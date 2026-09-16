@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import gragongit.arcaneartistry.common.api.CastProgressEvents;
 import gragongit.arcaneartistry.common.api.CastProgressEvents.CastProgressContext;
+import gragongit.arcaneartistry.common.network.ModNetworking;
 import gragongit.arcaneartistry.common.registry.ModDataComponents;
 import gragongit.arcaneartistry.common.registry.ModRegistries;
 import gragongit.arcaneartistry.common.staff.StaffCastAttachments;
@@ -20,6 +21,7 @@ public class ArcaneArtistry implements ModInitializer {
     LOGGER.info("Initializing all Arcane Artistry modules");
 
     ModRegistries.register();
+    ModNetworking.register();
     ModDataComponents.register();
     StaffCastAttachments.register();
     StaffInteractionHandler.register();

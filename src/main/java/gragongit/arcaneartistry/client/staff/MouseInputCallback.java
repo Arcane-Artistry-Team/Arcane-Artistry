@@ -1,4 +1,4 @@
-package gragongit.arcaneartistry.common.staff;
+package gragongit.arcaneartistry.client.staff;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;

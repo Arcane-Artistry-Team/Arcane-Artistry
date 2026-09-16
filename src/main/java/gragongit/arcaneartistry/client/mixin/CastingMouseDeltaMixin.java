@@ -3,7 +3,7 @@ package gragongit.arcaneartistry.client.mixin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import gragongit.arcaneartistry.common.staff.MouseInputCallback;
+import gragongit.arcaneartistry.client.staff.MouseInputCallback;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionResult;
