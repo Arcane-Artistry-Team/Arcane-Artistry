@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import gragongit.arcaneartistry.common.ArcaneArtistry;
 import gragongit.arcaneartistry.common.registry.ModDataComponents;
 import gragongit.arcaneartistry.common.registry.ModRegistries;
+import gragongit.arcaneartistry.common.spell.SpellEffectType;
 import gragongit.arcaneartistry.common.staff.Staff;
 import gragongit.arcaneartistry.common.staff.StaffType;
 import net.fabricmc.api.ModInitializer;
@@ -19,6 +20,9 @@ public class ArcaneArtistryElements implements ModInitializer {
   public static final Logger LOGGER = LoggerFactory.getLogger("Arcane Artistry Elements");
 
   public static final StaffType FIRE = Registry.register(ModRegistries.STAFF_TYPES, ArcaneArtistryElements.id("fire"), new StaffType());
+
+  public static final SpellEffectType<FireballEffect> FIREBALL =
+      Registry.register(ModRegistries.SPELL_EFFECT_TYPES, id("fireball"), new SpellEffectType<>(FireballEffect.CODEC));
 
   @Override
   public void onInitialize() {

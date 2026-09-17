@@ -7,6 +7,7 @@ import gragongit.arcaneartistry.common.api.CastProgressEvents.CastProgressContex
 import gragongit.arcaneartistry.common.network.ModNetworking;
 import gragongit.arcaneartistry.common.registry.ModDataComponents;
 import gragongit.arcaneartistry.common.registry.ModRegistries;
+import gragongit.arcaneartistry.common.spell.SpellHandler;
 import gragongit.arcaneartistry.common.staff.StaffCastAttachments;
 import gragongit.arcaneartistry.common.staff.StaffInteractionHandler;
 import net.fabricmc.api.ModInitializer;
@@ -26,9 +27,8 @@ public class ArcaneArtistry implements ModInitializer {
     StaffCastAttachments.register();
     StaffInteractionHandler.register();
 
-    CastProgressEvents.START.register(this::testLog);
-    CastProgressEvents.STROKE_ADDED.register(this::testLog);
     CastProgressEvents.STOP.register(this::testLog);
+    CastProgressEvents.STOP.register(SpellHandler::onCastProgressEnd);
   }
 
   public static Identifier id(String path) {

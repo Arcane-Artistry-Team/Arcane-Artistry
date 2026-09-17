@@ -1,0 +1,11 @@
+{
+  "staff_type": "arcane-artistry-elements:fire",
+  "pattern": [
+    "up",
+    "down"
+  ],
+  "effect": {
+    "type": "arcane-artistry-elements:fireball",
+    "damage": 10
+  }
+}
