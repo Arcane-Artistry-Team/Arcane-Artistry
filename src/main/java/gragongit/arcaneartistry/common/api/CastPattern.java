@@ -11,4 +11,15 @@ public record CastPattern(List<StaffDirection> pattern) {
   public boolean equals(Object obj) {
     return obj instanceof CastPattern other && pattern.equals(other.pattern);
   }
+
+  public static CastPattern of(String pattern) {
+    List<StaffDirection> strokes = pattern.chars().mapToObj(c -> switch (Character.toUpperCase(c)) {
+      case 'U' -> StaffDirection.UP;
+      case 'D' -> StaffDirection.DOWN;
+      case 'L' -> StaffDirection.LEFT;
+      case 'R' -> StaffDirection.RIGHT;
+      default -> throw new IllegalArgumentException("Unknown char '" + (char) c + "' in CastPattern '" + pattern + "'");
+    }).toList();
+    return new CastPattern(strokes);
+  }
 }
