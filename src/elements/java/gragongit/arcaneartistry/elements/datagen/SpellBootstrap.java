@@ -4,7 +4,7 @@ import gragongit.arcaneartistry.common.api.CastPattern;
 import gragongit.arcaneartistry.common.registry.ModRegistries;
 import gragongit.arcaneartistry.common.spell.Spell;
 import gragongit.arcaneartistry.elements.common.ArcaneArtistryElements;
-import gragongit.arcaneartistry.elements.common.FireballEffect;
+import gragongit.arcaneartistry.elements.common.spells.effects.FireballEffect;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 

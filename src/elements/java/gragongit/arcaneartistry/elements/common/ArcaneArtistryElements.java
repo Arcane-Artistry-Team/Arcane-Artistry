@@ -8,6 +8,7 @@ import gragongit.arcaneartistry.common.registry.ModRegistries;
 import gragongit.arcaneartistry.common.spell.SpellEffectType;
 import gragongit.arcaneartistry.common.staff.Staff;
 import gragongit.arcaneartistry.common.staff.StaffType;
+import gragongit.arcaneartistry.elements.common.spells.effects.FireballEffect;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.item.v1.DefaultItemComponentEvents;
 import net.minecraft.core.Registry;
