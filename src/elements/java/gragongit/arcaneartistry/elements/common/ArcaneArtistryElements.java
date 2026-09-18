@@ -15,7 +15,7 @@ public class ArcaneArtistryElements implements ModInitializer {
 
   @Override
   public void onInitialize() {
-    LOGGER.info("Arcane Artistry Elements!");
+    LOGGER.info("Arcane Artistry Elements");
 
     StaffTypes.init();
     Staffs.init();

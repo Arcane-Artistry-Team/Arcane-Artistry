@@ -27,7 +27,6 @@ public final class ModRegistries {
   public static final ResourceKey<Registry<Spell>> SPELL_KEY = ResourceKey.createRegistryKey(ArcaneArtistry.id("spell"));
 
   public static void register() {
-    ArcaneArtistry.LOGGER.info("Registering registries");
     DynamicRegistries.registerSynced(SPELL_KEY, Spell.CODEC);
   }
 }

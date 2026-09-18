@@ -19,7 +19,7 @@ public class ArcaneArtistry implements ModInitializer {
 
   @Override
   public void onInitialize() {
-    LOGGER.info("Initializing all Arcane Artistry modules");
+    LOGGER.info("Initializing Arcane Artistry");
 
     ModRegistries.register();
     ModNetworking.register();

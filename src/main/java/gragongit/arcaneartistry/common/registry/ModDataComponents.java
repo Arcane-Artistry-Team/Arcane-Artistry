@@ -11,7 +11,5 @@ public final class ModDataComponents {
       .register(BuiltInRegistries.DATA_COMPONENT_TYPE, ArcaneArtistry.id("staff"),
           DataComponentType.<Staff>builder().persistent(Staff.CODEC).build());
 
-  public static void register() {
-    ArcaneArtistry.LOGGER.info("Registering data components");
-  }
+  public static void register() {}
 }
