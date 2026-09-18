@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import gragongit.arcaneartistry.common.ArcaneArtistry;
 import gragongit.arcaneartistry.elements.common.spells.effects.SpellEffects;
+import gragongit.arcaneartistry.elements.common.staffs.CastingEffects;
 import gragongit.arcaneartistry.elements.common.staffs.StaffTypes;
 import gragongit.arcaneartistry.elements.common.staffs.Staffs;
 import net.fabricmc.api.ModInitializer;
@@ -20,6 +21,7 @@ public class ArcaneArtistryElements implements ModInitializer {
     StaffTypes.init();
     Staffs.init();
     SpellEffects.init();
+    CastingEffects.init();
   }
 
   public static Identifier id(String path) {
