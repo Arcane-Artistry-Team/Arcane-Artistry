@@ -5,7 +5,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gragongit.arcaneartistry.common.spell.SpellEffect;
 import gragongit.arcaneartistry.common.spell.SpellEffectType;
-import gragongit.arcaneartistry.elements.common.ArcaneArtistryElements;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 
@@ -16,7 +15,7 @@ public record FireballEffect(int damage) implements SpellEffect {
 
   @Override
   public SpellEffectType<?> type() {
-    return ArcaneArtistryElements.FIREBALL;
+    return SpellEffects.FIREBALL;
   }
 
   @Override
