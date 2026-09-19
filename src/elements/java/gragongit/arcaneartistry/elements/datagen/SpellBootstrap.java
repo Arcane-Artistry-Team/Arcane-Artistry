@@ -16,7 +16,7 @@ public final class SpellBootstrap {
   static void bootstrapSpells(BootstrapContext<Spell> context) {
     HolderGetter<StaffType> staffTypes = context.lookup(ModRegistries.STAFF_TYPE_KEY);
     registerSpell(context, "fireball_spell",
-        new Spell(staffTypes, StaffTypes.FIRE_KEY, CastPattern.of("UD"), new FireballEffect(10), SoundEvents.FIREWORK_ROCKET_LARGE_BLAST));
+        new Spell(staffTypes, StaffTypes.FIRE_KEY, CastPattern.of("UD"), new FireballEffect(3), SoundEvents.FIREWORK_ROCKET_LARGE_BLAST));
   }
 
   private static void registerSpell(BootstrapContext<Spell> context, String spellId, Spell spell) {

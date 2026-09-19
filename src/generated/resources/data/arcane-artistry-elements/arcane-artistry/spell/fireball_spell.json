@@ -2,7 +2,7 @@
   "cast_sound": "minecraft:entity.firework_rocket.large_blast",
   "effect": {
     "type": "arcane-artistry-elements:fireball",
-    "damage": 10
+    "power": 3
   },
   "pattern": [
     "up",
