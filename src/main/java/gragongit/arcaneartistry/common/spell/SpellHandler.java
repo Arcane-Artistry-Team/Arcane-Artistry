@@ -51,6 +51,7 @@ public final class SpellHandler {
         continue;
       }
       if (spell.pattern().equals(c.castPattern())) {
+        spell.castSound().ifPresent(sound -> playSound(player, sound.value(), 1F));
         spell.effect().onCast(player);
         return;
       }
