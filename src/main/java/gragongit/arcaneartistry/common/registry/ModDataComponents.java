@@ -9,7 +9,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 public final class ModDataComponents {
   public static final DataComponentType<Staff> STAFF = Registry
       .register(BuiltInRegistries.DATA_COMPONENT_TYPE, ArcaneArtistry.id("staff"),
-          DataComponentType.<Staff>builder().persistent(Staff.CODEC).build());
+          DataComponentType.<Staff>builder().persistent(Staff.CODEC).networkSynchronized(Staff.STREAM_CODEC).build());
 
   public static void register() {}
 }

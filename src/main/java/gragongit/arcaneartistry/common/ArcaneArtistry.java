@@ -27,8 +27,9 @@ public class ArcaneArtistry implements ModInitializer {
     StaffCastAttachments.register();
     StaffInteractionHandler.register();
 
+    SpellHandler.init();
+
     CastProgressEvents.STOP.register(this::testLog);
-    CastProgressEvents.STOP.register(SpellHandler::onCastProgressEnd);
   }
 
   public static Identifier id(String path) {

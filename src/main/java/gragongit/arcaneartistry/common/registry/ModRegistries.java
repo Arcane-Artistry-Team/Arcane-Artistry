@@ -15,9 +15,6 @@ public final class ModRegistries {
 
   public static final ResourceKey<Registry<StaffType>> STAFF_TYPE_KEY = ResourceKey.createRegistryKey(ArcaneArtistry.id("staff_type"));
 
-  public static final Registry<StaffType> STAFF_TYPES =
-      FabricRegistryBuilder.create(STAFF_TYPE_KEY).attribute(RegistryAttribute.SYNCED).buildAndRegister();
-
   public static final ResourceKey<Registry<SpellEffectType<?>>> SPELL_EFFECT_TYPE_KEY =
       ResourceKey.createRegistryKey(ArcaneArtistry.id("spell_effect_type"));
 
@@ -27,6 +24,7 @@ public final class ModRegistries {
   public static final ResourceKey<Registry<Spell>> SPELL_KEY = ResourceKey.createRegistryKey(ArcaneArtistry.id("spell"));
 
   public static void register() {
+    DynamicRegistries.registerSynced(STAFF_TYPE_KEY, StaffType.CODEC);
     DynamicRegistries.registerSynced(SPELL_KEY, Spell.CODEC);
   }
 }
