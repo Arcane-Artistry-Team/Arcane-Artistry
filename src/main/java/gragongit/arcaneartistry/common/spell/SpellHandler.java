@@ -20,7 +20,7 @@ public final class SpellHandler {
 
   public static void onCastProgressStrokeAdded(CastProgressContext c) {
     Player player = c.player();
-    if (player.level().isClientSide()) {
+    if (player.level().isClientSide() || c.castPattern().isEmpty()) {
       return;
     }
 

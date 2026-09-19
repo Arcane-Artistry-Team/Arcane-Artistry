@@ -22,4 +22,8 @@ public record CastPattern(List<StaffDirection> strokes) {
     }).toList();
     return new CastPattern(strokes);
   }
+
+  public boolean isEmpty() {
+    return strokes.isEmpty();
+  }
 }
