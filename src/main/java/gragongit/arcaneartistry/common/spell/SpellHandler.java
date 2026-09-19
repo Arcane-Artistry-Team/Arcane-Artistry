@@ -5,6 +5,7 @@ import gragongit.arcaneartistry.common.api.CastProgressEvents.CastProgressContex
 import gragongit.arcaneartistry.common.registry.ModDataComponents;
 import gragongit.arcaneartistry.common.registry.ModRegistries;
 import gragongit.arcaneartistry.common.staff.Staff;
+import gragongit.arcaneartistry.common.staff.StaffDirection;
 import net.minecraft.core.Registry;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -29,12 +30,12 @@ public final class SpellHandler {
       return;
     }
 
-    staff.type().value().strokeSound().ifPresent(sound -> playSound(player, sound.value()));
+    staff.type().value().strokeSound().ifPresent(sound -> playSound(player, sound.value(), getPitch(c.castPattern().getLast())));
   }
 
   public static void onCastProgressEnd(CastProgressContext c) {
     Player player = c.player();
-    if (player.level().isClientSide()) {
+    if (player.level().isClientSide() || c.castPattern().isEmpty()) {
       return;
     }
 
@@ -55,10 +56,25 @@ public final class SpellHandler {
       }
     }
 
-    staff.type().value().failSound().ifPresent(sound -> playSound(player, sound.value()));
+    staff.type().value().failSound().ifPresent(sound -> playSound(player, sound.value(), 1F));
   }
 
-  private static void playSound(Player player, SoundEvent sound) {
-    player.level().playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundSource.PLAYERS, 1.0F, 1.0F);
+  private static void playSound(Player player, SoundEvent sound, float pitch) {
+    player.level().playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundSource.PLAYERS, 0.7F, pitch);
+  }
+
+  private static float getPitch(StaffDirection direction) {
+    switch (direction) {
+      case StaffDirection.UP:
+        return 1.2F;
+      case StaffDirection.LEFT:
+        return 1.05F;
+      case StaffDirection.RIGHT:
+        return 0.95F;
+      case StaffDirection.DOWN:
+        return 0.8F;
+      default:
+        return 1F;
+    }
   }
 }

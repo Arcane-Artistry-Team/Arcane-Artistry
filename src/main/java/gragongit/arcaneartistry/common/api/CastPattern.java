@@ -12,6 +12,11 @@ public record CastPattern(List<StaffDirection> strokes) {
     return obj instanceof CastPattern other && strokes.equals(other.strokes);
   }
 
+  @Override
+  public String toString() {
+    return strokes.toString();
+  }
+
   public static CastPattern of(String pattern) {
     List<StaffDirection> strokes = pattern.chars().mapToObj(c -> switch (Character.toUpperCase(c)) {
       case 'U' -> StaffDirection.UP;
@@ -25,5 +30,9 @@ public record CastPattern(List<StaffDirection> strokes) {
 
   public boolean isEmpty() {
     return strokes.isEmpty();
+  }
+
+  public StaffDirection getLast() {
+    return strokes.getLast();
   }
 }
