@@ -8,6 +8,7 @@ import gragongit.arcaneartistry.client.renderer.CastingRenderState;
 import gragongit.arcaneartistry.common.api.CastState;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.player.Player;
 
@@ -24,7 +25,8 @@ public abstract class AvatarRendererMixin {
     CastingRenderState renderState = (CastingRenderState) state;
 
     renderState.arcaneArtistry$setCasting(castState.isCasting());
-    renderState.arcaneArtistry$setYaw((float) castState.getStaffRenderOffsetYaw());
-    renderState.arcaneArtistry$setPitch((float) castState.getStaffRenderOffsetPitch());
+    renderState.arcaneArtistry$setYaw(Mth.lerp(partialTicks, castState.getStaffRenderOffsetYawOld(), castState.getStaffRenderOffsetYaw()));
+    renderState
+        .arcaneArtistry$setPitch(Mth.lerp(partialTicks, castState.getStaffRenderOffsetPitchOld(), castState.getStaffRenderOffsetPitch()));
   }
 }

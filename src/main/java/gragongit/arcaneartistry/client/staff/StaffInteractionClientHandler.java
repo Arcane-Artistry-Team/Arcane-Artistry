@@ -1,6 +1,5 @@
 package gragongit.arcaneartistry.client.staff;
 
-import gragongit.arcaneartistry.common.ArcaneArtistry;
 import gragongit.arcaneartistry.common.api.CastState;
 import gragongit.arcaneartistry.common.network.StaffRenderOffsetPayload;
 import gragongit.arcaneartistry.common.network.StrokePayload;
@@ -55,12 +54,20 @@ public final class StaffInteractionClientHandler {
     state.setStaffRenderOffsetPitch(offsetPitch);
     offsetDirty = true;
 
-    ArcaneArtistry.LOGGER.info("Yaw: " + offsetYaw + " Pitch: " + offsetPitch);
-
     return InteractionResult.CONSUME;
   }
 
   private static void onClientTick(Minecraft client) {
+    if (client.level == null) {
+      return;
+    }
+
+    for (Player player : client.level.players()) {
+      CastState state = CastState.of(player);
+      state.setStaffRenderOffsetYawOld(state.getStaffRenderOffsetYaw());
+      state.setStaffRenderOffsetPitchOld(state.getStaffRenderOffsetPitch());
+    }
+
     Player player = client.player;
     if (player == null || !offsetDirty) {
       return;

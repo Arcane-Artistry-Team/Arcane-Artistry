@@ -23,9 +23,15 @@ public final class StaffCastAttachments {
       .create(ArcaneArtistry.id("staff_render_offset_yaw"),
           builder -> builder.initializer(() -> 0F).syncWith(ByteBufCodecs.FLOAT, AttachmentSyncPredicate.allButTarget()));
 
+  public static final AttachmentType<Float> STAFF_RENDER_OFFSET_YAW_OLD =
+      AttachmentRegistry.create(ArcaneArtistry.id("staff_render_offset_yaw_old"), builder -> builder.initializer(() -> 0F));
+
   public static final AttachmentType<Float> STAFF_RENDER_OFFSET_PITCH = AttachmentRegistry
       .create(ArcaneArtistry.id("staff_render_offset_pitch"),
           builder -> builder.initializer(() -> 0F).syncWith(ByteBufCodecs.FLOAT, AttachmentSyncPredicate.allButTarget()));
+
+  public static final AttachmentType<Float> STAFF_RENDER_OFFSET_PITCH_OLD =
+      AttachmentRegistry.create(ArcaneArtistry.id("staff_render_offset_pitch_old"), builder -> builder.initializer(() -> 0F));
 
   public static final AttachmentType<CastPattern> STROKES = AttachmentRegistry.create(ArcaneArtistry.id("strokes"));
 
