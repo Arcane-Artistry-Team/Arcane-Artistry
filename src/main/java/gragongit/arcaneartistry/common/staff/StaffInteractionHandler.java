@@ -4,8 +4,10 @@ import gragongit.arcaneartistry.common.api.CastPattern;
 import gragongit.arcaneartistry.common.api.CastProgressEvents;
 import gragongit.arcaneartistry.common.api.CastProgressEvents.CastProgressContext;
 import gragongit.arcaneartistry.common.api.CastState;
+import gragongit.arcaneartistry.common.network.StaffRenderOffsetPayload;
 import gragongit.arcaneartistry.common.network.StrokePayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 
 public final class StaffInteractionHandler {
@@ -17,6 +19,9 @@ public final class StaffInteractionHandler {
     ServerPlayNetworking
         .registerGlobalReceiver(StrokePayload.TYPE, (payload,
             context) -> context.server().execute(() -> StaffInteractionHandler.appendStroke(context.player(), payload.direction())));
+    ServerPlayNetworking
+        .registerGlobalReceiver(StaffRenderOffsetPayload.TYPE,
+            (payload, context) -> context.server().execute(() -> StaffInteractionHandler.updateRenderOffset(context.player(), payload)));
   }
 
   public static void onStaffInteractionStart(Player player) {
@@ -57,6 +62,19 @@ public final class StaffInteractionHandler {
     CastState state = CastState.of(player);
     state.setCasting(false);
     state.clearStrokes();
+  }
+
+  private static void updateRenderOffset(Player player, StaffRenderOffsetPayload payload) {
+    CastState state = CastState.of(player);
+    if (!state.isCasting()) {
+      return;
+    }
+
+    double yaw = Mth.clamp(payload.yaw(), -0.5, 0.5);
+    double pitch = Mth.clamp(payload.pitch(), -0.5, 0.5);
+
+    state.setStaffRenderOffsetYaw(yaw);
+    state.setStaffRenderOffsetPitch(pitch);
   }
 
   private static CastProgressContext getCastProgressContext(Player player) {
