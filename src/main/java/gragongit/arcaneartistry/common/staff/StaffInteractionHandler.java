@@ -1,6 +1,5 @@
 package gragongit.arcaneartistry.common.staff;
 
-import java.util.List;
 import gragongit.arcaneartistry.common.api.CastPattern;
 import gragongit.arcaneartistry.common.api.CastProgressEvents;
 import gragongit.arcaneartistry.common.api.CastProgressEvents.CastProgressContext;
@@ -39,9 +38,9 @@ public final class StaffInteractionHandler {
 
   private static void appendStroke(Player player, StaffDirection direction) {
     CastState state = CastState.of(player);
-    List<StaffDirection> strokes = state.getStrokes();
+    CastPattern strokes = state.getStrokes();
 
-    if (!strokes.isEmpty() && strokes.get(strokes.size() - 1) == direction) {
+    if (!strokes.isEmpty() && strokes.getLast() == direction) {
       return;
     }
 
@@ -61,6 +60,6 @@ public final class StaffInteractionHandler {
   }
 
   private static CastProgressContext getCastProgressContext(Player player) {
-    return new CastProgressContext(player, new CastPattern(CastState.of(player).getStrokes()));
+    return new CastProgressContext(player, CastState.of(player).getStrokes());
   }
 }

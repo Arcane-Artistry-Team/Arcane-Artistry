@@ -1,7 +1,5 @@
 package gragongit.arcaneartistry.common.api;
 
-import java.util.ArrayList;
-import java.util.List;
 import gragongit.arcaneartistry.common.staff.StaffCastAttachments;
 import gragongit.arcaneartistry.common.staff.StaffDirection;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
@@ -57,19 +55,15 @@ public final class CastState {
     target.setAttached(StaffCastAttachments.STAFF_RENDER_OFFSET_PITCH, pitch);
   }
 
-  public List<StaffDirection> getStrokes() {
-    return target.getAttachedOrElse(StaffCastAttachments.STROKES, List.of());
+  public CastPattern getStrokes() {
+    return target.getAttachedOrElse(StaffCastAttachments.STROKES, CastPattern.empty());
   }
 
   public void addStroke(StaffDirection direction) {
-    target.modifyAttached(StaffCastAttachments.STROKES, current -> {
-      List<StaffDirection> updated = new ArrayList<>(current == null ? List.of() : current);
-      updated.add(direction);
-      return List.copyOf(updated);
-    });
+    target.modifyAttached(StaffCastAttachments.STROKES, current -> current.add(direction));
   }
 
   public void clearStrokes() {
-    target.setAttached(StaffCastAttachments.STROKES, List.of());
+    target.setAttached(StaffCastAttachments.STROKES, CastPattern.empty());
   }
 }

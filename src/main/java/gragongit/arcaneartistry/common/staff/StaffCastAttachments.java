@@ -1,7 +1,7 @@
 package gragongit.arcaneartistry.common.staff;
 
-import java.util.List;
 import gragongit.arcaneartistry.common.ArcaneArtistry;
+import gragongit.arcaneartistry.common.api.CastPattern;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentSyncPredicate;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
@@ -29,7 +29,7 @@ public final class StaffCastAttachments {
       .create(ArcaneArtistry.id("staff_render_offset_pitch"),
           builder -> builder.initializer(() -> 0.0).syncWith(ByteBufCodecs.DOUBLE, AttachmentSyncPredicate.all()));
 
-  public static final AttachmentType<List<StaffDirection>> STROKES = AttachmentRegistry.create(ArcaneArtistry.id("strokes"));
+  public static final AttachmentType<CastPattern> STROKES = AttachmentRegistry.create(ArcaneArtistry.id("strokes"));
 
   public static void register() {}
 }
