@@ -1,5 +1,6 @@
 package gragongit.arcaneartistry.client.staff;
 
+import gragongit.arcaneartistry.common.ArcaneArtistry;
 import gragongit.arcaneartistry.common.api.CastState;
 import gragongit.arcaneartistry.common.network.StaffRenderOffsetPayload;
 import gragongit.arcaneartistry.common.network.StrokePayload;
@@ -13,8 +14,7 @@ import net.minecraft.world.entity.player.Player;
 
 public final class StaffInteractionClientHandler {
   private static final double INPUT_THRESHOLD = 200.0;
-  private static final double MAX_STAFF_RENDER_OFFSET = 0.5;
-  private static final double RENDER_TRANSLATE_SCALE = 0.00075;
+  private static final float NORMALIZE_SCALE = 0.001F;
 
   private static boolean offsetDirty;
 
@@ -49,13 +49,13 @@ public final class StaffInteractionClientHandler {
     state.setAccumulatedYaw(yaw);
     state.setAccumulatedPitch(pitch);
 
-    double offsetYaw =
-        Mth.clamp(state.getStaffRenderOffsetYaw() + deltaX * RENDER_TRANSLATE_SCALE, -MAX_STAFF_RENDER_OFFSET, MAX_STAFF_RENDER_OFFSET);
-    double offsetPitch =
-        Mth.clamp(state.getStaffRenderOffsetPitch() + deltaY * RENDER_TRANSLATE_SCALE, -MAX_STAFF_RENDER_OFFSET, MAX_STAFF_RENDER_OFFSET);
+    float offsetYaw = Mth.clamp(state.getStaffRenderOffsetYaw() + (float) deltaX * NORMALIZE_SCALE, -1F, 1F);
+    float offsetPitch = Mth.clamp(state.getStaffRenderOffsetPitch() + (float) deltaY * NORMALIZE_SCALE, -1F, 1F);
     state.setStaffRenderOffsetYaw(offsetYaw);
     state.setStaffRenderOffsetPitch(offsetPitch);
     offsetDirty = true;
+
+    ArcaneArtistry.LOGGER.info("Yaw: " + offsetYaw + " Pitch: " + offsetPitch);
 
     return InteractionResult.CONSUME;
   }

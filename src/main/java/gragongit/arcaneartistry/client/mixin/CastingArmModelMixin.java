@@ -10,7 +10,6 @@ import gragongit.arcaneartistry.client.renderer.CastingRenderState;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 
@@ -33,10 +32,7 @@ public abstract class CastingArmModelMixin<T extends HumanoidRenderState> {
     HumanoidArm arm = state.useItemHand == InteractionHand.MAIN_HAND ? state.mainArm : state.mainArm.getOpposite();
     ModelPart armPart = arm == HumanoidArm.RIGHT ? rightArm : leftArm;
 
-    float yaw = Mth.clamp(castingState.arcaneArtistry$getYaw(), -MAX_ROTATION, MAX_ROTATION);
-    float pitch = Mth.clamp(castingState.arcaneArtistry$getPitch(), -MAX_ROTATION, MAX_ROTATION);
-
-    armPart.xRot += pitch;
-    armPart.yRot += (arm == HumanoidArm.RIGHT ? 1 : -1) * yaw;
+    armPart.xRot += castingState.arcaneArtistry$getPitch() * MAX_ROTATION;
+    armPart.yRot += (arm == HumanoidArm.RIGHT ? 1 : -1) * castingState.arcaneArtistry$getYaw() * MAX_ROTATION;
   }
 }

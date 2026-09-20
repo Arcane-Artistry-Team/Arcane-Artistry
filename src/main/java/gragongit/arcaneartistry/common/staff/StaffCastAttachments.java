@@ -19,13 +19,13 @@ public final class StaffCastAttachments {
   public static final AttachmentType<Double> ACCUMULATED_PITCH =
       AttachmentRegistry.create(ArcaneArtistry.id("accumulated_pitch"), builder -> builder.initializer(() -> 0.0));
 
-  public static final AttachmentType<Double> STAFF_RENDER_OFFSET_YAW = AttachmentRegistry
+  public static final AttachmentType<Float> STAFF_RENDER_OFFSET_YAW = AttachmentRegistry
       .create(ArcaneArtistry.id("staff_render_offset_yaw"),
-          builder -> builder.initializer(() -> 0.0).syncWith(ByteBufCodecs.DOUBLE, AttachmentSyncPredicate.allButTarget()));
+          builder -> builder.initializer(() -> 0F).syncWith(ByteBufCodecs.FLOAT, AttachmentSyncPredicate.allButTarget()));
 
-  public static final AttachmentType<Double> STAFF_RENDER_OFFSET_PITCH = AttachmentRegistry
+  public static final AttachmentType<Float> STAFF_RENDER_OFFSET_PITCH = AttachmentRegistry
       .create(ArcaneArtistry.id("staff_render_offset_pitch"),
-          builder -> builder.initializer(() -> 0.0).syncWith(ByteBufCodecs.DOUBLE, AttachmentSyncPredicate.allButTarget()));
+          builder -> builder.initializer(() -> 0F).syncWith(ByteBufCodecs.FLOAT, AttachmentSyncPredicate.allButTarget()));
 
   public static final AttachmentType<CastPattern> STROKES = AttachmentRegistry.create(ArcaneArtistry.id("strokes"));
 

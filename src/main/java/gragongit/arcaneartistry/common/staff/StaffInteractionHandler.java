@@ -7,7 +7,6 @@ import gragongit.arcaneartistry.common.api.CastState;
 import gragongit.arcaneartistry.common.network.StaffRenderOffsetPayload;
 import gragongit.arcaneartistry.common.network.StrokePayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 
 public final class StaffInteractionHandler {
@@ -69,12 +68,8 @@ public final class StaffInteractionHandler {
     if (!state.isCasting()) {
       return;
     }
-
-    double yaw = Mth.clamp(payload.yaw(), -0.5, 0.5);
-    double pitch = Mth.clamp(payload.pitch(), -0.5, 0.5);
-
-    state.setStaffRenderOffsetYaw(yaw);
-    state.setStaffRenderOffsetPitch(pitch);
+    state.setStaffRenderOffsetYaw(payload.yaw());
+    state.setStaffRenderOffsetPitch(payload.pitch());
   }
 
   private static CastProgressContext getCastProgressContext(Player player) {

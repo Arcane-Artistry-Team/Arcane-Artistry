@@ -20,6 +20,8 @@ import net.minecraft.world.item.ItemStack;
 @Mixin(ItemInHandRenderer.class)
 public class CastingHandMovementMixin {
   @Unique
+  private static final float MAX_STAFF_MOVEMENT = 0.25F;
+  @Unique
   private static final float STAFF_CENTER_POS_X = 0.25F;
   @Unique
   private static final float STAFF_CENTER_POS_Y = -0.15F;
@@ -54,8 +56,8 @@ public class CastingHandMovementMixin {
     HumanoidArm arm = castingHand == InteractionHand.MAIN_HAND ? player.getMainArm() : player.getMainArm().getOpposite();
     int invert = arm == HumanoidArm.RIGHT ? 1 : -1;
 
-    double offsetX = state.getStaffRenderOffsetYaw();
-    double offsetY = state.getStaffRenderOffsetPitch();
+    float offsetX = state.getStaffRenderOffsetYaw() * MAX_STAFF_MOVEMENT;
+    float offsetY = state.getStaffRenderOffsetPitch() * MAX_STAFF_MOVEMENT;
     poseStack.translate(STAFF_CENTER_POS_X + offsetX, STAFF_CENTER_POS_Y + -offsetY, STAFF_CENTER_POS_Z);
     poseStack.mulPose(Axis.XP.rotationDegrees(STAFF_ROT_X));
     poseStack.mulPose(Axis.YP.rotationDegrees(invert * STAFF_ROT_Y));
