@@ -9,7 +9,7 @@ import gragongit.arcaneartistry.common.staff.StaffType;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.core.registries.codec.RegistryFileCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 
@@ -31,7 +31,11 @@ public record Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffec
 
   public static final Codec<Spell> CODEC = RecordCodecBuilder
       .create(instance -> instance
-          .group(RegistryFileCodec.create(ModRegistries.STAFF_TYPE_KEY, StaffType.CODEC).fieldOf("staff_type").forGetter(Spell::staffType),
+          .group(
+              RegistryFileCodec
+                  .create(ModRegistries.STAFF_TYPE_KEY, StaffType.CODEC, false)
+                  .fieldOf("staff_type")
+                  .forGetter(Spell::staffType),
               CastPattern.CODEC.fieldOf("pattern").forGetter(Spell::pattern), EFFECT_CODEC.fieldOf("effect").forGetter(Spell::effect),
               SoundEvent.CODEC.optionalFieldOf("cast_sound").forGetter(Spell::castSound))
           .apply(instance, Spell::new));
