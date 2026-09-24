@@ -13,7 +13,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec2;
 
 public final class StaffInteractionClientHandler {
-  private static final double INPUT_THRESHOLD = 200.0;
+  private static final double INPUT_THRESHOLD = 400.0;
   private static final float NORMALIZE_SCALE = 0.001F;
 
   private static boolean offsetDirty;
@@ -34,12 +34,8 @@ public final class StaffInteractionClientHandler {
 
     Vec2 accDelta = state.getAccumulatedDelta().add(delta);
 
-    if (Math.abs(accDelta.x) >= INPUT_THRESHOLD) {
-      sendStroke(accDelta.x > 0 ? StaffDirection.RIGHT : StaffDirection.LEFT);
-      accDelta = Vec2.ZERO;
-    }
-    if (Math.abs(accDelta.y) >= INPUT_THRESHOLD) {
-      sendStroke(accDelta.y > 0 ? StaffDirection.DOWN : StaffDirection.UP);
+    if (accDelta.length() >= INPUT_THRESHOLD) {
+      sendStroke(resolveDirection(accDelta));
       accDelta = Vec2.ZERO;
     }
 
@@ -52,6 +48,12 @@ public final class StaffInteractionClientHandler {
     offsetDirty = true;
 
     return InteractionResult.CONSUME;
+  }
+
+  private static StaffDirection resolveDirection(Vec2 delta) {
+    double angle = Math.atan2(delta.y, delta.x);
+    int directionIndex = ((int) Math.round(angle / (Math.PI / 4.0))) & 7;
+    return StaffDirection.values()[directionIndex];
   }
 
   private static void onClientTick(Minecraft client) {
