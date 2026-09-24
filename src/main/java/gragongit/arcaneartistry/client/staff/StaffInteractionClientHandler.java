@@ -13,7 +13,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec2;
 
 public final class StaffInteractionClientHandler {
-  private static final double INPUT_THRESHOLD = 400.0;
+  private static final double INPUT_THRESHOLD = 200.0;
   private static final float NORMALIZE_SCALE = 0.001F;
 
   private static boolean offsetDirty;
@@ -52,7 +52,7 @@ public final class StaffInteractionClientHandler {
 
   private static StaffDirection resolveDirection(Vec2 delta) {
     double angle = Math.atan2(delta.y, delta.x);
-    int directionIndex = ((int) Math.round(angle / (Math.PI / 4.0))) & 7;
+    int directionIndex = ((int) Math.round(angle / (Math.PI / (StaffDirection.values().length / 2)))) & StaffDirection.values().length - 1;
     return StaffDirection.values()[directionIndex];
   }
 

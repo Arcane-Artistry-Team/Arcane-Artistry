@@ -67,21 +67,13 @@ public final class SpellHandler {
   private static float getPitch(StaffDirection direction) {
     switch (direction) {
       case StaffDirection.UP:
-        return 1.5F;
-      case StaffDirection.UP_LEFT:
         return 1.2F;
-      case StaffDirection.UP_RIGHT:
-        return 1.35F;
       case StaffDirection.LEFT:
         return 1.05F;
       case StaffDirection.RIGHT:
         return 0.95F;
-      case StaffDirection.DOWN_LEFT:
-        return 0.8F;
-      case StaffDirection.DOWN_RIGHT:
-        return 0.65F;
       case StaffDirection.DOWN:
-        return 0.5F;
+        return 0.8F;
       default:
         return 1F;
     }

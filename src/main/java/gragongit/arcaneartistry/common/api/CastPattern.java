@@ -42,10 +42,6 @@ public record CastPattern(List<StaffDirection> strokes) {
       case 'D' -> StaffDirection.DOWN;
       case 'L' -> StaffDirection.LEFT;
       case 'R' -> StaffDirection.RIGHT;
-      case 'Q' -> StaffDirection.UP_LEFT;
-      case 'E' -> StaffDirection.UP_RIGHT;
-      case 'Y' -> StaffDirection.DOWN_LEFT;
-      case 'C' -> StaffDirection.DOWN_RIGHT;
       default -> throw new IllegalArgumentException("Unknown char '" + (char) c + "' in CastPattern '" + pattern + "'");
     }).toList();
   }
