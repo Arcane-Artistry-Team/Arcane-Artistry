@@ -3,6 +3,7 @@ package gragongit.arcaneartistry.common.api;
 import gragongit.arcaneartistry.common.staff.StaffCastAttachments;
 import gragongit.arcaneartistry.common.staff.StaffDirection;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
+import net.minecraft.world.phys.Vec2;
 
 public final class CastState {
   private final AttachmentTarget target;
@@ -23,20 +24,12 @@ public final class CastState {
     target.setAttached(StaffCastAttachments.IS_CASTING, casting);
   }
 
-  public double getAccumulatedYaw() {
-    return target.getAttachedOrElse(StaffCastAttachments.ACCUMULATED_YAW, 0.0);
+  public Vec2 getAccumulatedDelta() {
+    return target.getAttachedOrElse(StaffCastAttachments.ACCUMULATED_DELTA, Vec2.ZERO);
   }
 
-  public void setAccumulatedYaw(double yaw) {
-    target.setAttached(StaffCastAttachments.ACCUMULATED_YAW, yaw);
-  }
-
-  public double getAccumulatedPitch() {
-    return target.getAttachedOrElse(StaffCastAttachments.ACCUMULATED_PITCH, 0.0);
-  }
-
-  public void setAccumulatedPitch(double pitch) {
-    target.setAttached(StaffCastAttachments.ACCUMULATED_PITCH, pitch);
+  public void setAccumulatedDelta(Vec2 delta) {
+    target.setAttached(StaffCastAttachments.ACCUMULATED_DELTA, delta);
   }
 
   public float getStaffRenderOffsetYaw() {
@@ -47,14 +40,6 @@ public final class CastState {
     target.setAttached(StaffCastAttachments.STAFF_RENDER_OFFSET_YAW, yaw);
   }
 
-  public float getStaffRenderOffsetYawOld() {
-    return target.getAttachedOrElse(StaffCastAttachments.STAFF_RENDER_OFFSET_YAW_OLD, 0F);
-  }
-
-  public void setStaffRenderOffsetYawOld(float oldYaw) {
-    target.setAttached(StaffCastAttachments.STAFF_RENDER_OFFSET_YAW_OLD, oldYaw);
-  }
-
   public float getStaffRenderOffsetPitch() {
     return target.getAttachedOrElse(StaffCastAttachments.STAFF_RENDER_OFFSET_PITCH, 0F);
   }
@@ -63,12 +48,12 @@ public final class CastState {
     target.setAttached(StaffCastAttachments.STAFF_RENDER_OFFSET_PITCH, pitch);
   }
 
-  public float getStaffRenderOffsetPitchOld() {
-    return target.getAttachedOrElse(StaffCastAttachments.STAFF_RENDER_OFFSET_PITCH_OLD, 0F);
+  public Vec2 getStaffRenderOffsetOld() {
+    return target.getAttachedOrElse(StaffCastAttachments.STAFF_RENDER_OFFSET_OLD, Vec2.ZERO);
   }
 
-  public void setStaffRenderOffsetPitchOld(float oldPitch) {
-    target.setAttached(StaffCastAttachments.STAFF_RENDER_OFFSET_PITCH_OLD, oldPitch);
+  public void setStaffRenderOffsetOld(Vec2 oldOffset) {
+    target.setAttached(StaffCastAttachments.STAFF_RENDER_OFFSET_OLD, oldOffset);
   }
 
   public CastPattern getStrokes() {

@@ -25,8 +25,8 @@ public abstract class AvatarRendererMixin {
     CastingRenderState renderState = (CastingRenderState) state;
 
     renderState.arcaneArtistry$setCasting(castState.isCasting());
-    renderState.arcaneArtistry$setYaw(Mth.lerp(partialTicks, castState.getStaffRenderOffsetYawOld(), castState.getStaffRenderOffsetYaw()));
+    renderState.arcaneArtistry$setYaw(Mth.lerp(partialTicks, castState.getStaffRenderOffsetOld().x, castState.getStaffRenderOffsetYaw()));
     renderState
-        .arcaneArtistry$setPitch(Mth.lerp(partialTicks, castState.getStaffRenderOffsetPitchOld(), castState.getStaffRenderOffsetPitch()));
+        .arcaneArtistry$setPitch(Mth.lerp(partialTicks, castState.getStaffRenderOffsetOld().y, castState.getStaffRenderOffsetPitch()));
   }
 }

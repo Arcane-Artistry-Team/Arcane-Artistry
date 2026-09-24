@@ -8,6 +8,7 @@ import gragongit.arcaneartistry.common.network.StaffRenderOffsetPayload;
 import gragongit.arcaneartistry.common.network.StrokePayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec2;
 
 public final class StaffInteractionHandler {
 
@@ -25,8 +26,7 @@ public final class StaffInteractionHandler {
 
   public static void onStaffInteractionStart(Player player) {
     CastState state = CastState.of(player);
-    state.setAccumulatedYaw(0);
-    state.setAccumulatedPitch(0);
+    state.setAccumulatedDelta(Vec2.ZERO);
     state.setStaffRenderOffsetYaw(0);
     state.setStaffRenderOffsetPitch(0);
     state.clearStrokes();

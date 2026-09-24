@@ -32,22 +32,18 @@ public final class StaffInteractionClientHandler {
     if (!state.isCasting())
       return InteractionResult.PASS;
 
-    double yaw = state.getAccumulatedYaw() + delta.x;
-    double pitch = state.getAccumulatedPitch() + delta.y;
+    Vec2 accDelta = state.getAccumulatedDelta().add(delta);
 
-    if (Math.abs(yaw) >= INPUT_THRESHOLD) {
-      sendStroke(yaw > 0 ? StaffDirection.RIGHT : StaffDirection.LEFT);
-      yaw = 0;
-      pitch = 0;
+    if (Math.abs(accDelta.x) >= INPUT_THRESHOLD) {
+      sendStroke(accDelta.x > 0 ? StaffDirection.RIGHT : StaffDirection.LEFT);
+      accDelta = Vec2.ZERO;
     }
-    if (Math.abs(pitch) >= INPUT_THRESHOLD) {
-      sendStroke(pitch > 0 ? StaffDirection.DOWN : StaffDirection.UP);
-      yaw = 0;
-      pitch = 0;
+    if (Math.abs(accDelta.y) >= INPUT_THRESHOLD) {
+      sendStroke(accDelta.y > 0 ? StaffDirection.DOWN : StaffDirection.UP);
+      accDelta = Vec2.ZERO;
     }
 
-    state.setAccumulatedYaw(yaw);
-    state.setAccumulatedPitch(pitch);
+    state.setAccumulatedDelta(accDelta);
 
     float offsetYaw = Mth.clamp(state.getStaffRenderOffsetYaw() + delta.x * NORMALIZE_SCALE, -1F, 1F);
     float offsetPitch = Mth.clamp(state.getStaffRenderOffsetPitch() + delta.y * NORMALIZE_SCALE, -1F, 1F);
@@ -65,8 +61,7 @@ public final class StaffInteractionClientHandler {
 
     for (Player player : client.level.players()) {
       CastState state = CastState.of(player);
-      state.setStaffRenderOffsetYawOld(state.getStaffRenderOffsetYaw());
-      state.setStaffRenderOffsetPitchOld(state.getStaffRenderOffsetPitch());
+      state.setStaffRenderOffsetOld(new Vec2(state.getStaffRenderOffsetYaw(), state.getStaffRenderOffsetPitch()));
     }
 
     Player player = client.player;
