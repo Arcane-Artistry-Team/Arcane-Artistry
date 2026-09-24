@@ -32,20 +32,12 @@ public final class CastState {
     target.setAttached(StaffCastAttachments.ACCUMULATED_DELTA, delta);
   }
 
-  public float getStaffRenderOffsetYaw() {
-    return target.getAttachedOrElse(StaffCastAttachments.STAFF_RENDER_OFFSET_YAW, 0F);
+  public Vec2 getStaffRenderOffset() {
+    return target.getAttachedOrElse(StaffCastAttachments.STAFF_RENDER_OFFSET, Vec2.ZERO);
   }
 
-  public void setStaffRenderOffsetYaw(float yaw) {
-    target.setAttached(StaffCastAttachments.STAFF_RENDER_OFFSET_YAW, yaw);
-  }
-
-  public float getStaffRenderOffsetPitch() {
-    return target.getAttachedOrElse(StaffCastAttachments.STAFF_RENDER_OFFSET_PITCH, 0F);
-  }
-
-  public void setStaffRenderOffsetPitch(float pitch) {
-    target.setAttached(StaffCastAttachments.STAFF_RENDER_OFFSET_PITCH, pitch);
+  public void setStaffRenderOffset(Vec2 offset) {
+    target.setAttached(StaffCastAttachments.STAFF_RENDER_OFFSET, offset);
   }
 
   public Vec2 getStaffRenderOffsetOld() {

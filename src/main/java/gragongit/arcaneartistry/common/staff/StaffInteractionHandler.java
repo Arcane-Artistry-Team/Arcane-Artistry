@@ -27,8 +27,7 @@ public final class StaffInteractionHandler {
   public static void onStaffInteractionStart(Player player) {
     CastState state = CastState.of(player);
     state.setAccumulatedDelta(Vec2.ZERO);
-    state.setStaffRenderOffsetYaw(0);
-    state.setStaffRenderOffsetPitch(0);
+    state.setStaffRenderOffset(Vec2.ZERO);
     state.clearStrokes();
     state.setCasting(true);
 
@@ -68,8 +67,7 @@ public final class StaffInteractionHandler {
     if (!state.isCasting()) {
       return;
     }
-    state.setStaffRenderOffsetYaw(payload.yaw());
-    state.setStaffRenderOffsetPitch(payload.pitch());
+    state.setStaffRenderOffset(payload.offset());
   }
 
   private static CastProgressContext getCastProgressContext(Player player) {

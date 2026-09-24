@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.state.level.FirstPersonHandsAndItemsRenderS
 import net.minecraft.client.renderer.state.level.PlayerRenderState;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec2;
 
 @Mixin(FirstPersonHandsAndItemsRenderer.class)
 public class CastingHandMovementMixin {
@@ -53,10 +54,9 @@ public class CastingHandMovementMixin {
       return;
     }
 
-    float offsetX = castState.getStaffRenderOffsetYaw() * MAX_STAFF_MOVEMENT;
-    float offsetY = castState.getStaffRenderOffsetPitch() * MAX_STAFF_MOVEMENT;
+    Vec2 offset = castState.getStaffRenderOffset().scale(MAX_STAFF_MOVEMENT);
 
-    poseStack.translate(STAFF_CENTER_POS_X + offsetX, STAFF_CENTER_POS_Y + -offsetY, STAFF_CENTER_POS_Z);
+    poseStack.translate(STAFF_CENTER_POS_X + offset.x, STAFF_CENTER_POS_Y + -offset.y, STAFF_CENTER_POS_Z);
     poseStack.rotate(Axis.XP.rotationDegrees(STAFF_ROT_X));
   }
 }
