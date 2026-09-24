@@ -8,6 +8,8 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec2;
 
 public final class CrystalBallRenderer {
 
@@ -31,6 +33,8 @@ public final class CrystalBallRenderer {
   private static final int QUESTION_MARK = 0xA0A0A0;
 
   private static final float LANE_FACTOR = 5;
+
+  private static final float COORD_LIMIT = 1_000_000f;
 
   private final List<CrystalBallNode> visible = new ArrayList<>();
 
@@ -100,30 +104,98 @@ public final class CrystalBallRenderer {
     int alpha = alpha255(v);
 
     float k = childPx / CrystalBallNode.ROOT_SIZE;
-    int core = Math.max(1, (int) Math.round(k));
+    int core = Math.max(1, Math.round(k));
     int outline = core * 3;
-    float lane = Math.max(2, LANE_FACTOR * core);
+    float laneStart = laneOf(parent.size() * zoom);
+    float laneEnd = laneOf(childPx);
 
-    StaffDirection right = child.direction().right();
-    float ox = right.asVec2().x * lane;
-    float oy = right.asVec2().y * lane;
+    Vec2 dir = child.edgeDir();
+    float rx = -dir.y;
+    float ry = dir.x;
+    float sideStart = parent.depth() % 2 == 0 ? 1 : -1;
+    float sideEnd = -sideStart;
 
-    float ax = screenX(parent.coords().x) + ox;
-    float ay = screenY(parent.coords().y) + oy;
-    float bx = screenX(child.coords().x) + ox;
-    float by = screenY(child.coords().y) + oy;
+    float ax = screenX(parent.coords().x) + rx * laneStart * sideStart;
+    float ay = screenY(parent.coords().y) + ry * laneStart * sideStart;
+    float bx = screenX(child.coords().x) + rx * laneEnd * sideEnd;
+    float by = screenY(child.coords().y) + ry * laneEnd * sideEnd;
 
     int coreColor = states.stateOf(child) == CrystalBallNodeState.UNKNOWN ? LINE_UNKNOWN : LINE_KNOWN;
-    fillLine(ax, ay, bx, by, outline, ARGB.color(alpha, LINE_OUTLINE));
-    fillLine(ax, ay, bx, by, core, ARGB.color(alpha, coreColor));
+    drawLine(ax, ay, bx, by, outline, ARGB.color(alpha, LINE_OUTLINE));
+    drawLine(ax, ay, bx, by, core, ARGB.color(alpha, coreColor));
   }
 
-  private void fillLine(float ax, float ay, float bx, float by, int width, int color) {
-    float half = width / 2;
-    int x0 = clampX(Math.min(ax, bx) - half);
-    int y0 = clampY(Math.min(ay, by) - half);
-    int x1 = clampX(Math.max(ax, bx) + half);
-    int y1 = clampY(Math.max(ay, by) + half);
+  private static float laneOf(float nodePx) {
+    int nodeCore = Math.max(1, Math.round(nodePx / CrystalBallNode.ROOT_SIZE));
+    float lane = Math.max(2, LANE_FACTOR * nodeCore);
+    return Math.min(lane, nodePx * 0.3f);
+  }
+
+  private void drawLine(float ax, float ay, float bx, float by, int width, int color) {
+    float dx = bx - ax;
+    float dy = by - ay;
+    float len = Mth.sqrt(dx * dx + dy * dy);
+    if (len < 1e-4f) {
+      return;
+    }
+    float half = width / 2f;
+    float ex = dx / len * half;
+    float ey = dy / len * half;
+    ax -= ex;
+    ay -= ey;
+    bx += ex;
+    by += ey;
+
+    boolean steep = Math.abs(dy) > Math.abs(dx);
+    float u0 = steep ? ay : ax;
+    float v0 = steep ? ax : ay;
+    float u1 = steep ? by : bx;
+    float v1 = steep ? bx : by;
+    if (u0 > u1) {
+      float t = u0;
+      u0 = u1;
+      u1 = t;
+      t = v0;
+      v0 = v1;
+      v1 = t;
+    }
+    float slope = (v1 - v0) / (u1 - u0);
+
+    int uMin = steep ? vy0 : vx0;
+    int uMax = steep ? vy1 : vx1;
+    int us = Math.max(Mth.floor(u0), uMin);
+    int ue = Math.min(Mth.ceil(u1), uMax);
+    if (ue <= us) {
+      return;
+    }
+
+    int runStart = us;
+    int runV = lineV(v0, slope, u0, us, half);
+    for (int u = us + 1; u < ue; u++) {
+      int v = lineV(v0, slope, u0, u, half);
+      if (v != runV) {
+        emit(steep, runStart, runV, u, runV + width, color);
+        runStart = u;
+        runV = v;
+      }
+    }
+    emit(steep, runStart, runV, ue, runV + width, color);
+  }
+
+  private static int lineV(float v0, float slope, float u0, int u, float half) {
+    float v = v0 + slope * (u + 0.5f - u0) - half;
+    return Math.round(Math.clamp(v, -COORD_LIMIT, COORD_LIMIT));
+  }
+
+  private void emit(boolean steep, int u0, int v0, int u1, int v1, int color) {
+    int x0 = steep ? v0 : u0;
+    int y0 = steep ? u0 : v0;
+    int x1 = steep ? v1 : u1;
+    int y1 = steep ? u1 : v1;
+    x0 = Math.max(x0, vx0);
+    y0 = Math.max(y0, vy0);
+    x1 = Math.min(x1, vx1);
+    y1 = Math.min(y1, vy1);
     if (x1 > x0 && y1 > y0) {
       graphics.fill(x0, y0, x1, y1, color);
     }
@@ -135,14 +207,14 @@ public final class CrystalBallRenderer {
     if (fade <= 0f) {
       return;
     }
-    int size = (int) Math.round(sizePx);
+    int size = Math.round(sizePx);
     if (size < 2) {
       return;
     }
     float sx = screenX(node.coords().x);
     float sy = screenY(node.coords().y);
-    int px = (int) Math.round(sx - sizePx / 2.0);
-    int py = (int) Math.round(sy - sizePx / 2.0);
+    int px = Math.round(sx - sizePx / 2);
+    int py = Math.round(sy - sizePx / 2);
 
     CrystalBallNodeState state = states.stateOf(node);
     Identifier sprite = switch (state) {
@@ -153,7 +225,7 @@ public final class CrystalBallRenderer {
     int alpha = alpha255(fade);
     graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, px, py, size, size, ARGB.color(alpha, 0xFFFFFF));
 
-    if (state == CrystalBallNodeState.UNKNOWN && sizePx >= 10.0 && fade >= 0.25f) {
+    if (state == CrystalBallNodeState.UNKNOWN && sizePx >= 10 && fade >= 0.25f) {
       float scale = (sizePx / CrystalBallNode.ROOT_SIZE) * 1.5f;
       var pose = graphics.pose();
       pose.pushMatrix();
@@ -186,13 +258,5 @@ public final class CrystalBallRenderer {
 
   private float screenY(float worldY) {
     return originY + worldY * zoom;
-  }
-
-  private int clampX(float v) {
-    return (int) Math.round(Math.clamp(v, vx0, vx1));
-  }
-
-  private int clampY(float v) {
-    return (int) Math.round(Math.clamp(v, vy0, vy1));
   }
 }
