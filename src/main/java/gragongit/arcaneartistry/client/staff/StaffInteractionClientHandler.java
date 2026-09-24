@@ -41,10 +41,8 @@ public final class StaffInteractionClientHandler {
 
     state.setAccumulatedDelta(accDelta);
 
-    float offsetYaw = Mth.clamp(state.getStaffRenderOffsetYaw() + delta.x * NORMALIZE_SCALE, -1F, 1F);
-    float offsetPitch = Mth.clamp(state.getStaffRenderOffsetPitch() + delta.y * NORMALIZE_SCALE, -1F, 1F);
-    state.setStaffRenderOffsetYaw(offsetYaw);
-    state.setStaffRenderOffsetPitch(offsetPitch);
+    Vec2 offset = clampComponents(state.getStaffRenderOffset().add(delta.scale(NORMALIZE_SCALE)), -1F, 1F);
+    state.setStaffRenderOffset(offset);
     offsetDirty = true;
 
     return InteractionResult.CONSUME;
@@ -56,6 +54,10 @@ public final class StaffInteractionClientHandler {
     return StaffDirection.values()[directionIndex];
   }
 
+  private static Vec2 clampComponents(Vec2 v, float min, float max) {
+    return new Vec2(Mth.clamp(v.x, min, max), Mth.clamp(v.y, min, max));
+  }
+
   private static void onClientTick(Minecraft client) {
     if (client.level == null) {
       return;
@@ -63,7 +65,7 @@ public final class StaffInteractionClientHandler {
 
     for (Player player : client.level.players()) {
       CastState state = CastState.of(player);
-      state.setStaffRenderOffsetOld(new Vec2(state.getStaffRenderOffsetYaw(), state.getStaffRenderOffsetPitch()));
+      state.setStaffRenderOffsetOld(state.getStaffRenderOffset());
     }
 
     Player player = client.player;
@@ -72,7 +74,7 @@ public final class StaffInteractionClientHandler {
     }
 
     CastState state = CastState.of(player);
-    ClientPlayNetworking.send(new StaffRenderOffsetPayload(state.getStaffRenderOffsetYaw(), state.getStaffRenderOffsetPitch()));
+    ClientPlayNetworking.send(new StaffRenderOffsetPayload(state.getStaffRenderOffset()));
     offsetDirty = false;
   }
 
