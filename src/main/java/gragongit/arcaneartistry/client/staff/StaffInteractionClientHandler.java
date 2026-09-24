@@ -10,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec2;
 
 public final class StaffInteractionClientHandler {
   private static final double INPUT_THRESHOLD = 200.0;
@@ -22,7 +23,7 @@ public final class StaffInteractionClientHandler {
     ClientTickEvents.END_CLIENT_TICK.register(StaffInteractionClientHandler::onClientTick);
   }
 
-  private static InteractionResult onMouseInput(double deltaX, double deltaY) {
+  private static InteractionResult onMouseInput(Vec2 delta) {
     Player player = Minecraft.getInstance().player;
     if (player == null)
       return InteractionResult.PASS;
@@ -31,8 +32,8 @@ public final class StaffInteractionClientHandler {
     if (!state.isCasting())
       return InteractionResult.PASS;
 
-    double yaw = state.getAccumulatedYaw() + deltaX;
-    double pitch = state.getAccumulatedPitch() + deltaY;
+    double yaw = state.getAccumulatedYaw() + delta.x;
+    double pitch = state.getAccumulatedPitch() + delta.y;
 
     if (Math.abs(yaw) >= INPUT_THRESHOLD) {
       sendStroke(yaw > 0 ? StaffDirection.RIGHT : StaffDirection.LEFT);
@@ -48,8 +49,8 @@ public final class StaffInteractionClientHandler {
     state.setAccumulatedYaw(yaw);
     state.setAccumulatedPitch(pitch);
 
-    float offsetYaw = Mth.clamp(state.getStaffRenderOffsetYaw() + (float) deltaX * NORMALIZE_SCALE, -1F, 1F);
-    float offsetPitch = Mth.clamp(state.getStaffRenderOffsetPitch() + (float) deltaY * NORMALIZE_SCALE, -1F, 1F);
+    float offsetYaw = Mth.clamp(state.getStaffRenderOffsetYaw() + delta.x * NORMALIZE_SCALE, -1F, 1F);
+    float offsetPitch = Mth.clamp(state.getStaffRenderOffsetPitch() + delta.y * NORMALIZE_SCALE, -1F, 1F);
     state.setStaffRenderOffsetYaw(offsetYaw);
     state.setStaffRenderOffsetPitch(offsetPitch);
     offsetDirty = true;

@@ -7,13 +7,15 @@ import gragongit.arcaneartistry.client.staff.MouseInputCallback;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.phys.Vec2;
 
 @Mixin(MouseHandler.class)
 public class CastingMouseDeltaMixin {
 
   @Redirect(method = "turnPlayer(D)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;turn(DD)V"))
   private void onPlayerTurn(LocalPlayer player, double deltaX, double deltaY) {
-    InteractionResult result = MouseInputCallback.EVENT.invoker().onMouseInput(deltaX, deltaY);
+    InteractionResult result =
+        MouseInputCallback.EVENT.invoker().onMouseInput(new Vec2(Double.valueOf(deltaX).floatValue(), Double.valueOf(deltaY).floatValue()));
     if (result != InteractionResult.CONSUME) {
       player.turn(deltaX, deltaY);
     }
