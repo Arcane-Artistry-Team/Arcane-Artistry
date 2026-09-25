@@ -1,5 +1,6 @@
 package gragongit.arcaneartistry.common.spell;
 
+import java.util.Optional;
 import gragongit.arcaneartistry.common.api.CastProgressEvents;
 import gragongit.arcaneartistry.common.api.CastProgressEvents.CastProgressContext;
 import gragongit.arcaneartistry.common.registry.ModDataComponents;
@@ -39,25 +40,20 @@ public final class SpellHandler {
       return;
     }
 
-    Registry<Spell> spells = player.level().registryAccess().lookupOrThrow(ModRegistries.SPELL_KEY);
     ItemStack stack = player.getUseItem();
     Staff staff = stack.get(ModDataComponents.STAFF);
     if (staff == null) {
       return;
     }
 
-    for (Spell spell : spells) {
-      if (!staff.type().equals(spell.staffType())) {
-        continue;
-      }
-      if (spell.pattern().equals(c.castPattern())) {
-        spell.castSound().ifPresent(sound -> playSound(player, sound.value(), 1F));
-        spell.effect().onCast(player);
-        return;
-      }
+    Registry<Spell> spells = player.level().registryAccess().lookupOrThrow(ModRegistries.SPELL_KEY);
+    Optional<Spell> spell = SpellsByStaffType.of(spells).find(staff.type(), c.castPattern());
+    if (spell.isPresent()) {
+      spell.get().castSound().ifPresent(sound -> playSound(player, sound.value(), 1F));
+      spell.get().effect().onCast(player);
+    } else {
+      staff.type().value().failSound().ifPresent(sound -> playSound(player, sound.value(), 1F));
     }
-
-    staff.type().value().failSound().ifPresent(sound -> playSound(player, sound.value(), 1F));
   }
 
   private static void playSound(Player player, SoundEvent sound, float pitch) {
