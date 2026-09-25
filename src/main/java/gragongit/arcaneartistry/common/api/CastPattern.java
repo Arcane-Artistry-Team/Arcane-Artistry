@@ -4,9 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 import com.mojang.serialization.Codec;
 import gragongit.arcaneartistry.common.staff.StaffDirection;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
 public record CastPattern(List<StaffDirection> strokes) {
   public static final Codec<CastPattern> CODEC = StaffDirection.CODEC.listOf().xmap(CastPattern::new, CastPattern::strokes);
+
+  public static final StreamCodec<ByteBuf, CastPattern> STREAM_CODEC =
+      StaffDirection.STREAM_CODEC.apply(ByteBufCodecs.list()).map(CastPattern::new, CastPattern::strokes);
 
   public CastPattern {
     strokes = List.copyOf(strokes);

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import gragongit.arcaneartistry.common.api.CastProgressEvents;
 import gragongit.arcaneartistry.common.api.CastProgressEvents.CastProgressContext;
+import gragongit.arcaneartistry.common.crystalball.CrystalBallAttachments;
 import gragongit.arcaneartistry.common.crystalball.CrystalBallItem;
 import gragongit.arcaneartistry.common.network.ModNetworking;
 import gragongit.arcaneartistry.common.registry.ModDataComponents;
@@ -32,6 +33,7 @@ public class ArcaneArtistry implements ModInitializer {
     ModDataComponents.register();
     StaffCastAttachments.register();
     StaffInteractionHandler.register();
+    CrystalBallAttachments.register();
 
     SpellHandler.init();
 

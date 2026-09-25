@@ -1,5 +1,6 @@
 package gragongit.arcaneartistry.common.crystalball;
 
+import gragongit.arcaneartistry.common.staff.Staff;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -16,7 +17,10 @@ public class CrystalBallItem extends Item {
   @Override
   public InteractionResult use(Level level, Player player, InteractionHand hand) {
     if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
-      ServerPlayNetworking.send(serverPlayer, new CrystalBallPayload());
+      Staff staff = Staff.get(serverPlayer.getOffhandItem());
+      if (staff != null) {
+        ServerPlayNetworking.send(serverPlayer, new CrystalBallPayload(staff.type()));
+      }
     }
     return InteractionResult.SUCCESS;
   }

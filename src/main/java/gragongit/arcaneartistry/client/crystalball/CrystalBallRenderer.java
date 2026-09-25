@@ -18,6 +18,11 @@ public final class CrystalBallRenderer {
     CrystalBallNodeState stateOf(CrystalBallNode node);
   }
 
+  private static final int MAX_DEPTH = 8;
+  private static final float ROOT_SIZE = 26;
+  private static final float ROOT_EDGE_LENGTH = ROOT_SIZE * 8;
+  private static final float ROTATION_DEGREES = 2.5f;
+
   private static final Identifier FRAME_UNKNOWN = Identifier.withDefaultNamespace("advancements/task_frame_unobtained");
   private static final Identifier FRAME_EXPLORED = Identifier.withDefaultNamespace("advancements/task_frame_obtained");
   private static final Identifier FRAME_SPELL = Identifier.withDefaultNamespace("advancements/challenge_frame_obtained");
@@ -36,7 +41,10 @@ public final class CrystalBallRenderer {
 
   private static final float COORD_LIMIT = 1_000_000f;
 
-  private final List<CrystalBallNode> visible = new ArrayList<>();
+  private record Visible(CrystalBallNode node, float worldX, float worldY, int depth) {
+  }
+
+  private final List<Visible> visible = new ArrayList<>();
 
   private GuiGraphicsExtractor graphics;
   private ChrystalBallNodeStateProvider states;
@@ -57,9 +65,9 @@ public final class CrystalBallRenderer {
 
     visible.clear();
     graphics.enableScissor(x0, y0, x1, y1);
-    collect(root);
-    for (CrystalBallNode node : visible) {
-      drawNode(font, node);
+    collect(root, 0, 0f, 0f);
+    for (Visible v : visible) {
+      drawNode(font, v);
     }
     graphics.disableScissor();
 
@@ -68,57 +76,87 @@ public final class CrystalBallRenderer {
     this.states = null;
   }
 
-  private void collect(CrystalBallNode node) {
-    float sizePx = node.size() * zoom;
+  private void collect(CrystalBallNode node, int depth, float worldX, float worldY) {
+    float sizePx = size(depth) * zoom;
     if (fadeSmall(sizePx) <= 0f) {
       return;
     }
-    float sx = screenX(node.coords().x);
-    float sy = screenY(node.coords().y);
+    float sx = screenX(worldX);
+    float sy = screenY(worldY);
 
-    float r = node.subtreeRadius() * zoom;
+    float r = subtreeRadius(depth) * zoom;
     if (sx + r < vx0 || sx - r > vx1 || sy + r < vy0 || sy - r > vy1) {
       return;
     }
     float half = sizePx / 2;
     if (sx + half >= vx0 && sx - half <= vx1 && sy + half >= vy0 && sy - half <= vy1) {
-      visible.add(node);
+      visible.add(new Visible(node, worldX, worldY, depth));
     }
 
+    if (depth >= MAX_DEPTH) {
+      return;
+    }
     for (StaffDirection dir : StaffDirection.values()) {
-      CrystalBallNode child = node.child(dir);
-      if (child == null || fadeSmall(child.size() * zoom) <= 0f) {
+      int childDepth = depth + 1;
+      Vec2 edgeDir = rotatedDirection(dir, depth);
+      float length = edgeLength(childDepth);
+      float childWorldX = worldX + edgeDir.x * length;
+      float childWorldY = worldY + edgeDir.y * length;
+      float childSizePx = size(childDepth) * zoom;
+      if (fadeSmall(childSizePx) <= 0f) {
         continue;
       }
-      drawEdge(node, child);
-      collect(child);
+      CrystalBallNode child = node.child(dir);
+      drawEdge(depth, worldX, worldY, child, childDepth, childWorldX, childWorldY, edgeDir);
+      collect(child, childDepth, childWorldX, childWorldY);
     }
   }
 
-  private void drawEdge(CrystalBallNode parent, CrystalBallNode child) {
-    float childPx = child.size() * zoom;
-    float v = visibility(childPx) * fadeLarge(parent.size() * zoom);
+  private static Vec2 rotatedDirection(StaffDirection dir, int parentDepth) {
+    float angle = (float) Math.toRadians(ROTATION_DEGREES) * (parentDepth % 2 == 0 ? 1 : -1);
+    float cos = Mth.cos(angle);
+    float sin = Mth.sin(angle);
+    Vec2 base = dir.asVec2();
+    return new Vec2(base.x * cos - base.y * sin, base.x * sin + base.y * cos);
+  }
+
+  private static float size(int depth) {
+    return ROOT_SIZE / (1 << depth);
+  }
+
+  private static float edgeLength(int depth) {
+    return ROOT_EDGE_LENGTH / (1 << (depth - 1));
+  }
+
+  private static float subtreeRadius(int depth) {
+    return ROOT_EDGE_LENGTH * 2 / (1 << depth) + size(depth) / 2;
+  }
+
+  private void drawEdge(int parentDepth, float parentWorldX, float parentWorldY, CrystalBallNode child, int childDepth, float childWorldX,
+      float childWorldY, Vec2 edgeDir) {
+    float childPx = size(childDepth) * zoom;
+    float v = visibility(childPx) * fadeLarge(size(parentDepth) * zoom);
     if (v <= 0f) {
       return;
     }
     int alpha = alpha255(v);
 
-    float k = childPx / CrystalBallNode.ROOT_SIZE;
+    float k = childPx / ROOT_SIZE;
     int core = Math.max(1, Math.round(k));
     int outline = core * 3;
-    float laneStart = laneOf(parent.size() * zoom);
+
+    float laneStart = laneOf(size(parentDepth) * zoom);
     float laneEnd = laneOf(childPx);
 
-    Vec2 dir = child.edgeDir();
-    float rx = -dir.y;
-    float ry = dir.x;
-    float sideStart = parent.depth() % 2 == 0 ? 1 : -1;
+    float rx = -edgeDir.y;
+    float ry = edgeDir.x;
+    float sideStart = parentDepth % 2 == 0 ? 1 : -1;
     float sideEnd = -sideStart;
 
-    float ax = screenX(parent.coords().x) + rx * laneStart * sideStart;
-    float ay = screenY(parent.coords().y) + ry * laneStart * sideStart;
-    float bx = screenX(child.coords().x) + rx * laneEnd * sideEnd;
-    float by = screenY(child.coords().y) + ry * laneEnd * sideEnd;
+    float ax = screenX(parentWorldX) + rx * laneStart * sideStart;
+    float ay = screenY(parentWorldY) + ry * laneStart * sideStart;
+    float bx = screenX(childWorldX) + rx * laneEnd * sideEnd;
+    float by = screenY(childWorldY) + ry * laneEnd * sideEnd;
 
     int coreColor = states.stateOf(child) == CrystalBallNodeState.UNKNOWN ? LINE_UNKNOWN : LINE_KNOWN;
     drawLine(ax, ay, bx, by, outline, ARGB.color(alpha, LINE_OUTLINE));
@@ -126,7 +164,7 @@ public final class CrystalBallRenderer {
   }
 
   private static float laneOf(float nodePx) {
-    int nodeCore = Math.max(1, Math.round(nodePx / CrystalBallNode.ROOT_SIZE));
+    int nodeCore = Math.max(1, Math.round(nodePx / ROOT_SIZE));
     float lane = Math.max(2, LANE_FACTOR * nodeCore);
     return Math.min(lane, nodePx * 0.3f);
   }
@@ -201,8 +239,8 @@ public final class CrystalBallRenderer {
     }
   }
 
-  private void drawNode(Font font, CrystalBallNode node) {
-    float sizePx = node.size() * zoom;
+  private void drawNode(Font font, Visible v) {
+    float sizePx = size(v.depth()) * zoom;
     float fade = visibility(sizePx);
     if (fade <= 0f) {
       return;
@@ -211,12 +249,12 @@ public final class CrystalBallRenderer {
     if (size < 2) {
       return;
     }
-    float sx = screenX(node.coords().x);
-    float sy = screenY(node.coords().y);
+    float sx = screenX(v.worldX());
+    float sy = screenY(v.worldY());
     int px = Math.round(sx - sizePx / 2);
     int py = Math.round(sy - sizePx / 2);
 
-    CrystalBallNodeState state = states.stateOf(node);
+    CrystalBallNodeState state = states.stateOf(v.node());
     Identifier sprite = switch (state) {
       case UNKNOWN -> FRAME_UNKNOWN;
       case EXPLORED -> FRAME_EXPLORED;
@@ -226,7 +264,7 @@ public final class CrystalBallRenderer {
     graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, px, py, size, size, ARGB.color(alpha, 0xFFFFFF));
 
     if (state == CrystalBallNodeState.UNKNOWN && sizePx >= 10 && fade >= 0.25f) {
-      float scale = (sizePx / CrystalBallNode.ROOT_SIZE) * 1.5f;
+      float scale = (sizePx / ROOT_SIZE) * 1.5f;
       var pose = graphics.pose();
       pose.pushMatrix();
       pose.translate(sx, sy);

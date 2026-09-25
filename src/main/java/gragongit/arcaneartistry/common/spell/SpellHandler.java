@@ -3,6 +3,7 @@ package gragongit.arcaneartistry.common.spell;
 import java.util.Optional;
 import gragongit.arcaneartistry.common.api.CastProgressEvents;
 import gragongit.arcaneartistry.common.api.CastProgressEvents.CastProgressContext;
+import gragongit.arcaneartistry.common.crystalball.CrystalBallState;
 import gragongit.arcaneartistry.common.registry.ModDataComponents;
 import gragongit.arcaneartistry.common.registry.ModRegistries;
 import gragongit.arcaneartistry.common.staff.Staff;
@@ -45,6 +46,8 @@ public final class SpellHandler {
     if (staff == null) {
       return;
     }
+
+    CrystalBallState.of(player).addExplored(staff.type().unwrapKey().orElseThrow(), c.castPattern());
 
     Registry<Spell> spells = player.level().registryAccess().lookupOrThrow(ModRegistries.SPELL_KEY);
     Optional<Spell> spell = SpellsByStaffType.of(spells).find(staff.type(), c.castPattern());
