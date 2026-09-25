@@ -8,5 +8,6 @@ import net.minecraft.sounds.SoundEvents;
 public final class StaffTypeBootstrap {
   static void bootstrapStaffTypes(BootstrapContext<StaffType> context) {
     context.register(StaffTypes.FIRE_KEY, new StaffType(SoundEvents.FIRECHARGE_USE, SoundEvents.FIRE_EXTINGUISH));
+    context.register(StaffTypes.WATER_KEY, new StaffType(SoundEvents.POINTED_DRIPSTONE_DRIP_WATER, SoundEvents.FIRE_EXTINGUISH));
   }
 }

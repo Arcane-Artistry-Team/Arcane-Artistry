@@ -1,0 +1,12 @@
+{
+  "cast_sound": "minecraft:entity.player.splash",
+  "effect": {
+    "type": "arcane-artistry-elements:fireball",
+    "power": 1
+  },
+  "pattern": [
+    "left",
+    "right"
+  ],
+  "staff_type": "arcane-artistry-elements:water"
+}
