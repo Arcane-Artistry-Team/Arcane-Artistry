@@ -30,6 +30,7 @@ public final class CrystalBallRenderer {
   private static final int BIG_STAR_MIN_SIZE = 5;
   private static final int BIG_STAR_MAX_SIZE = 9;
   private static final float SPARKLE_CHANCE = 0.5f;
+  private static final float STAR_HIT_PADDING = 2;
   private static final float ROOT_SIZE = 26;
   private static final float ROOT_EDGE_LENGTH = ROOT_SIZE * 8;
   private static final float ROTATION_DEGREES = 2.5f;
@@ -111,11 +112,46 @@ public final class CrystalBallRenderer {
     }
     graphics.disableScissor();
 
-    visible.clear();
-    bigStars.clear();
-    stars.clear();
     this.graphics = null;
     this.states = null;
+  }
+
+  public Optional<CrystalBallNode> nodeAt(double mouseX, double mouseY) {
+    if (mouseX < vx0 || mouseX > vx1 || mouseY < vy0 || mouseY > vy1) {
+      return Optional.empty();
+    }
+    for (int i = visible.size() - 1; i >= 0; i--) {
+      Visible v = visible.get(i);
+      float sizePx = size(v.depth()) * zoom;
+      if (visibility(sizePx) <= 0f || Math.round(sizePx) < 2) {
+        continue;
+      }
+      float half = sizePx / 2;
+      if (Math.abs(mouseX - screenX(v.worldX())) <= half && Math.abs(mouseY - screenY(v.worldY())) <= half) {
+        return Optional.of(v.node());
+      }
+    }
+    Visible nearest = nearestStar(bigStars, mouseX, mouseY, BIG_STAR_MAX_SIZE / 2f + STAR_HIT_PADDING, null);
+    nearest = nearestStar(stars, mouseX, mouseY, STAR_MAX_SIZE / 2f + STAR_HIT_PADDING, nearest);
+    return Optional.ofNullable(nearest).map(Visible::node);
+  }
+
+  private Visible nearestStar(List<Visible> candidates, double mouseX, double mouseY, float radius, Visible best) {
+    double bestDist = best == null ? radius * radius : distSq(best, mouseX, mouseY);
+    for (Visible v : candidates) {
+      double d = distSq(v, mouseX, mouseY);
+      if (d <= radius * radius && d < bestDist) {
+        best = v;
+        bestDist = d;
+      }
+    }
+    return best;
+  }
+
+  private double distSq(Visible v, double mouseX, double mouseY) {
+    double dx = mouseX - screenX(v.worldX());
+    double dy = mouseY - screenY(v.worldY());
+    return dx * dx + dy * dy;
   }
 
   private void collect(CrystalBallNode node, int depth, float worldX, float worldY) {

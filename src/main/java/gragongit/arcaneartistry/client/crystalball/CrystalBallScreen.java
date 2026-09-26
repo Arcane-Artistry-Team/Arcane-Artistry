@@ -1,5 +1,6 @@
 package gragongit.arcaneartistry.client.crystalball;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import gragongit.arcaneartistry.common.api.CastPattern;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -13,12 +14,17 @@ public class CrystalBallScreen extends Screen {
   private static final int BUTTON_PADDING = 4;
   private static final int HOME_BUTTON_WIDTH = 50;
   private static final int HOME_BUTTON_HEIGHT = 20;
+  private static final int LEFT_BUTTON = InputConstants.MOUSE_BUTTON_LEFT;
+  private static final double CLICK_DRAG_TOLERANCE = 3;
+  private static final float CLICK_FOCUS_SECONDS = 1f;
 
   private final CrystalBallNode root = CrystalBallNode.createRoot();
   private final CrystalBallCamera camera = new CrystalBallCamera();
   private final CrystalBallRenderer renderer = new CrystalBallRenderer();
   private final CrystalBallRenderer.ChrystalBallNodeStateProvider states;
   private final long openedAt = System.nanoTime();
+  private boolean clickPending;
+  private double clickDragDistance;
 
   public CrystalBallScreen(CrystalBallRenderer.ChrystalBallNodeStateProvider states) {
     super(Component.translatable("screen.arcane_artistry.crystal_ball"));
@@ -56,7 +62,32 @@ public class CrystalBallScreen extends Screen {
   }
 
   @Override
+  public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    if (super.mouseClicked(event, doubleClick)) {
+      return true;
+    }
+    if (event.button() == LEFT_BUTTON) {
+      clickPending = true;
+      clickDragDistance = 0;
+    }
+    return true;
+  }
+
+  @Override
+  public boolean mouseReleased(MouseButtonEvent event) {
+    if (event.button() == LEFT_BUTTON && clickPending) {
+      clickPending = false;
+      if (clickDragDistance <= CLICK_DRAG_TOLERANCE) {
+        renderer.nodeAt(event.x(), event.y()).ifPresent(node -> focus(node.path(), CLICK_FOCUS_SECONDS));
+        return true;
+      }
+    }
+    return super.mouseReleased(event);
+  }
+
+  @Override
   public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+    clickDragDistance += Math.abs(dx) + Math.abs(dy);
     camera.drag((float) dx, (float) dy);
     return true;
   }
