@@ -2,6 +2,7 @@ package gragongit.arcaneartistry.client.crystalball;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import gragongit.arcaneartistry.common.staff.StaffDirection;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -16,6 +17,10 @@ public final class CrystalBallRenderer {
   @FunctionalInterface
   public interface ChrystalBallNodeStateProvider {
     CrystalBallNodeState stateOf(CrystalBallNode node);
+
+    default Optional<Identifier> iconOf(CrystalBallNode node) {
+      return Optional.empty();
+    }
   }
 
   private static final int MAX_DEPTH = 8;
@@ -38,6 +43,8 @@ public final class CrystalBallRenderer {
   private static final int QUESTION_MARK = 0xA0A0A0;
 
   private static final float LANE_FACTOR = 5;
+
+  private static final float ICON_SIZE_FACTOR = 0.6f;
 
   private static final float COORD_LIMIT = 1_000_000f;
 
@@ -251,8 +258,6 @@ public final class CrystalBallRenderer {
     }
     float sx = screenX(v.worldX());
     float sy = screenY(v.worldY());
-    int px = Math.round(sx - sizePx / 2);
-    int py = Math.round(sy - sizePx / 2);
 
     CrystalBallNodeState state = states.stateOf(v.node());
     Identifier sprite = switch (state) {
@@ -261,17 +266,39 @@ public final class CrystalBallRenderer {
       case SPELL -> FRAME_SPELL;
     };
     int alpha = alpha255(fade);
-    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, px, py, size, size, ARGB.color(alpha, 0xFFFFFF));
+    var pose = graphics.pose();
+    pose.pushMatrix();
+    pose.translate(sx, sy);
+    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, -size / 2, -size / 2, size, size, ARGB.color(alpha, 0xFFFFFF));
+    pose.popMatrix();
 
     if (state == CrystalBallNodeState.UNKNOWN && sizePx >= 10 && fade >= 0.25f) {
-      float scale = (sizePx / ROOT_SIZE) * 1.5f;
-      var pose = graphics.pose();
-      pose.pushMatrix();
-      pose.translate(sx, sy);
-      pose.scale(scale, scale);
-      graphics.centeredText(font, "?", 0, -font.lineHeight / 2, ARGB.color(alpha, QUESTION_MARK));
-      pose.popMatrix();
+      drawQuestionMark(font, sx, sy, sizePx, alpha);
+    } else if (state == CrystalBallNodeState.SPELL && sizePx >= 10 && fade >= 0.25f) {
+      states.iconOf(v.node()).ifPresent(icon -> drawIcon(icon, sx, sy, sizePx, alpha));
     }
+  }
+
+  private void drawQuestionMark(Font font, float sx, float sy, float sizePx, int alpha) {
+    float scale = (sizePx / ROOT_SIZE) * 1.5f;
+    var pose = graphics.pose();
+    pose.pushMatrix();
+    pose.translate(sx, sy);
+    pose.scale(scale, scale);
+    graphics.centeredText(font, "?", 0, -font.lineHeight / 2, ARGB.color(alpha, QUESTION_MARK));
+    pose.popMatrix();
+  }
+
+  private void drawIcon(Identifier icon, float sx, float sy, float sizePx, int alpha) {
+    int size = Math.round(sizePx * ICON_SIZE_FACTOR);
+    if (size < 1) {
+      return;
+    }
+    var pose = graphics.pose();
+    pose.pushMatrix();
+    pose.translate(sx, sy);
+    graphics.blit(RenderPipelines.GUI_TEXTURED, icon, -size / 2, -size / 2, 0, 0, size, size, size, size, ARGB.color(alpha, 0xFFFFFF));
+    pose.popMatrix();
   }
 
   private static float fadeSmall(float sizePx) {

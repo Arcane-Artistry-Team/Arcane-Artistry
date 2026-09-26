@@ -10,6 +10,7 @@ import gragongit.arcaneartistry.common.spell.SpellsByStaffType;
 import gragongit.arcaneartistry.common.staff.StaffType;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.Identifier;
 
 public final class CrystalBallNodeStates implements CrystalBallRenderer.ChrystalBallNodeStateProvider {
   private final Map<CastPattern, Spell> spells;
@@ -28,6 +29,11 @@ public final class CrystalBallNodeStates implements CrystalBallRenderer.Chrystal
   @Override
   public CrystalBallNodeState stateOf(CrystalBallNode node) {
     return cache.computeIfAbsent(node, this::compute);
+  }
+
+  @Override
+  public Optional<Identifier> iconOf(CrystalBallNode node) {
+    return spellAt(node).map(Spell::icon);
   }
 
   private CrystalBallNodeState compute(CrystalBallNode node) {

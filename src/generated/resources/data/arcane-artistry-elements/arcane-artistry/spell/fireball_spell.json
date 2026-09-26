@@ -4,6 +4,7 @@
     "type": "arcane-artistry-elements:fireball",
     "power": 3
   },
+  "icon": "minecraft:textures/item/fire_charge.png",
   "pattern": [
     "up",
     "down"

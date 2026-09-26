@@ -10,18 +10,20 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.codec.RegistryFileCodec;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 
-public record Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffect effect, Optional<Holder<SoundEvent>> castSound) {
+public record Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffect effect, Identifier icon,
+    Optional<Holder<SoundEvent>> castSound) {
 
   public Spell(HolderGetter<StaffType> staffTypes, ResourceKey<StaffType> staffType, CastPattern pattern, SpellEffect effect,
-      SoundEvent castSound) {
-    this(staffTypes.getOrThrow(staffType), pattern, effect, castSound);
+      Identifier icon, SoundEvent castSound) {
+    this(staffTypes.getOrThrow(staffType), pattern, effect, icon, castSound);
   }
 
-  public Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffect effect, SoundEvent castSound) {
-    this(staffType, pattern, effect, Optional.ofNullable(castSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder));
+  public Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffect effect, Identifier icon, SoundEvent castSound) {
+    this(staffType, pattern, effect, icon, Optional.ofNullable(castSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder));
   }
 
   @SuppressWarnings("unchecked")
@@ -37,6 +39,7 @@ public record Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffec
                   .fieldOf("staff_type")
                   .forGetter(Spell::staffType),
               CastPattern.CODEC.fieldOf("pattern").forGetter(Spell::pattern), EFFECT_CODEC.fieldOf("effect").forGetter(Spell::effect),
+              Identifier.CODEC.fieldOf("icon").forGetter(Spell::icon),
               SoundEvent.CODEC.optionalFieldOf("cast_sound").forGetter(Spell::castSound))
           .apply(instance, Spell::new));
 }

@@ -4,6 +4,7 @@
     "type": "arcane-artistry-elements:fireball",
     "power": 1
   },
+  "icon": "minecraft:textures/item/nether_star.png",
   "pattern": [
     "left",
     "right"
