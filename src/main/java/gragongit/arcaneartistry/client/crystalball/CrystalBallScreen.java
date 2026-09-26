@@ -94,7 +94,8 @@ public class CrystalBallScreen extends Screen {
 
   @Override
   public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-    camera.zoomAt((float) (mouseX - this.width / 2), (float) (mouseY - this.height / 2), (float) Math.pow(1.25, scrollY));
+    float targetZoom = CrystalBallRenderer.steppedZoom(camera.zoom(), scrollY);
+    camera.zoomAt((float) (mouseX - this.width / 2), (float) (mouseY - this.height / 2), targetZoom / camera.zoom());
     return true;
   }
 

@@ -42,6 +42,7 @@ public final class CrystalBallRenderer {
   private static final Identifier FRAME_SPELL = Identifier.withDefaultNamespace("advancements/challenge_frame_obtained");
 
   private static final float FOCUS_NODE_PX = 26;
+  private static final int ZOOM_STEPS_PER_DEPTH = 4;
   private static final float FADE_IN_PX = FOCUS_NODE_PX * size(1) / size(0);
   private static final float FADE_OUT_PX = FOCUS_NODE_PX * size(2) / size(0);
   private static final float FADE_LARGE_START_PX = FOCUS_NODE_PX * size(0) / size(2);
@@ -215,6 +216,17 @@ public final class CrystalBallRenderer {
       depth++;
     }
     return new Vec2(x, y);
+  }
+
+  public static float steppedZoom(float zoom, double steps) {
+    double baseZoom = FOCUS_NODE_PX / size(0);
+    double depthFactor = size(0) / size(1);
+    double level = Math.log(zoom / baseZoom) / Math.log(depthFactor) * ZOOM_STEPS_PER_DEPTH;
+    double target = level + steps;
+    if (steps == Math.rint(steps)) {
+      target = Math.round(target);
+    }
+    return (float) (baseZoom * Math.pow(depthFactor, target / ZOOM_STEPS_PER_DEPTH));
   }
 
   public static float focusZoom(int depth, int viewWidth, int viewHeight) {
