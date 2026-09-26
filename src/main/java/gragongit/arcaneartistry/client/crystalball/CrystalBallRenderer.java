@@ -24,6 +24,7 @@ public final class CrystalBallRenderer {
   }
 
   private static final int MAX_DEPTH = 8;
+  private static final int STAR_MAX_SIZE = 5;
   private static final float ROOT_SIZE = 26;
   private static final float ROOT_EDGE_LENGTH = ROOT_SIZE * 8;
   private static final float ROTATION_DEGREES = 2.5f;
@@ -52,11 +53,13 @@ public final class CrystalBallRenderer {
   }
 
   private final List<Visible> visible = new ArrayList<>();
+  private final List<Visible> stars = new ArrayList<>();
 
   private GuiGraphicsExtractor graphics;
   private ChrystalBallNodeStateProvider states;
   private int vx0, vy0, vx1, vy1;
   private float originX, originY, zoom;
+  private float time;
 
   public void render(GuiGraphicsExtractor graphics, Font font, CrystalBallNode root, CrystalBallCamera camera,
       ChrystalBallNodeStateProvider states, int x0, int y0, int x1, int y1) {
@@ -69,25 +72,28 @@ public final class CrystalBallRenderer {
     this.originX = (x0 + x1) / 2 + camera.panX();
     this.originY = (y0 + y1) / 2 + camera.panY();
     this.zoom = camera.zoom();
+    this.time = System.nanoTime() / 1_000_000_000f;
 
     visible.clear();
+    stars.clear();
     graphics.enableScissor(x0, y0, x1, y1);
     collect(root, 0, 0f, 0f);
     for (Visible v : visible) {
       drawNode(font, v);
     }
+    for (Visible v : stars) {
+      drawStar(v.worldX(), v.worldY());
+    }
     graphics.disableScissor();
 
     visible.clear();
+    stars.clear();
     this.graphics = null;
     this.states = null;
   }
 
   private void collect(CrystalBallNode node, int depth, float worldX, float worldY) {
     float sizePx = size(depth) * zoom;
-    if (fadeSmall(sizePx) <= 0f) {
-      return;
-    }
     float sx = screenX(worldX);
     float sy = screenY(worldY);
 
@@ -95,6 +101,12 @@ public final class CrystalBallRenderer {
     if (sx + r < vx0 || sx - r > vx1 || sy + r < vy0 || sy - r > vy1) {
       return;
     }
+
+    if (fadeSmall(sizePx) <= 0f) {
+      stars.add(new Visible(node, worldX, worldY, depth));
+      return;
+    }
+
     float half = sizePx / 2;
     if (sx + half >= vx0 && sx - half <= vx1 && sy + half >= vy0 && sy - half <= vy1) {
       visible.add(new Visible(node, worldX, worldY, depth));
@@ -109,10 +121,6 @@ public final class CrystalBallRenderer {
       float length = edgeLength(childDepth);
       float childWorldX = worldX + edgeDir.x * length;
       float childWorldY = worldY + edgeDir.y * length;
-      float childSizePx = size(childDepth) * zoom;
-      if (fadeSmall(childSizePx) <= 0f) {
-        continue;
-      }
       CrystalBallNode child = node.child(dir);
       drawEdge(depth, worldX, worldY, child, childDepth, childWorldX, childWorldY, edgeDir);
       collect(child, childDepth, childWorldX, childWorldY);
@@ -299,6 +307,42 @@ public final class CrystalBallRenderer {
     pose.translate(sx, sy);
     graphics.blit(RenderPipelines.GUI_TEXTURED, icon, -size / 2, -size / 2, 0, 0, size, size, size, size, ARGB.color(alpha, 0xFFFFFF));
     pose.popMatrix();
+  }
+
+  private void drawStar(float worldX, float worldY) {
+    float sx = screenX(worldX);
+    float sy = screenY(worldY);
+    if (sx < vx0 - STAR_MAX_SIZE || sx > vx1 + STAR_MAX_SIZE || sy < vy0 - STAR_MAX_SIZE || sy > vy1 + STAR_MAX_SIZE) {
+      return;
+    }
+
+    float seed = seedFor(worldX, worldY);
+    int size = 1 + Math.round(seed * (STAR_MAX_SIZE - 1));
+
+    float speed = 1.2f + seed * 1.8f;
+    float phase = seed * (float) (Math.PI * 2);
+    float brightness = 0.5f + 0.5f * Mth.sin(time * speed + phase);
+    int alpha = alpha255(brightness);
+    int color = ARGB.color(alpha, 0xFFFFFF);
+
+    var pose = graphics.pose();
+    pose.pushMatrix();
+    pose.translate(sx, sy);
+    if (size <= 2) {
+      graphics.fill(-size / 2, -size / 2, size - size / 2, size - size / 2, color);
+    } else {
+      int arm = size / 2;
+      graphics.fill(-arm, 0, arm + 1, 1, color);
+      graphics.fill(0, -arm, 1, arm + 1, color);
+    }
+    pose.popMatrix();
+  }
+
+  private static float seedFor(float worldX, float worldY) {
+    int h = Float.floatToIntBits(worldX) * 374761393 + Float.floatToIntBits(worldY) * 668265263;
+    h = (h ^ (h >>> 13)) * 1274126177;
+    h ^= h >>> 16;
+    return (h & 0xFFFFFF) / (float) 0xFFFFFF;
   }
 
   private static float fadeSmall(float sizePx) {
