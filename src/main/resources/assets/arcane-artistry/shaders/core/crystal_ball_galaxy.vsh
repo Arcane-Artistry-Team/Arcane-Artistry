@@ -10,10 +10,12 @@ layout(location = 2) in vec2 UV3;
 
 layout(location = 0) out vec2 uv;
 layout(location = 1) out float time;
+layout(location = 2) out float pixel;
 
 void main() {
     gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
 
     uv = UV0;
     time = UV3.x;
+    pixel = UV3.y;
 }

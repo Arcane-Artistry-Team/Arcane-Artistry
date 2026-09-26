@@ -22,6 +22,7 @@ public final class CrystalBallGalaxy {
   private static final float TIME_SCALE = 0.4f;
   private static final float TIME_OFFSET = 40f;
   private static final float GALAXY_SIZE = 600f;
+  private static final float PIXEL_SIZE = 2f;
 
   private static final VertexFormat FORMAT = VertexFormat
       .builder(0)
@@ -56,22 +57,23 @@ public final class CrystalBallGalaxy {
     float v0 = (y0 - rootY) / scale;
     float v1 = (y1 - rootY) / scale;
     float time = TIME_OFFSET + seconds * TIME_SCALE;
-    graphics.guiRenderState.addGuiElement(new State(new Matrix3x2f(graphics.pose()), x0, y0, x1, y1, u0, u1, v0, v1, time));
+    float pixel = PIXEL_SIZE / scale;
+    graphics.guiRenderState.addGuiElement(new State(new Matrix3x2f(graphics.pose()), x0, y0, x1, y1, u0, u1, v0, v1, time, pixel));
   }
 
-  private record State(Matrix3x2fc pose, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, float time,
+  private record State(Matrix3x2fc pose, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, float time, float pixel,
       @Nullable ScreenRectangle bounds) implements GuiElementRenderState {
 
-    State(Matrix3x2f pose, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, float time) {
-      this(pose, x0, y0, x1, y1, u0, u1, v0, v1, time, new ScreenRectangle(x0, y0, x1 - x0, y1 - y0).transformMaxBounds(pose));
+    State(Matrix3x2f pose, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, float time, float pixel) {
+      this(pose, x0, y0, x1, y1, u0, u1, v0, v1, time, pixel, new ScreenRectangle(x0, y0, x1 - x0, y1 - y0).transformMaxBounds(pose));
     }
 
     @Override
     public void buildVertices(VertexConsumer consumer) {
-      consumer.addVertexWith2DPose(pose, x0, y0).setUv(u0, v0).setUv3(time, 0);
-      consumer.addVertexWith2DPose(pose, x0, y1).setUv(u0, v1).setUv3(time, 0);
-      consumer.addVertexWith2DPose(pose, x1, y1).setUv(u1, v1).setUv3(time, 0);
-      consumer.addVertexWith2DPose(pose, x1, y0).setUv(u1, v0).setUv3(time, 0);
+      consumer.addVertexWith2DPose(pose, x0, y0).setUv(u0, v0).setUv3(time, pixel);
+      consumer.addVertexWith2DPose(pose, x0, y1).setUv(u0, v1).setUv3(time, pixel);
+      consumer.addVertexWith2DPose(pose, x1, y1).setUv(u1, v1).setUv3(time, pixel);
+      consumer.addVertexWith2DPose(pose, x1, y0).setUv(u1, v0).setUv3(time, pixel);
     }
 
     @Override

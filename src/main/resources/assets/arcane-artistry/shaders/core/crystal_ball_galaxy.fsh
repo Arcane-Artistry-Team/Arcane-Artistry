@@ -3,8 +3,9 @@
 
 #include <minecraft:dynamictransforms.glsl>
 
-layout(location = 0) in vec2 uv;
+layout(location = 0) in vec2 rawUv;
 layout(location = 1) in float time;
+layout(location = 2) in float pixel;
 
 layout(location = 0) out vec4 fragColor;
 
@@ -18,9 +19,11 @@ const float DEPTH = 3.15;
 const float STEP_SIZE = DEPTH / float(STEPS);
 const float STEP_WEIGHT = STEP_SIZE / 0.035;
 const float BRIGHTNESS = 0.5;
+const float COLOR_LEVELS = 12.0;
 const float ROTATION_SPEED = 0.025;
 
 void main() {
+    vec2 uv = (floor(rawUv / pixel) + 0.5) * pixel;
     float len = length(uv);
 
     // The rotation angle grows towards the center, which twists the fractal into a spiral.
@@ -57,6 +60,7 @@ void main() {
         + CORE * smoothstep(0.2, 0.0, len) * 0.35
         + PURPLE * smoothstep(0.0, 0.6, v3) * 0.2;
     col = min(pow(abs(col), vec3(1.2)), 1.0);
+    col = floor(col * COLOR_LEVELS + 0.5) / COLOR_LEVELS;
 
     fragColor = vec4(BASE + col * BRIGHTNESS, 1.0) * ColorModulator;
 }
