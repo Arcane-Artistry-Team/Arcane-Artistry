@@ -41,10 +41,11 @@ public final class CrystalBallRenderer {
   private static final Identifier FRAME_EXPLORED = Identifier.withDefaultNamespace("advancements/task_frame_obtained");
   private static final Identifier FRAME_SPELL = Identifier.withDefaultNamespace("advancements/challenge_frame_obtained");
 
-  private static final float FADE_OUT_PX = 10;
-  private static final float FADE_IN_PX = 26;
-  private static final float FADE_LARGE_START_PX = 120;
-  private static final float FADE_LARGE_END_PX = 240;
+  private static final float FOCUS_NODE_PX = 26;
+  private static final float FADE_IN_PX = FOCUS_NODE_PX * size(1) / size(0);
+  private static final float FADE_OUT_PX = FOCUS_NODE_PX * size(2) / size(0);
+  private static final float FADE_LARGE_START_PX = FOCUS_NODE_PX * size(0) / size(2);
+  private static final float FADE_LARGE_END_PX = FOCUS_NODE_PX * size(0) / size(3);
 
   private static final int LINE_OUTLINE = 0x000000;
   private static final int LINE_KNOWN = 0xFFFFFF;
@@ -219,7 +220,7 @@ public final class CrystalBallRenderer {
   public static float focusZoom(int depth, int viewWidth, int viewHeight) {
     float childReach = edgeLength(depth + 1) + size(depth + 1) / 2;
     float fitZoom = Math.min(viewWidth, viewHeight) / 2f * FOCUS_FILL / childReach;
-    float readableZoom = FADE_IN_PX / size(depth);
+    float readableZoom = FOCUS_NODE_PX / size(depth);
     return Math.max(fitZoom, readableZoom);
   }
 
