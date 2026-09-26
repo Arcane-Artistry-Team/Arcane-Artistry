@@ -3,7 +3,8 @@
   "package": "gragongit.arcaneartistry.common.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
-    "StaffItemMixin"
+    "StaffItemMixin",
+    "StaffStopUsingMixin"
   ],
   "injectors": {
     "defaultRequire": 1

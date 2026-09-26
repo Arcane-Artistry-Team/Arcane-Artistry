@@ -26,7 +26,7 @@ public abstract class StaffItemMixin {
       return;
     }
 
-    StaffInteractionEvents.START.invoker().onStaffInteractionStart(player);
+    StaffInteractionEvents.START.invoker().onStaffInteractionStart(player, hand);
     cir.setReturnValue(InteractionResult.CONSUME);
   }
 

@@ -31,7 +31,8 @@ public class CastingHandMovementMixin {
   @Unique
   private static final float STAFF_ROT_X = -60.0F;
 
-  @Inject(method = "submitArmWithItem", at = @At("HEAD"))
+  @Inject(method = "submitArmWithItem",
+      at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V", shift = At.Shift.AFTER))
   private void arcaneartistry$applyStaffCursorOffset(PlayerRenderState playerState, FirstPersonHandsAndItemsRenderState state,
       float partialTicks, float xRot, InteractionHand hand, float attack, ItemStack itemStack, float inverseArmHeight, PoseStack poseStack,
       SubmitNodeCollector submitNodeCollector, int lightCoords, CallbackInfo ci) {

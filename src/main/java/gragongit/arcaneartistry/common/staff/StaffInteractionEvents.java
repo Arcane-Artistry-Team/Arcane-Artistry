@@ -2,18 +2,19 @@ package gragongit.arcaneartistry.common.staff;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 
 public final class StaffInteractionEvents {
   private StaffInteractionEvents() {}
 
   public interface Start {
-    void onStaffInteractionStart(Player player);
+    void onStaffInteractionStart(Player player, InteractionHand hand);
   }
 
-  public static final Event<Start> START = EventFactory.createArrayBacked(Start.class, listeners -> (player) -> {
+  public static final Event<Start> START = EventFactory.createArrayBacked(Start.class, listeners -> (player, hand) -> {
     for (Start listener : listeners) {
-      listener.onStaffInteractionStart(player);
+      listener.onStaffInteractionStart(player, hand);
     }
   });
 

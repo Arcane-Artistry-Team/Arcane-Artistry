@@ -7,6 +7,7 @@ import gragongit.arcaneartistry.common.api.CastState;
 import gragongit.arcaneartistry.common.network.StaffRenderOffsetPayload;
 import gragongit.arcaneartistry.common.network.StrokePayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec2;
 
@@ -24,14 +25,14 @@ public final class StaffInteractionHandler {
             (payload, context) -> context.server().execute(() -> StaffInteractionHandler.updateRenderOffset(context.player(), payload)));
   }
 
-  public static void onStaffInteractionStart(Player player) {
+  public static void onStaffInteractionStart(Player player, InteractionHand hand) {
     CastState state = CastState.of(player);
     state.setAccumulatedDelta(Vec2.ZERO);
     state.setStaffRenderOffset(Vec2.ZERO);
     state.clearStrokes();
     state.setCasting(true);
 
-    player.startUsingItem(player.getUsedItemHand());
+    player.startUsingItem(hand);
     CastProgressEvents.START.invoker().onCastProgressStart(getCastProgressContext(player));
   }
 
