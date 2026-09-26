@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import gragongit.arcaneartistry.common.api.CastPattern;
+import gragongit.arcaneartistry.common.crystalball.CrystalBallState;
 import gragongit.arcaneartistry.common.staff.StaffDirection;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -24,7 +25,7 @@ public final class CrystalBallRenderer {
     }
   }
 
-  private static final int MAX_DEPTH = 8;
+  private static final int MAX_DEPTH = CrystalBallState.MAX_PATTERN_LENGTH;
   private static final int STAR_MIN_SIZE = 1;
   private static final int STAR_MAX_SIZE = 3;
   private static final int BIG_STAR_MIN_SIZE = 5;

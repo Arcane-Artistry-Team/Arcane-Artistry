@@ -60,6 +60,10 @@ public record CastPattern(List<StaffDirection> strokes) {
     return strokes.getLast();
   }
 
+  public int size() {
+    return strokes.size();
+  }
+
   @Override
   public String toString() {
     return strokes.toString();
