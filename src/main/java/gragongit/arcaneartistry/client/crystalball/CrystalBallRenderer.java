@@ -59,6 +59,8 @@ public final class CrystalBallRenderer {
   private ChrystalBallNodeStateProvider states;
   private int vx0, vy0, vx1, vy1;
   private float originX, originY, zoom;
+  private float centerX, centerY;
+  private float panX, panY;
   private float time;
 
   public void render(GuiGraphicsExtractor graphics, Font font, CrystalBallNode root, CrystalBallCamera camera,
@@ -69,15 +71,25 @@ public final class CrystalBallRenderer {
     this.vy0 = y0;
     this.vx1 = x1;
     this.vy1 = y1;
-    this.originX = (x0 + x1) / 2 + camera.panX();
-    this.originY = (y0 + y1) / 2 + camera.panY();
+    this.centerX = (x0 + x1) / 2f;
+    this.centerY = (y0 + y1) / 2f;
+    this.panX = camera.panX();
+    this.panY = camera.panY();
+    this.originX = centerX + panX;
+    this.originY = centerY + panY;
     this.zoom = camera.zoom();
     this.time = System.nanoTime() / 1_000_000_000f;
 
     visible.clear();
     stars.clear();
     graphics.enableScissor(x0, y0, x1, y1);
+
+    var pose = graphics.pose();
+    pose.pushMatrix();
+    pose.translate(panX, panY);
     collect(root, 0, 0f, 0f);
+    pose.popMatrix();
+
     for (Visible v : visible) {
       drawNode(font, v);
     }
@@ -168,10 +180,10 @@ public final class CrystalBallRenderer {
     float sideStart = parentDepth % 2 == 0 ? 1 : -1;
     float sideEnd = -sideStart;
 
-    float ax = screenX(parentWorldX) + rx * laneStart * sideStart;
-    float ay = screenY(parentWorldY) + ry * laneStart * sideStart;
-    float bx = screenX(childWorldX) + rx * laneEnd * sideEnd;
-    float by = screenY(childWorldY) + ry * laneEnd * sideEnd;
+    float ax = localX(parentWorldX) + rx * laneStart * sideStart;
+    float ay = localY(parentWorldY) + ry * laneStart * sideStart;
+    float bx = localX(childWorldX) + rx * laneEnd * sideEnd;
+    float by = localY(childWorldY) + ry * laneEnd * sideEnd;
 
     int coreColor = states.stateOf(child) == CrystalBallNodeState.UNKNOWN ? LINE_UNKNOWN : LINE_KNOWN;
     drawLine(ax, ay, bx, by, outline, ARGB.color(alpha, LINE_OUTLINE));
@@ -214,8 +226,8 @@ public final class CrystalBallRenderer {
     }
     float slope = (v1 - v0) / (u1 - u0);
 
-    int uMin = steep ? vy0 : vx0;
-    int uMax = steep ? vy1 : vx1;
+    int uMin = steep ? Mth.floor(vy0 - panY) : Mth.floor(vx0 - panX);
+    int uMax = steep ? Mth.ceil(vy1 - panY) : Mth.ceil(vx1 - panX);
     int us = Math.max(Mth.floor(u0), uMin);
     int ue = Math.min(Mth.ceil(u1), uMax);
     if (ue <= us) {
@@ -245,10 +257,6 @@ public final class CrystalBallRenderer {
     int y0 = steep ? u0 : v0;
     int x1 = steep ? v1 : u1;
     int y1 = steep ? u1 : v1;
-    x0 = Math.max(x0, vx0);
-    y0 = Math.max(y0, vy0);
-    x1 = Math.min(x1, vx1);
-    y1 = Math.min(y1, vy1);
     if (x1 > x0 && y1 > y0) {
       graphics.fill(x0, y0, x1, y1, color);
     }
@@ -367,5 +375,13 @@ public final class CrystalBallRenderer {
 
   private float screenY(float worldY) {
     return originY + worldY * zoom;
+  }
+
+  private float localX(float worldX) {
+    return centerX + worldX * zoom;
+  }
+
+  private float localY(float worldY) {
+    return centerY + worldY * zoom;
   }
 }
