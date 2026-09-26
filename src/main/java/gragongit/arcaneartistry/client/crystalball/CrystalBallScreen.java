@@ -12,6 +12,7 @@ public class CrystalBallScreen extends Screen {
   private final CrystalBallCamera camera = new CrystalBallCamera();
   private final CrystalBallRenderer renderer = new CrystalBallRenderer();
   private final CrystalBallRenderer.ChrystalBallNodeStateProvider states;
+  private final long openedAt = System.nanoTime();
 
   public CrystalBallScreen(CrystalBallRenderer.ChrystalBallNodeStateProvider states) {
     super(Component.translatable("screen.arcane_artistry.crystal_ball"));
@@ -25,7 +26,9 @@ public class CrystalBallScreen extends Screen {
     int y0 = MARGIN;
     int x1 = this.width - MARGIN;
     int y1 = this.height - MARGIN;
-    graphics.fill(x0, y0, x1, y1, 0xFF101010);
+    float rootX = (x0 + x1) / 2f + camera.panX();
+    float rootY = (y0 + y1) / 2f + camera.panY();
+    CrystalBallGalaxy.render(graphics, x0, y0, x1, y1, rootX, rootY, camera.zoom(), (System.nanoTime() - openedAt) / 1_000_000_000f);
     renderer.render(graphics, this.font, root, camera, states, x0, y0, x1, y1);
   }
 

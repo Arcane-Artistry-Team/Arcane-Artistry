@@ -1,6 +1,7 @@
 package gragongit.arcaneartistry.client;
 
 import java.util.Set;
+import gragongit.arcaneartistry.client.crystalball.CrystalBallGalaxy;
 import gragongit.arcaneartistry.client.crystalball.CrystalBallNodeStates;
 import gragongit.arcaneartistry.client.crystalball.CrystalBallScreen;
 import gragongit.arcaneartistry.client.staff.StaffInteractionClientHandler;
@@ -20,6 +21,7 @@ public class ArcaneArtistryClient implements ClientModInitializer {
   @Override
   public void onInitializeClient() {
     StaffInteractionClientHandler.register();
+    CrystalBallGalaxy.register();
 
     ClientPlayNetworking.registerGlobalReceiver(CrystalBallPayload.TYPE, (payload, context) -> {
       LocalPlayer player = context.player();
