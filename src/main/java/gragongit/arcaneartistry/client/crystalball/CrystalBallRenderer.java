@@ -33,6 +33,7 @@ public final class CrystalBallRenderer {
   private static final float ROOT_EDGE_LENGTH = ROOT_SIZE * 8;
   private static final float ROTATION_DEGREES = 2.5f;
 
+  private static final Identifier FRAME_ROOT = Identifier.withDefaultNamespace("advancements/goal_frame_obtained");
   private static final Identifier FRAME_UNKNOWN = Identifier.withDefaultNamespace("advancements/task_frame_unobtained");
   private static final Identifier FRAME_EXPLORED = Identifier.withDefaultNamespace("advancements/task_frame_obtained");
   private static final Identifier FRAME_SPELL = Identifier.withDefaultNamespace("advancements/challenge_frame_obtained");
@@ -299,6 +300,7 @@ public final class CrystalBallRenderer {
 
     CrystalBallNodeState state = states.stateOf(v.node());
     Identifier sprite = switch (state) {
+      case ROOT -> FRAME_ROOT;
       case UNKNOWN -> FRAME_UNKNOWN;
       case EXPLORED -> FRAME_EXPLORED;
       case SPELL -> FRAME_SPELL;
@@ -312,7 +314,7 @@ public final class CrystalBallRenderer {
 
     if (state == CrystalBallNodeState.UNKNOWN && sizePx >= 10 && fade >= 0.25f) {
       drawQuestionMark(font, sx, sy, sizePx, alpha);
-    } else if (state == CrystalBallNodeState.SPELL && sizePx >= 10 && fade >= 0.25f) {
+    } else if ((state == CrystalBallNodeState.SPELL || state == CrystalBallNodeState.ROOT) && sizePx >= 10 && fade >= 0.25f) {
       states.iconOf(v.node()).ifPresent(icon -> drawIcon(icon, sx, sy, sizePx, alpha));
     }
   }

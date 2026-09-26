@@ -1,4 +1,5 @@
 {
   "fail_sound": "minecraft:block.fire.extinguish",
+  "icon": "minecraft:textures/item/blaze_powder.png",
   "stroke_sound": "minecraft:item.firecharge.use"
 }

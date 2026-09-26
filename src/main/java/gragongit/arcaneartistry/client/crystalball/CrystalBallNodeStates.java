@@ -13,17 +13,19 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
 
 public final class CrystalBallNodeStates implements CrystalBallRenderer.ChrystalBallNodeStateProvider {
+  private final Identifier staffIcon;
   private final Map<CastPattern, Spell> spells;
   private final Set<CastPattern> explored;
   private final Map<CrystalBallNode, CrystalBallNodeState> cache = new IdentityHashMap<>();
 
-  private CrystalBallNodeStates(Map<CastPattern, Spell> spells, Set<CastPattern> explored) {
+  private CrystalBallNodeStates(Identifier staffIcon, Map<CastPattern, Spell> spells, Set<CastPattern> explored) {
+    this.staffIcon = staffIcon;
     this.spells = spells;
     this.explored = explored;
   }
 
   public static CrystalBallNodeStates forStaffType(Registry<Spell> registry, Holder<StaffType> staffType, Set<CastPattern> explored) {
-    return new CrystalBallNodeStates(SpellsByStaffType.of(registry).forStaffType(staffType), explored);
+    return new CrystalBallNodeStates(staffType.value().icon(), SpellsByStaffType.of(registry).forStaffType(staffType), explored);
   }
 
   @Override
@@ -33,10 +35,16 @@ public final class CrystalBallNodeStates implements CrystalBallRenderer.Chrystal
 
   @Override
   public Optional<Identifier> iconOf(CrystalBallNode node) {
+    if (node.isRoot()) {
+      return Optional.of(staffIcon);
+    }
     return spellAt(node).map(Spell::icon);
   }
 
   private CrystalBallNodeState compute(CrystalBallNode node) {
+    if (node.isRoot()) {
+      return CrystalBallNodeState.ROOT;
+    }
     CastPattern pattern = node.path();
     if (!explored.contains(pattern)) {
       return CrystalBallNodeState.UNKNOWN;
