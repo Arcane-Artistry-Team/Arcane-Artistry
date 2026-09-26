@@ -24,7 +24,10 @@ public final class CrystalBallRenderer {
   }
 
   private static final int MAX_DEPTH = 8;
+  private static final int STAR_MIN_SIZE = 1;
   private static final int STAR_MAX_SIZE = 5;
+  private static final int BIG_STAR_MIN_SIZE = 3;
+  private static final int BIG_STAR_MAX_SIZE = 7;
   private static final float ROOT_SIZE = 26;
   private static final float ROOT_EDGE_LENGTH = ROOT_SIZE * 8;
   private static final float ROTATION_DEGREES = 2.5f;
@@ -53,6 +56,7 @@ public final class CrystalBallRenderer {
   }
 
   private final List<Visible> visible = new ArrayList<>();
+  private final List<Visible> bigStars = new ArrayList<>();
   private final List<Visible> stars = new ArrayList<>();
 
   private GuiGraphicsExtractor graphics;
@@ -81,6 +85,7 @@ public final class CrystalBallRenderer {
     this.time = System.nanoTime() / 1_000_000_000f;
 
     visible.clear();
+    bigStars.clear();
     stars.clear();
     graphics.enableScissor(x0, y0, x1, y1);
 
@@ -93,12 +98,16 @@ public final class CrystalBallRenderer {
     for (Visible v : visible) {
       drawNode(font, v);
     }
+    for (Visible v : bigStars) {
+      drawStar(v.worldX(), v.worldY(), BIG_STAR_MIN_SIZE, BIG_STAR_MAX_SIZE);
+    }
     for (Visible v : stars) {
-      drawStar(v.worldX(), v.worldY());
+      drawStar(v.worldX(), v.worldY(), STAR_MIN_SIZE, STAR_MAX_SIZE);
     }
     graphics.disableScissor();
 
     visible.clear();
+    bigStars.clear();
     stars.clear();
     this.graphics = null;
     this.states = null;
@@ -115,7 +124,10 @@ public final class CrystalBallRenderer {
     }
 
     if (fadeSmall(sizePx) <= 0f) {
-      stars.add(new Visible(node, worldX, worldY, depth));
+      bigStars.add(new Visible(node, worldX, worldY, depth));
+      if (depth < MAX_DEPTH) {
+        collectSmallStars(node, depth, worldX, worldY);
+      }
       return;
     }
 
@@ -136,6 +148,15 @@ public final class CrystalBallRenderer {
       CrystalBallNode child = node.child(dir);
       drawEdge(depth, worldX, worldY, child, childDepth, childWorldX, childWorldY, edgeDir);
       collect(child, childDepth, childWorldX, childWorldY);
+    }
+  }
+
+  private void collectSmallStars(CrystalBallNode node, int depth, float worldX, float worldY) {
+    int childDepth = depth + 1;
+    float length = edgeLength(childDepth);
+    for (StaffDirection dir : StaffDirection.values()) {
+      Vec2 edgeDir = rotatedDirection(dir, depth);
+      stars.add(new Visible(node.child(dir), worldX + edgeDir.x * length, worldY + edgeDir.y * length, childDepth));
     }
   }
 
@@ -317,18 +338,18 @@ public final class CrystalBallRenderer {
     pose.popMatrix();
   }
 
-  private void drawStar(float worldX, float worldY) {
+  private void drawStar(float worldX, float worldY, int minSize, int maxSize) {
     float sx = screenX(worldX);
     float sy = screenY(worldY);
-    if (sx < vx0 - STAR_MAX_SIZE || sx > vx1 + STAR_MAX_SIZE || sy < vy0 - STAR_MAX_SIZE || sy > vy1 + STAR_MAX_SIZE) {
+    if (sx < vx0 - maxSize || sx > vx1 + maxSize || sy < vy0 - maxSize || sy > vy1 + maxSize) {
       return;
     }
 
-    float seed = seedFor(worldX, worldY);
-    int size = 1 + Math.round(seed * (STAR_MAX_SIZE - 1));
+    int hash = hashFor(worldX, worldY);
+    int size = minSize + Math.round(unit(hash) * (maxSize - minSize));
 
-    float speed = 1.2f + seed * 1.8f;
-    float phase = seed * (float) (Math.PI * 2);
+    float speed = 1.2f + unit(hash >>> 8) * 1.8f;
+    float phase = unit(hash >>> 16) * (float) (Math.PI * 2);
     float brightness = 0.5f + 0.5f * Mth.sin(time * speed + phase);
     int alpha = alpha255(brightness);
     int color = ARGB.color(alpha, 0xFFFFFF);
@@ -346,11 +367,13 @@ public final class CrystalBallRenderer {
     pose.popMatrix();
   }
 
-  private static float seedFor(float worldX, float worldY) {
-    int h = Float.floatToIntBits(worldX) * 374761393 + Float.floatToIntBits(worldY) * 668265263;
-    h = (h ^ (h >>> 13)) * 1274126177;
-    h ^= h >>> 16;
-    return (h & 0xFFFFFF) / (float) 0xFFFFFF;
+  private static int hashFor(float worldX, float worldY) {
+    int h = Mth.murmurHash3Mixer(Float.floatToIntBits(worldX));
+    return Mth.murmurHash3Mixer(h ^ Float.floatToIntBits(worldY));
+  }
+
+  private static float unit(int bits) {
+    return (bits & 0xFF) / 255f;
   }
 
   private static float fadeSmall(float sizePx) {
