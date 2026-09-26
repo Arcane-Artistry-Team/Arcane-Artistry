@@ -25,9 +25,10 @@ public final class CrystalBallRenderer {
 
   private static final int MAX_DEPTH = 8;
   private static final int STAR_MIN_SIZE = 1;
-  private static final int STAR_MAX_SIZE = 5;
-  private static final int BIG_STAR_MIN_SIZE = 3;
-  private static final int BIG_STAR_MAX_SIZE = 7;
+  private static final int STAR_MAX_SIZE = 3;
+  private static final int BIG_STAR_MIN_SIZE = 5;
+  private static final int BIG_STAR_MAX_SIZE = 9;
+  private static final float SPARKLE_CHANCE = 0.5f;
   private static final float ROOT_SIZE = 26;
   private static final float ROOT_EDGE_LENGTH = ROOT_SIZE * 8;
   private static final float ROTATION_DEGREES = 2.5f;
@@ -99,10 +100,10 @@ public final class CrystalBallRenderer {
       drawNode(font, v);
     }
     for (Visible v : bigStars) {
-      drawStar(v.worldX(), v.worldY(), BIG_STAR_MIN_SIZE, BIG_STAR_MAX_SIZE);
+      drawStar(v.worldX(), v.worldY(), BIG_STAR_MIN_SIZE, BIG_STAR_MAX_SIZE, true);
     }
     for (Visible v : stars) {
-      drawStar(v.worldX(), v.worldY(), STAR_MIN_SIZE, STAR_MAX_SIZE);
+      drawStar(v.worldX(), v.worldY(), STAR_MIN_SIZE, STAR_MAX_SIZE, false);
     }
     graphics.disableScissor();
 
@@ -338,7 +339,7 @@ public final class CrystalBallRenderer {
     pose.popMatrix();
   }
 
-  private void drawStar(float worldX, float worldY, int minSize, int maxSize) {
+  private void drawStar(float worldX, float worldY, int minSize, int maxSize, boolean sparkle) {
     float sx = screenX(worldX);
     float sy = screenY(worldY);
     if (sx < vx0 - maxSize || sx > vx1 + maxSize || sy < vy0 - maxSize || sy > vy1 + maxSize) {
@@ -363,8 +364,20 @@ public final class CrystalBallRenderer {
       int arm = size / 2;
       graphics.fill(-arm, 0, arm + 1, 1, color);
       graphics.fill(0, -arm, 1, arm + 1, color);
+      if (sparkle && arm >= 2 && unit(hash >>> 24) < SPARKLE_CHANCE) {
+        drawDiagonals(arm / 2, ARGB.color(alpha / 2, 0xFFFFFF));
+      }
     }
     pose.popMatrix();
+  }
+
+  private void drawDiagonals(int arm, int color) {
+    for (int i = 1; i <= arm; i++) {
+      graphics.fill(i, i, i + 1, i + 1, color);
+      graphics.fill(-i, i, -i + 1, i + 1, color);
+      graphics.fill(i, -i, i + 1, -i + 1, color);
+      graphics.fill(-i, -i, -i + 1, -i + 1, color);
+    }
   }
 
   private static int hashFor(float worldX, float worldY) {
