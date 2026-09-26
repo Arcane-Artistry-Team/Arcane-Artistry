@@ -3,6 +3,7 @@ package gragongit.arcaneartistry.client.crystalball;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import gragongit.arcaneartistry.common.api.CastPattern;
 import gragongit.arcaneartistry.common.staff.StaffDirection;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -51,6 +52,8 @@ public final class CrystalBallRenderer {
   private static final float LANE_FACTOR = 5;
 
   private static final float ICON_SIZE_FACTOR = 0.6f;
+
+  private static final float FOCUS_FILL = 0.85f;
 
   private static final float COORD_LIMIT = 1_000_000f;
 
@@ -160,6 +163,27 @@ public final class CrystalBallRenderer {
       Vec2 edgeDir = rotatedDirection(dir, depth);
       stars.add(new Visible(node.child(dir), worldX + edgeDir.x * length, worldY + edgeDir.y * length, childDepth));
     }
+  }
+
+  public static Vec2 worldPositionOf(CastPattern pattern) {
+    float x = 0;
+    float y = 0;
+    int depth = 0;
+    for (StaffDirection dir : pattern.strokes()) {
+      Vec2 edgeDir = rotatedDirection(dir, depth);
+      float length = edgeLength(depth + 1);
+      x += edgeDir.x * length;
+      y += edgeDir.y * length;
+      depth++;
+    }
+    return new Vec2(x, y);
+  }
+
+  public static float focusZoom(int depth, int viewWidth, int viewHeight) {
+    float childReach = edgeLength(depth + 1) + size(depth + 1) / 2;
+    float fitZoom = Math.min(viewWidth, viewHeight) / 2f * FOCUS_FILL / childReach;
+    float readableZoom = FADE_IN_PX / size(depth);
+    return Math.max(fitZoom, readableZoom);
   }
 
   private static Vec2 rotatedDirection(StaffDirection dir, int parentDepth) {
