@@ -97,6 +97,8 @@ public class CrystalBallScreen extends Screen {
 
   @Override
   public boolean mouseReleased(MouseButtonEvent event) {
+    boolean handled = super.mouseReleased(event);
+    setFocused(null);
     if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && clickPending) {
       clickPending = false;
       if (clickDragDistance <= CLICK_DRAG_TOLERANCE) {
@@ -104,7 +106,7 @@ public class CrystalBallScreen extends Screen {
         return true;
       }
     }
-    return super.mouseReleased(event);
+    return handled;
   }
 
   @Override
