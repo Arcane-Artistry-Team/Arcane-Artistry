@@ -3,8 +3,15 @@ package gragongit.arcaneartistry.client.crystalball;
 import net.minecraft.util.Mth;
 
 public final class CrystalBallCamera {
+
+  @FunctionalInterface
+  public interface FocusBounds {
+    CrystalBallRenderer.WorldPosition clamp(double focusX, double focusY, double zoom);
+  }
+
   private double minZoom = 0;
   private double maxZoom = Double.MAX_VALUE;
+  private FocusBounds focusBounds = (x, y, zoom) -> new CrystalBallRenderer.WorldPosition(x, y);
 
   private double panX;
   private double panY;
@@ -16,6 +23,12 @@ public final class CrystalBallCamera {
     this.minZoom = minZoom;
     this.maxZoom = maxZoom;
     setFocus(focusX(), focusY(), Math.clamp(zoom, minZoom, maxZoom));
+    clampFocus();
+  }
+
+  public void setFocusBounds(FocusBounds focusBounds) {
+    this.focusBounds = focusBounds;
+    clampFocus();
   }
 
   private record Flight(double fromX, double fromY, double fromZoom, double toX, double toY, double toZoom, long startNanos,
@@ -26,6 +39,7 @@ public final class CrystalBallCamera {
     flight = null;
     panX += dxPixels;
     panY += dyPixels;
+    clampFocus();
   }
 
   public void zoomAt(double relX, double relY, double factor) {
@@ -35,6 +49,12 @@ public final class CrystalBallCamera {
     panX = relX - (relX - panX) * f;
     panY = relY - (relY - panY) * f;
     zoom = newZoom;
+    clampFocus();
+  }
+
+  private void clampFocus() {
+    CrystalBallRenderer.WorldPosition clamped = focusBounds.clamp(focusX(), focusY(), zoom);
+    setFocus(clamped.x(), clamped.y(), zoom);
   }
 
   public void flyTo(double worldX, double worldY, double targetZoom, float seconds) {

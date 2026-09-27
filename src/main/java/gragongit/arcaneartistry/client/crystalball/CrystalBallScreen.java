@@ -16,6 +16,7 @@ public class CrystalBallScreen extends Screen {
   private static final int LEFT_BUTTON = InputConstants.MOUSE_BUTTON_LEFT;
   private static final double CLICK_DRAG_TOLERANCE = 3;
   private static final float CLICK_FOCUS_SECONDS = 1f;
+  private static final double PAN_MARGIN = 24;
 
   private final CrystalBallNode root = CrystalBallNode.createRoot();
   private final CrystalBallCamera camera = new CrystalBallCamera();
@@ -43,6 +44,7 @@ public class CrystalBallScreen extends Screen {
     rootFocusZoom = CrystalBallRenderer.focusZoom(0, viewWidth(), viewHeight());
     deepestFocusZoom = CrystalBallRenderer.focusZoom(maxDepth, viewWidth(), viewHeight());
     camera.setZoomRange(rootFocusZoom, deepestFocusZoom);
+    camera.setFocusBounds((x, y, zoom) -> CrystalBallRenderer.clampFocus(x, y, zoom, maxDepth, viewWidth(), viewHeight(), PAN_MARGIN));
     if (!initialized) {
       initialized = true;
       focus(CastPattern.empty(), 0);

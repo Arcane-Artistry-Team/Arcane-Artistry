@@ -100,9 +100,9 @@ public final class CrystalBallRenderer {
     this.centerY = (y0 + y1) / 2f;
     double focusNodePx = focusNodePx(x1 - x0, y1 - y0);
     this.fadeInPx = (float) (focusNodePx * size(1) / size(0));
-    this.fadeOutPx = (float) (focusNodePx * size(2) / size(0));
+    this.fadeOutPx = (float) fadeOutPx(focusNodePx);
     this.fadeLargeStartPx = (float) (focusNodePx * size(0) / size(2));
-    this.fadeLargeEndPx = (float) (focusNodePx * size(0) / size(3));
+    this.fadeLargeEndPx = (float) fadeLargeEndPx(focusNodePx);
     this.zoom = camera.zoom();
     if (zoom != anchorZoom) {
       anchorZoom = zoom;
@@ -266,6 +266,79 @@ public final class CrystalBallRenderer {
     double childReach = edgeLength(1) + size(1) / 2;
     double fitPx = Math.min(viewWidth, viewHeight) / 2.0 * FOCUS_FILL / childReach * size(0);
     return Math.max(fitPx, MIN_FOCUS_NODE_PX);
+  }
+
+  private static double fadeOutPx(double focusNodePx) {
+    return focusNodePx * size(2) / size(0);
+  }
+
+  private static double fadeLargeEndPx(double focusNodePx) {
+    return focusNodePx * size(0) / size(3);
+  }
+
+  public static WorldPosition clampFocus(double focusX, double focusY, double zoom, int maxDepth, int viewWidth, int viewHeight,
+      double marginPx) {
+    double focusNodePx = focusNodePx(viewWidth, viewHeight);
+    int firstDepth = 0;
+    while (firstDepth < maxDepth && size(firstDepth) * zoom >= fadeLargeEndPx(focusNodePx)) {
+      firstDepth++;
+    }
+    int starDepth = firstDepth;
+    while (starDepth < maxDepth && size(starDepth) * zoom > fadeOutPx(focusNodePx)) {
+      starDepth++;
+    }
+    int lastDepth = Math.min(maxDepth, starDepth + 1);
+    double halfX = Math.max(0, viewWidth / 2.0 - marginPx) / zoom;
+    double halfY = Math.max(0, viewHeight / 2.0 - marginPx) / zoom;
+    FocusClamp clamp = new FocusClamp(focusX, focusY, halfX, halfY, firstDepth, lastDepth);
+    clamp.search(0, 0, 0);
+    return new WorldPosition(clamp.bestX, clamp.bestY);
+  }
+
+  private static final class FocusClamp {
+    private final double focusX, focusY, halfX, halfY;
+    private final int firstDepth, lastDepth;
+    private double bestX, bestY;
+    private double bestDistSq = Double.POSITIVE_INFINITY;
+
+    private FocusClamp(double focusX, double focusY, double halfX, double halfY, int firstDepth, int lastDepth) {
+      this.focusX = focusX;
+      this.focusY = focusY;
+      this.halfX = halfX;
+      this.halfY = halfY;
+      this.firstDepth = firstDepth;
+      this.lastDepth = lastDepth;
+      this.bestX = focusX;
+      this.bestY = focusY;
+    }
+
+    private void search(double worldX, double worldY, int depth) {
+      double reach = ROOT_EDGE_LENGTH * DEPTH_SCALE_POWERS[depth] / (1 - DEPTH_SCALE);
+      if (bestDistSq == 0 || boxDistSq(worldX, worldY, halfX + reach, halfY + reach) >= bestDistSq) {
+        return;
+      }
+      if (depth >= firstDepth) {
+        double distSq = boxDistSq(worldX, worldY, halfX, halfY);
+        if (distSq < bestDistSq) {
+          bestDistSq = distSq;
+          bestX = Math.clamp(focusX, worldX - halfX, worldX + halfX);
+          bestY = Math.clamp(focusY, worldY - halfY, worldY + halfY);
+        }
+      }
+      if (depth >= lastDepth) {
+        return;
+      }
+      double length = edgeLength(depth + 1);
+      for (StaffDirection dir : StaffDirection.values()) {
+        search(worldX + edgeDirX(dir, depth) * length, worldY + edgeDirY(dir, depth) * length, depth + 1);
+      }
+    }
+
+    private double boxDistSq(double centerX, double centerY, double extentX, double extentY) {
+      double dx = Math.max(0, Math.abs(focusX - centerX) - extentX);
+      double dy = Math.max(0, Math.abs(focusY - centerY) - extentY);
+      return dx * dx + dy * dy;
+    }
   }
 
   private static double[][] edgeDirections(boolean x) {
