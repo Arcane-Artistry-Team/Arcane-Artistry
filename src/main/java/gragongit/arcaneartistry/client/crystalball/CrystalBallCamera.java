@@ -9,6 +9,8 @@ public final class CrystalBallCamera {
     CrystalBallRenderer.WorldPosition clamp(double focusX, double focusY, double zoom);
   }
 
+  private static final double FLIGHT_STAGGER = 0.3;
+
   private double minZoom = 0;
   private double maxZoom = Double.MAX_VALUE;
   private FocusBounds focusBounds = (x, y, zoom) -> new CrystalBallRenderer.WorldPosition(x, y);
@@ -31,7 +33,7 @@ public final class CrystalBallCamera {
     clampFocus();
   }
 
-  private record Flight(double fromX, double fromY, double fromZoom, double toX, double toY, double toZoom, long startNanos,
+  private record Flight(double fromX, double fromY, double fromZoom, double toX, double toY, double toZoom, double stagger, long startNanos,
       long durationNanos) {
   }
 
@@ -57,14 +59,16 @@ public final class CrystalBallCamera {
     setFocus(clamped.x(), clamped.y(), zoom);
   }
 
-  public void flyTo(double worldX, double worldY, double targetZoom, float seconds) {
+  public void flyTo(double worldX, double worldY, double targetZoom, float seconds, boolean staggered) {
     targetZoom = Math.clamp(targetZoom, minZoom, maxZoom);
     if (seconds <= 0) {
       flight = null;
       setFocus(worldX, worldY, targetZoom);
       return;
     }
-    flight = new Flight(focusX(), focusY(), zoom, worldX, worldY, targetZoom, System.nanoTime(), (long) (seconds * 1_000_000_000L));
+    double stagger = staggered ? FLIGHT_STAGGER : 0;
+    flight =
+        new Flight(focusX(), focusY(), zoom, worldX, worldY, targetZoom, stagger, System.nanoTime(), (long) (seconds * 1_000_000_000L));
   }
 
   public void update() {
@@ -72,14 +76,22 @@ public final class CrystalBallCamera {
       return;
     }
     double t = Math.min(1, (System.nanoTime() - flight.startNanos()) / (double) flight.durationNanos());
-    double e = t * t * (3 - 2 * t);
-    double x = Mth.lerp(e, flight.fromX(), flight.toX());
-    double y = Mth.lerp(e, flight.fromY(), flight.toY());
-    double z = Math.exp(Mth.lerp(e, Math.log(flight.fromZoom()), Math.log(flight.toZoom())));
+    double leading = ease(t / (1 - flight.stagger()));
+    double trailing = ease((t - flight.stagger()) / (1 - flight.stagger()));
+    boolean zoomingIn = flight.toZoom() > flight.fromZoom();
+    double ePos = zoomingIn ? leading : trailing;
+    double eZoom = zoomingIn ? trailing : leading;
+    double x = Mth.lerp(ePos, flight.fromX(), flight.toX());
+    double y = Mth.lerp(ePos, flight.fromY(), flight.toY());
+    double z = Math.exp(Mth.lerp(eZoom, Math.log(flight.fromZoom()), Math.log(flight.toZoom())));
     setFocus(x, y, z);
     if (t >= 1) {
       flight = null;
     }
+  }
+
+  private static double ease(double t) {
+    return Mth.smoothstep((float) Math.clamp(t, 0, 1));
   }
 
   public double focusX() {

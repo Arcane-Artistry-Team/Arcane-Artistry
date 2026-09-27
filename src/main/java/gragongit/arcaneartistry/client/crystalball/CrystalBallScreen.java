@@ -10,13 +10,15 @@ import net.minecraft.network.chat.Component;
 
 public class CrystalBallScreen extends Screen {
   private static final int MARGIN = 16;
-  private static final int BUTTON_PADDING = 4;
   private static final int HOME_BUTTON_WIDTH = 50;
   private static final int HOME_BUTTON_HEIGHT = 20;
-  private static final int LEFT_BUTTON = InputConstants.MOUSE_BUTTON_LEFT;
-  private static final double CLICK_DRAG_TOLERANCE = 3;
+  private static final int BUTTON_PADDING = 4;
+
   private static final float CLICK_FOCUS_SECONDS = 1f;
+  private static final double CLICK_DRAG_TOLERANCE = 3;
+
   private static final double PAN_MARGIN = 24;
+  private static final double STAGGER_MIN_DEPTHS = 1.01;
 
   private final CrystalBallNode root = CrystalBallNode.createRoot();
   private final CrystalBallCamera camera = new CrystalBallCamera();
@@ -60,7 +62,8 @@ public class CrystalBallScreen extends Screen {
   public void focus(CastPattern pattern, float seconds) {
     CrystalBallRenderer.WorldPosition target = CrystalBallRenderer.worldPositionOf(pattern);
     double zoom = CrystalBallRenderer.focusZoom(pattern.size(), viewWidth(), viewHeight());
-    camera.flyTo(target.x(), target.y(), zoom, seconds);
+    boolean staggered = CrystalBallRenderer.depthsBetween(camera.zoom(), zoom) > STAGGER_MIN_DEPTHS;
+    camera.flyTo(target.x(), target.y(), zoom, seconds, staggered);
   }
 
   @Override
@@ -74,7 +77,8 @@ public class CrystalBallScreen extends Screen {
     double galaxyPan = galaxyZoom / camera.zoom();
     double rootX = (x0 + x1) / 2.0 + camera.panX() * galaxyPan;
     double rootY = (y0 + y1) / 2.0 + camera.panY() * galaxyPan;
-    CrystalBallGalaxy.render(graphics, x0, y0, x1, y1, rootX, rootY, galaxyZoom, galaxyRadius, (System.nanoTime() - openedAt) / 1_000_000_000f);
+    CrystalBallGalaxy
+        .render(graphics, x0, y0, x1, y1, rootX, rootY, galaxyZoom, galaxyRadius, (System.nanoTime() - openedAt) / 1_000_000_000f);
     renderer.render(graphics, this.font, root, camera, states, x0, y0, x1, y1);
     super.extractRenderState(graphics, mouseX, mouseY, delta);
   }
@@ -84,7 +88,7 @@ public class CrystalBallScreen extends Screen {
     if (super.mouseClicked(event, doubleClick)) {
       return true;
     }
-    if (event.button() == LEFT_BUTTON) {
+    if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
       clickPending = true;
       clickDragDistance = 0;
     }
@@ -93,7 +97,7 @@ public class CrystalBallScreen extends Screen {
 
   @Override
   public boolean mouseReleased(MouseButtonEvent event) {
-    if (event.button() == LEFT_BUTTON && clickPending) {
+    if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && clickPending) {
       clickPending = false;
       if (clickDragDistance <= CLICK_DRAG_TOLERANCE) {
         renderer.nodeAt(event.x(), event.y()).ifPresent(node -> focus(node.path(), CLICK_FOCUS_SECONDS));

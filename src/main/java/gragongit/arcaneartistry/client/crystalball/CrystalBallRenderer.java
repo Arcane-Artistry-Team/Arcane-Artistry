@@ -233,7 +233,6 @@ public final class CrystalBallRenderer {
     return new WorldPosition(x, y);
   }
 
-  /** Distance from the root to the outermost nodes, which are the ends of the straight paths like RRRR... */
   public static double treeRadius(int maxDepth) {
     double radius = 0;
     for (StaffDirection dir : StaffDirection.values()) {
@@ -245,6 +244,10 @@ public final class CrystalBallRenderer {
       radius = Math.max(radius, Math.hypot(end.x(), end.y()));
     }
     return radius;
+  }
+
+  public static double depthsBetween(double zoomA, double zoomB) {
+    return Math.abs(Math.log(zoomB / zoomA)) / Math.log(size(0) / size(1));
   }
 
   public static double steppedZoom(double zoom, double steps, int viewWidth, int viewHeight) {
