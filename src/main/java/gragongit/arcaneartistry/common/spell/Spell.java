@@ -13,17 +13,18 @@ import net.minecraft.core.registries.codec.RegistryFileCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.ExtraCodecs;
 
-public record Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffect effect, Identifier icon,
+public record Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffect effect, int manaCost, Identifier icon,
     Optional<Holder<SoundEvent>> castSound) {
 
-  public Spell(HolderGetter<StaffType> staffTypes, ResourceKey<StaffType> staffType, CastPattern pattern, SpellEffect effect,
+  public Spell(HolderGetter<StaffType> staffTypes, ResourceKey<StaffType> staffType, CastPattern pattern, SpellEffect effect, int manaCost,
       Identifier icon, SoundEvent castSound) {
-    this(staffTypes.getOrThrow(staffType), pattern, effect, icon, castSound);
+    this(staffTypes.getOrThrow(staffType), pattern, effect, manaCost, icon, castSound);
   }
 
-  public Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffect effect, Identifier icon, SoundEvent castSound) {
-    this(staffType, pattern, effect, icon, Optional.ofNullable(castSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder));
+  public Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffect effect, int manaCost, Identifier icon, SoundEvent castSound) {
+    this(staffType, pattern, effect, manaCost, icon, Optional.ofNullable(castSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder));
   }
 
   @SuppressWarnings("unchecked")
@@ -39,6 +40,7 @@ public record Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffec
                   .fieldOf("staff_type")
                   .forGetter(Spell::staffType),
               CastPattern.CODEC.fieldOf("pattern").forGetter(Spell::pattern), EFFECT_CODEC.fieldOf("effect").forGetter(Spell::effect),
+              ExtraCodecs.NON_NEGATIVE_INT.fieldOf("mana_cost").forGetter(Spell::manaCost),
               Identifier.CODEC.fieldOf("icon").forGetter(Spell::icon),
               SoundEvent.CODEC.optionalFieldOf("cast_sound").forGetter(Spell::castSound))
           .apply(instance, Spell::new));

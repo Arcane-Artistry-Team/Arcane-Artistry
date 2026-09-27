@@ -5,6 +5,7 @@
     "power": 1
   },
   "icon": "minecraft:textures/item/nether_star.png",
+  "mana_cost": 15,
   "pattern": [
     "left",
     "right"

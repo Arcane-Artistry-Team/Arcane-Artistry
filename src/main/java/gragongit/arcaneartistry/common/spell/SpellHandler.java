@@ -4,6 +4,7 @@ import java.util.Optional;
 import gragongit.arcaneartistry.common.api.CastProgressEvents;
 import gragongit.arcaneartistry.common.api.CastProgressEvents.CastProgressContext;
 import gragongit.arcaneartistry.common.crystalball.CrystalBallState;
+import gragongit.arcaneartistry.common.mana.ManaState;
 import gragongit.arcaneartistry.common.registry.ModDataComponents;
 import gragongit.arcaneartistry.common.registry.ModRegistries;
 import gragongit.arcaneartistry.common.staff.Staff;
@@ -15,6 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 public final class SpellHandler {
+  public static final float NO_MANA_PITCH = 0.8F;
 
   public static void init() {
     CastProgressEvents.STROKE_ADDED.register(SpellHandler::onCastProgressStrokeAdded);
@@ -52,6 +54,10 @@ public final class SpellHandler {
     Registry<Spell> spells = player.level().registryAccess().lookupOrThrow(ModRegistries.SPELL_KEY);
     Optional<Spell> spell = SpellsByStaffType.of(spells).find(staff.type(), c.castPattern());
     if (spell.isPresent()) {
+      if (!ManaState.of(player).tryConsume(spell.get().manaCost())) {
+        staff.type().value().noManaSoundOrFail().ifPresent(sound -> playSound(player, sound.value(), NO_MANA_PITCH));
+        return;
+      }
       spell.get().castSound().ifPresent(sound -> playSound(player, sound.value(), 1F));
       spell.get().effect().onCast(player);
     } else {

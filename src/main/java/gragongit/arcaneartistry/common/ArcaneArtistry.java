@@ -6,6 +6,9 @@ import gragongit.arcaneartistry.common.api.CastProgressEvents;
 import gragongit.arcaneartistry.common.api.CastProgressEvents.CastProgressContext;
 import gragongit.arcaneartistry.common.crystalball.CrystalBallAttachments;
 import gragongit.arcaneartistry.common.crystalball.CrystalBallItem;
+import gragongit.arcaneartistry.common.mana.ManaAttachments;
+import gragongit.arcaneartistry.common.mana.ManaAttributes;
+import gragongit.arcaneartistry.common.mana.ManaState;
 import gragongit.arcaneartistry.common.network.ModNetworking;
 import gragongit.arcaneartistry.common.registry.ModDataComponents;
 import gragongit.arcaneartistry.common.registry.ModRegistries;
@@ -13,6 +16,7 @@ import gragongit.arcaneartistry.common.spell.SpellHandler;
 import gragongit.arcaneartistry.common.staff.StaffCastAttachments;
 import gragongit.arcaneartistry.common.staff.StaffInteractionHandler;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -34,8 +38,12 @@ public class ArcaneArtistry implements ModInitializer {
     StaffCastAttachments.register();
     StaffInteractionHandler.register();
     CrystalBallAttachments.register();
+    ManaAttributes.register();
+    ManaAttachments.register();
 
     SpellHandler.init();
+
+    ServerTickEvents.END_SERVER_TICK.register(server -> server.getPlayerList().getPlayers().forEach(player -> ManaState.of(player).tick()));
 
     ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, ArcaneArtistry.id("crystal_ball"));
     Registry.register(BuiltInRegistries.ITEM, key, new CrystalBallItem(new Item.Properties().setId(key).stacksTo(1)));

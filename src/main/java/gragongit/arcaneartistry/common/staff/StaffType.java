@@ -12,18 +12,25 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 
-public record StaffType(Identifier icon, Optional<Holder<SoundEvent>> strokeSound, Optional<Holder<SoundEvent>> failSound) {
+public record StaffType(Identifier icon, Optional<Holder<SoundEvent>> strokeSound, Optional<Holder<SoundEvent>> failSound,
+    Optional<Holder<SoundEvent>> noManaSound) {
 
-  public StaffType(Identifier icon, SoundEvent strokeSound, SoundEvent failSound) {
+  public StaffType(Identifier icon, SoundEvent strokeSound, SoundEvent failSound, SoundEvent noManaSound) {
     this(icon, Optional.ofNullable(strokeSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder),
-        Optional.ofNullable(failSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder));
+        Optional.ofNullable(failSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder),
+        Optional.ofNullable(noManaSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder));
+  }
+
+  public Optional<Holder<SoundEvent>> noManaSoundOrFail() {
+    return noManaSound.or(this::failSound);
   }
 
   public static final Codec<StaffType> CODEC = RecordCodecBuilder
       .create(instance -> instance
           .group(Identifier.CODEC.fieldOf("icon").forGetter(StaffType::icon),
               SoundEvent.CODEC.optionalFieldOf("stroke_sound").forGetter(StaffType::strokeSound),
-              SoundEvent.CODEC.optionalFieldOf("fail_sound").forGetter(StaffType::failSound))
+              SoundEvent.CODEC.optionalFieldOf("fail_sound").forGetter(StaffType::failSound),
+              SoundEvent.CODEC.optionalFieldOf("no_mana_sound").forGetter(StaffType::noManaSound))
           .apply(instance, StaffType::new));
 
   public static final StreamCodec<RegistryFriendlyByteBuf, Holder<StaffType>> STREAM_CODEC =

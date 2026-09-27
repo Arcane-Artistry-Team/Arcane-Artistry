@@ -1,5 +1,6 @@
 {
   "fail_sound": "minecraft:block.fire.extinguish",
   "icon": "minecraft:textures/item/heart_of_the_sea.png",
+  "no_mana_sound": "minecraft:entity.player.swim",
   "stroke_sound": "minecraft:block.pointed_dripstone.drip_water"
 }

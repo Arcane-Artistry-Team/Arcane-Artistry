@@ -5,6 +5,7 @@
     "power": 3
   },
   "icon": "minecraft:textures/item/fire_charge.png",
+  "mana_cost": 30,
   "pattern": [
     "up",
     "down"

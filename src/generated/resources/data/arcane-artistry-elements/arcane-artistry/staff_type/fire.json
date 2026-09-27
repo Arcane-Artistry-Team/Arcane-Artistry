@@ -1,5 +1,6 @@
 {
   "fail_sound": "minecraft:block.fire.extinguish",
   "icon": "minecraft:textures/item/blaze_powder.png",
+  "no_mana_sound": "minecraft:block.furnace.fire_crackle",
   "stroke_sound": "minecraft:item.firecharge.use"
 }
