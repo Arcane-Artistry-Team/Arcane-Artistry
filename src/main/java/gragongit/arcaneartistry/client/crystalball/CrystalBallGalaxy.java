@@ -21,7 +21,7 @@ import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
 public final class CrystalBallGalaxy {
   private static final float TIME_SCALE = 0.4f;
   private static final float TIME_OFFSET = 40f;
-  private static final float GALAXY_SIZE = 600f;
+  private static final double EDGE_UV = 0.65;
   private static final float PIXEL_SIZE = 2f;
 
   private static final VertexFormat FORMAT = VertexFormat
@@ -49,15 +49,15 @@ public final class CrystalBallGalaxy {
     RenderPipelines.register(PIPELINE);
   }
 
-  public static void render(GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, float rootX, float rootY, float zoom,
-      float seconds) {
-    float scale = GALAXY_SIZE * zoom;
-    float u0 = (x0 - rootX) / scale;
-    float u1 = (x1 - rootX) / scale;
-    float v0 = (y0 - rootY) / scale;
-    float v1 = (y1 - rootY) / scale;
+  public static void render(GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, double rootX, double rootY, double zoom,
+      double radius, float seconds) {
+    double scale = radius / EDGE_UV * zoom;
+    float u0 = (float) ((x0 - rootX) / scale);
+    float u1 = (float) ((x1 - rootX) / scale);
+    float v0 = (float) ((y0 - rootY) / scale);
+    float v1 = (float) ((y1 - rootY) / scale);
     float time = TIME_OFFSET + seconds * TIME_SCALE;
-    float pixel = PIXEL_SIZE / scale;
+    float pixel = (float) (PIXEL_SIZE / scale);
     graphics.guiRenderState.addGuiElement(new State(new Matrix3x2f(graphics.pose()), x0, y0, x1, y1, u0, u1, v0, v1, time, pixel));
   }
 

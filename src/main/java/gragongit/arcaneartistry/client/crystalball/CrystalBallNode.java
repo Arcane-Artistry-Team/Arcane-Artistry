@@ -5,20 +5,22 @@ import gragongit.arcaneartistry.common.staff.StaffDirection;
 
 public final class CrystalBallNode {
   private final CrystalBallNode parent;
+  private final CastPattern path;
   private final CrystalBallNode[] children = new CrystalBallNode[StaffDirection.values().length];
 
-  private CrystalBallNode(CrystalBallNode parent) {
+  private CrystalBallNode(CrystalBallNode parent, CastPattern path) {
     this.parent = parent;
+    this.path = path;
   }
 
   public static CrystalBallNode createRoot() {
-    return new CrystalBallNode(null);
+    return new CrystalBallNode(null, CastPattern.empty());
   }
 
   public CrystalBallNode child(StaffDirection dir) {
     CrystalBallNode c = children[dir.ordinal()];
     if (c == null) {
-      c = new CrystalBallNode(this);
+      c = new CrystalBallNode(this, path.add(dir));
       children[dir.ordinal()] = c;
     }
     return c;
@@ -26,8 +28,8 @@ public final class CrystalBallNode {
 
   public CrystalBallNode find(CastPattern pattern) {
     CrystalBallNode node = this;
-    for (StaffDirection dir : pattern.strokes()) {
-      node = node.child(dir);
+    for (int i = 0; i < pattern.size(); i++) {
+      node = node.child(pattern.get(i));
     }
     return node;
   }
@@ -41,29 +43,14 @@ public final class CrystalBallNode {
   }
 
   public StaffDirection direction() {
-    if (parent == null) {
-      return null;
-    }
-    for (StaffDirection dir : StaffDirection.values()) {
-      if (parent.children[dir.ordinal()] == this) {
-        return dir;
-      }
-    }
-    throw new IllegalStateException("Parent node has no connection to this node");
+    return parent == null ? null : path.getLast();
   }
 
   public int depth() {
-    int depth = 0;
-    for (CrystalBallNode n = this; n.parent != null; n = n.parent) {
-      depth++;
-    }
-    return depth;
+    return path.size();
   }
 
   public CastPattern path() {
-    if (parent == null) {
-      return CastPattern.empty();
-    }
-    return parent.path().add(direction());
+    return path;
   }
 }

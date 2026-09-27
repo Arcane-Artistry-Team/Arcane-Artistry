@@ -4,14 +4,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import gragongit.arcaneartistry.common.ArcaneArtistryConfig;
 import gragongit.arcaneartistry.common.api.CastPattern;
 import gragongit.arcaneartistry.common.staff.StaffType;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
 import net.minecraft.resources.ResourceKey;
 
 public final class CrystalBallState {
-  public static final int MAX_PATTERN_LENGTH = 8;
-
   private final AttachmentTarget target;
 
   private CrystalBallState(AttachmentTarget target) {
@@ -27,11 +26,11 @@ public final class CrystalBallState {
   }
 
   public static boolean isStorable(CastPattern pattern) {
-    return !pattern.isEmpty() && pattern.size() <= MAX_PATTERN_LENGTH;
+    return !pattern.isEmpty() && pattern.size() <= ArcaneArtistryConfig.maxPatternLength();
   }
 
   public void addExplored(ResourceKey<StaffType> staffType, CastPattern pattern) {
-    if (!isStorable(pattern)) {
+    if (!isStorable(pattern) || getExplored(staffType).contains(pattern)) {
       return;
     }
     target.modifyAttached(CrystalBallAttachments.EXPLORED_PATTERNS, current -> {

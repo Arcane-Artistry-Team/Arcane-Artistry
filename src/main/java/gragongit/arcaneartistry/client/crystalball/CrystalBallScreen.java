@@ -7,7 +7,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.phys.Vec2;
 
 public class CrystalBallScreen extends Screen {
   private static final int MARGIN = 16;
@@ -20,19 +19,30 @@ public class CrystalBallScreen extends Screen {
 
   private final CrystalBallNode root = CrystalBallNode.createRoot();
   private final CrystalBallCamera camera = new CrystalBallCamera();
-  private final CrystalBallRenderer renderer = new CrystalBallRenderer();
+  private final CrystalBallRenderer renderer;
+  private final int maxDepth;
+  private final double galaxyRadius;
   private final CrystalBallRenderer.ChrystalBallNodeStateProvider states;
   private final long openedAt = System.nanoTime();
+  private boolean initialized;
   private boolean clickPending;
   private double clickDragDistance;
 
-  public CrystalBallScreen(CrystalBallRenderer.ChrystalBallNodeStateProvider states) {
+  public CrystalBallScreen(CrystalBallRenderer.ChrystalBallNodeStateProvider states, int maxDepth) {
     super(Component.translatable("screen.arcane_artistry.crystal_ball"));
     this.states = states;
+    this.maxDepth = maxDepth;
+    this.galaxyRadius = CrystalBallRenderer.treeRadius(maxDepth);
+    this.renderer = new CrystalBallRenderer(maxDepth);
   }
 
   @Override
   protected void init() {
+    camera.setMaxZoom(CrystalBallRenderer.maxZoom(maxDepth, viewWidth(), viewHeight()));
+    if (!initialized) {
+      initialized = true;
+      focus(CastPattern.empty(), 0);
+    }
     int x = this.width - MARGIN - BUTTON_PADDING - HOME_BUTTON_WIDTH;
     int y = this.height - MARGIN - BUTTON_PADDING - HOME_BUTTON_HEIGHT;
     addRenderableWidget(Button
@@ -42,9 +52,9 @@ public class CrystalBallScreen extends Screen {
   }
 
   public void focus(CastPattern pattern, float seconds) {
-    Vec2 target = CrystalBallRenderer.worldPositionOf(pattern);
-    float zoom = CrystalBallRenderer.focusZoom(pattern.strokes().size(), this.width - 2 * MARGIN, this.height - 2 * MARGIN);
-    camera.flyTo(target.x, target.y, zoom, seconds);
+    CrystalBallRenderer.WorldPosition target = CrystalBallRenderer.worldPositionOf(pattern);
+    double zoom = CrystalBallRenderer.focusZoom(pattern.size(), viewWidth(), viewHeight());
+    camera.flyTo(target.x(), target.y(), zoom, seconds);
   }
 
   @Override
@@ -54,9 +64,9 @@ public class CrystalBallScreen extends Screen {
     int y0 = MARGIN;
     int x1 = this.width - MARGIN;
     int y1 = this.height - MARGIN;
-    float rootX = (x0 + x1) / 2f + camera.panX();
-    float rootY = (y0 + y1) / 2f + camera.panY();
-    CrystalBallGalaxy.render(graphics, x0, y0, x1, y1, rootX, rootY, camera.zoom(), (System.nanoTime() - openedAt) / 1_000_000_000f);
+    double rootX = (x0 + x1) / 2.0 + camera.panX();
+    double rootY = (y0 + y1) / 2.0 + camera.panY();
+    CrystalBallGalaxy.render(graphics, x0, y0, x1, y1, rootX, rootY, camera.zoom(), galaxyRadius, (System.nanoTime() - openedAt) / 1_000_000_000f);
     renderer.render(graphics, this.font, root, camera, states, x0, y0, x1, y1);
     super.extractRenderState(graphics, mouseX, mouseY, delta);
   }
@@ -88,15 +98,23 @@ public class CrystalBallScreen extends Screen {
   @Override
   public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
     clickDragDistance += Math.abs(dx) + Math.abs(dy);
-    camera.drag((float) dx, (float) dy);
+    camera.drag(dx, dy);
     return true;
   }
 
   @Override
   public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-    float targetZoom = CrystalBallRenderer.steppedZoom(camera.zoom(), scrollY);
-    camera.zoomAt((float) (mouseX - this.width / 2), (float) (mouseY - this.height / 2), targetZoom / camera.zoom());
+    double targetZoom = CrystalBallRenderer.steppedZoom(camera.zoom(), scrollY, viewWidth(), viewHeight());
+    camera.zoomAt(mouseX - this.width / 2, mouseY - this.height / 2, targetZoom / camera.zoom());
     return true;
+  }
+
+  private int viewWidth() {
+    return this.width - 2 * MARGIN;
+  }
+
+  private int viewHeight() {
+    return this.height - 2 * MARGIN;
   }
 
   @Override

@@ -33,7 +33,7 @@ public class ArcaneArtistryClient implements ClientModInitializer {
       Set<CastPattern> explored = CrystalBallState.of(player).getExplored(staffTypeKey);
 
       CrystalBallNodeStates states = CrystalBallNodeStates.forStaffType(spells, payload.staffType(), explored);
-      context.client().gui.setScreen(new CrystalBallScreen(states));
+      context.client().gui.setScreen(new CrystalBallScreen(states, payload.maxPatternLength()));
     });
   }
 }

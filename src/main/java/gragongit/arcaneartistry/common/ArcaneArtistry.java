@@ -32,6 +32,7 @@ public class ArcaneArtistry implements ModInitializer {
   public void onInitialize() {
     LOGGER.info("Initializing Arcane Artistry");
 
+    ArcaneArtistryConfig.load();
     ModRegistries.register();
     ModNetworking.register();
     ModDataComponents.register();

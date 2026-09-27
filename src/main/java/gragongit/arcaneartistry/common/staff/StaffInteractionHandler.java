@@ -1,5 +1,6 @@
 package gragongit.arcaneartistry.common.staff;
 
+import gragongit.arcaneartistry.common.ArcaneArtistryConfig;
 import gragongit.arcaneartistry.common.api.CastPattern;
 import gragongit.arcaneartistry.common.api.CastProgressEvents;
 import gragongit.arcaneartistry.common.api.CastProgressEvents.CastProgressContext;
@@ -44,7 +45,7 @@ public final class StaffInteractionHandler {
     CastState state = CastState.of(player);
     CastPattern strokes = state.getStrokes();
 
-    if (!strokes.isEmpty() && strokes.getLast() == direction) {
+    if (strokes.size() >= ArcaneArtistryConfig.maxPatternLength() || !strokes.isEmpty() && strokes.getLast() == direction) {
       return;
     }
 
