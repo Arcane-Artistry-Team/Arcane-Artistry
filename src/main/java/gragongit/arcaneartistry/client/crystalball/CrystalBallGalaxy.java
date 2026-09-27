@@ -23,6 +23,7 @@ public final class CrystalBallGalaxy {
   private static final float TIME_OFFSET = 40f;
   private static final double EDGE_UV = 0.65;
   private static final float PIXEL_SIZE = 2f;
+  private static final double DEEPEST_FOCUS_ZOOM = 10;
 
   private static final VertexFormat FORMAT = VertexFormat
       .builder(0)
@@ -47,6 +48,12 @@ public final class CrystalBallGalaxy {
 
   public static void register() {
     RenderPipelines.register(PIPELINE);
+  }
+
+  public static double parallaxZoom(double zoom, double rootFocusZoom, double deepestFocusZoom) {
+    double depthRange = Math.log(deepestFocusZoom / rootFocusZoom);
+    double exponent = depthRange > 0 ? Math.log(DEEPEST_FOCUS_ZOOM) / depthRange : 0;
+    return rootFocusZoom * Math.pow(zoom / rootFocusZoom, exponent);
   }
 
   public static void render(GuiGraphicsExtractor graphics, int x0, int y0, int x1, int y1, double rootX, double rootY, double zoom,

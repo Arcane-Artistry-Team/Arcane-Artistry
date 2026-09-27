@@ -24,6 +24,8 @@ public class CrystalBallScreen extends Screen {
   private final double galaxyRadius;
   private final CrystalBallRenderer.ChrystalBallNodeStateProvider states;
   private final long openedAt = System.nanoTime();
+  private double rootFocusZoom;
+  private double deepestFocusZoom;
   private boolean initialized;
   private boolean clickPending;
   private double clickDragDistance;
@@ -39,6 +41,8 @@ public class CrystalBallScreen extends Screen {
   @Override
   protected void init() {
     camera.setMaxZoom(CrystalBallRenderer.maxZoom(maxDepth, viewWidth(), viewHeight()));
+    rootFocusZoom = CrystalBallRenderer.focusZoom(0, viewWidth(), viewHeight());
+    deepestFocusZoom = CrystalBallRenderer.focusZoom(maxDepth, viewWidth(), viewHeight());
     if (!initialized) {
       initialized = true;
       focus(CastPattern.empty(), 0);
@@ -64,9 +68,11 @@ public class CrystalBallScreen extends Screen {
     int y0 = MARGIN;
     int x1 = this.width - MARGIN;
     int y1 = this.height - MARGIN;
-    double rootX = (x0 + x1) / 2.0 + camera.panX();
-    double rootY = (y0 + y1) / 2.0 + camera.panY();
-    CrystalBallGalaxy.render(graphics, x0, y0, x1, y1, rootX, rootY, camera.zoom(), galaxyRadius, (System.nanoTime() - openedAt) / 1_000_000_000f);
+    double galaxyZoom = CrystalBallGalaxy.parallaxZoom(camera.zoom(), rootFocusZoom, deepestFocusZoom);
+    double galaxyPan = galaxyZoom / camera.zoom();
+    double rootX = (x0 + x1) / 2.0 + camera.panX() * galaxyPan;
+    double rootY = (y0 + y1) / 2.0 + camera.panY() * galaxyPan;
+    CrystalBallGalaxy.render(graphics, x0, y0, x1, y1, rootX, rootY, galaxyZoom, galaxyRadius, (System.nanoTime() - openedAt) / 1_000_000_000f);
     renderer.render(graphics, this.font, root, camera, states, x0, y0, x1, y1);
     super.extractRenderState(graphics, mouseX, mouseY, delta);
   }
