@@ -40,9 +40,9 @@ public class CrystalBallScreen extends Screen {
 
   @Override
   protected void init() {
-    camera.setMaxZoom(CrystalBallRenderer.maxZoom(maxDepth, viewWidth(), viewHeight()));
     rootFocusZoom = CrystalBallRenderer.focusZoom(0, viewWidth(), viewHeight());
     deepestFocusZoom = CrystalBallRenderer.focusZoom(maxDepth, viewWidth(), viewHeight());
+    camera.setZoomRange(rootFocusZoom, deepestFocusZoom);
     if (!initialized) {
       initialized = true;
       focus(CastPattern.empty(), 0);

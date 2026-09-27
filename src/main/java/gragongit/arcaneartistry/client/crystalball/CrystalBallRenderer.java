@@ -247,11 +247,6 @@ public final class CrystalBallRenderer {
     return radius;
   }
 
-  /** Allows zooming one depth further than focusing a node of the deepest depth. */
-  public static double maxZoom(int maxDepth, int viewWidth, int viewHeight) {
-    return focusZoom(maxDepth, viewWidth, viewHeight) * size(0) / size(1);
-  }
-
   public static double steppedZoom(double zoom, double steps, int viewWidth, int viewHeight) {
     double baseZoom = focusZoom(0, viewWidth, viewHeight);
     double depthFactor = size(0) / size(1);

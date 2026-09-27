@@ -3,8 +3,7 @@ package gragongit.arcaneartistry.client.crystalball;
 import net.minecraft.util.Mth;
 
 public final class CrystalBallCamera {
-  public static final double MIN_ZOOM = 0.4;
-
+  private double minZoom = 0;
   private double maxZoom = Double.MAX_VALUE;
 
   private double panX;
@@ -13,8 +12,10 @@ public final class CrystalBallCamera {
 
   private Flight flight;
 
-  public void setMaxZoom(double maxZoom) {
+  public void setZoomRange(double minZoom, double maxZoom) {
+    this.minZoom = minZoom;
     this.maxZoom = maxZoom;
+    setFocus(focusX(), focusY(), Math.clamp(zoom, minZoom, maxZoom));
   }
 
   private record Flight(double fromX, double fromY, double fromZoom, double toX, double toY, double toZoom, long startNanos,
@@ -29,22 +30,15 @@ public final class CrystalBallCamera {
 
   public void zoomAt(double relX, double relY, double factor) {
     flight = null;
-    double newZoom = Math.clamp(zoom * factor, MIN_ZOOM, maxZoom);
+    double newZoom = Math.clamp(zoom * factor, minZoom, maxZoom);
     double f = newZoom / zoom;
     panX = relX - (relX - panX) * f;
     panY = relY - (relY - panY) * f;
     zoom = newZoom;
   }
 
-  public void reset() {
-    flight = null;
-    panX = 0;
-    panY = 0;
-    zoom = 1;
-  }
-
   public void flyTo(double worldX, double worldY, double targetZoom, float seconds) {
-    targetZoom = Math.clamp(targetZoom, MIN_ZOOM, maxZoom);
+    targetZoom = Math.clamp(targetZoom, minZoom, maxZoom);
     if (seconds <= 0) {
       flight = null;
       setFocus(worldX, worldY, targetZoom);
