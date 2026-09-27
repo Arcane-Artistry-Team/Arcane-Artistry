@@ -246,13 +246,17 @@ public final class CrystalBallRenderer {
     return radius;
   }
 
+  public static double depthZoomFactor() {
+    return size(0) / size(1);
+  }
+
   public static double depthsBetween(double zoomA, double zoomB) {
-    return Math.abs(Math.log(zoomB / zoomA)) / Math.log(size(0) / size(1));
+    return Math.abs(Math.log(zoomB / zoomA)) / Math.log(depthZoomFactor());
   }
 
   public static double steppedZoom(double zoom, double steps, int viewWidth, int viewHeight) {
     double baseZoom = focusZoom(0, viewWidth, viewHeight);
-    double depthFactor = size(0) / size(1);
+    double depthFactor = depthZoomFactor();
     double level = Math.log(zoom / baseZoom) / Math.log(depthFactor) * ZOOM_STEPS_PER_DEPTH;
     double target = level + steps;
     if (steps == Math.rint(steps)) {

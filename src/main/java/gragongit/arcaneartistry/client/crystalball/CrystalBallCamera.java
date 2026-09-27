@@ -59,6 +59,15 @@ public final class CrystalBallCamera {
     setFocus(clamped.x(), clamped.y(), zoom);
   }
 
+  public void jumpTo(double worldX, double worldY, double zoom) {
+    flight = null;
+    setFocus(worldX, worldY, zoom);
+  }
+
+  public boolean isFlying() {
+    return flight != null;
+  }
+
   public void flyTo(double worldX, double worldY, double targetZoom, float seconds, boolean staggered) {
     targetZoom = Math.clamp(targetZoom, minZoom, maxZoom);
     if (seconds <= 0) {

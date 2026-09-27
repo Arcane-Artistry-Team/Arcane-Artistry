@@ -17,6 +17,9 @@ public class CrystalBallScreen extends Screen {
   private static final float CLICK_FOCUS_SECONDS = 1f;
   private static final double CLICK_DRAG_TOLERANCE = 3;
 
+  private static final float INTRO_SECONDS = 2f;
+  private static final int INTRO_DEPTHS = 3;
+
   private static final double PAN_MARGIN = 24;
   private static final double STAGGER_MIN_DEPTHS = 1.01;
 
@@ -49,7 +52,8 @@ public class CrystalBallScreen extends Screen {
     camera.setFocusBounds((x, y, zoom) -> CrystalBallRenderer.clampFocus(x, y, zoom, maxDepth, viewWidth(), viewHeight(), PAN_MARGIN));
     if (!initialized) {
       initialized = true;
-      focus(CastPattern.empty(), 0);
+      camera.jumpTo(0, 0, rootFocusZoom / Math.pow(CrystalBallRenderer.depthZoomFactor(), INTRO_DEPTHS));
+      focus(CastPattern.empty(), INTRO_SECONDS);
     }
     int x = this.width - MARGIN - BUTTON_PADDING - HOME_BUTTON_WIDTH;
     int y = this.height - MARGIN - BUTTON_PADDING - HOME_BUTTON_HEIGHT;
@@ -112,12 +116,17 @@ public class CrystalBallScreen extends Screen {
   @Override
   public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
     clickDragDistance += Math.abs(dx) + Math.abs(dy);
-    camera.drag(dx, dy);
+    if (!camera.isFlying()) {
+      camera.drag(dx, dy);
+    }
     return true;
   }
 
   @Override
   public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+    if (camera.isFlying()) {
+      return true;
+    }
     double targetZoom = CrystalBallRenderer.steppedZoom(camera.zoom(), scrollY, viewWidth(), viewHeight());
     camera.zoomAt(mouseX - this.width / 2, mouseY - this.height / 2, targetZoom / camera.zoom());
     return true;
