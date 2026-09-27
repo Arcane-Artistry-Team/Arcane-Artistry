@@ -1,6 +1,7 @@
 package gragongit.arcaneartistry.client.mana;
 
 import java.util.List;
+import gragongit.arcaneartistry.client.ArcaneArtistryClientConfig;
 import gragongit.arcaneartistry.common.ArcaneArtistry;
 import gragongit.arcaneartistry.common.mana.ManaState;
 import gragongit.arcaneartistry.common.registry.ModDataComponents;
@@ -64,7 +65,8 @@ public final class ManaHud {
 
   private static void extractCrosshairBar(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker) {
     Minecraft minecraft = Minecraft.getInstance();
-    if (ManaHudConfig.POSITION.get() != ManaBarPosition.CROSSHAIR || !minecraft.options.getCameraType().isFirstPerson()
+    if (ArcaneArtistryClientConfig.MANA_BAR_POSITION.get() != ManaBarPosition.CROSSHAIR
+        || !minecraft.options.getCameraType().isFirstPerson()
         || minecraft.debugEntries.isCurrentlyEnabled(DebugScreenEntries.THREE_DIMENSIONAL_CROSSHAIR)) {
       return;
     }
@@ -84,7 +86,7 @@ public final class ManaHud {
   }
 
   private static void extractCornerBar(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker) {
-    if (ManaHudConfig.POSITION.get() != ManaBarPosition.BOTTOM_RIGHT) {
+    if (ArcaneArtistryClientConfig.MANA_BAR_POSITION.get() != ManaBarPosition.BOTTOM_RIGHT) {
       return;
     }
     ManaState state = visibleManaState(Minecraft.getInstance().player);

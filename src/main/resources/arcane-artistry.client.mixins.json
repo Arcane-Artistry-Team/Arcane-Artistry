@@ -8,7 +8,8 @@
     "CastingMouseDeltaMixin",
     "CastingArmModelMixin",
     "CastingHandMovementMixin",
-    "VideoSettingsScreenMixin"
+    "VideoSettingsScreenMixin",
+    "MouseSettingsScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

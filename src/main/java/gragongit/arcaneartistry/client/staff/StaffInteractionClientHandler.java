@@ -1,5 +1,6 @@
 package gragongit.arcaneartistry.client.staff;
 
+import gragongit.arcaneartistry.client.ArcaneArtistryClientConfig;
 import gragongit.arcaneartistry.common.api.CastState;
 import gragongit.arcaneartistry.common.network.StaffRenderOffsetPayload;
 import gragongit.arcaneartistry.common.network.StrokePayload;
@@ -13,7 +14,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec2;
 
 public final class StaffInteractionClientHandler {
-  private static final double INPUT_THRESHOLD = 200.0;
   private static final float NORMALIZE_SCALE = 0.001F;
 
   private static boolean offsetDirty;
@@ -34,7 +34,7 @@ public final class StaffInteractionClientHandler {
 
     Vec2 accDelta = state.getAccumulatedDelta().add(delta);
 
-    if (accDelta.length() >= INPUT_THRESHOLD) {
+    if (accDelta.length() >= ArcaneArtistryClientConfig.STROKE_THRESHOLD.get()) {
       sendStroke(resolveDirection(accDelta));
       accDelta = Vec2.ZERO;
     }

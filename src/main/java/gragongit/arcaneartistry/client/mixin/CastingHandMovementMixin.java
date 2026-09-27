@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import gragongit.arcaneartistry.client.ArcaneArtistryClientConfig;
 import gragongit.arcaneartistry.common.api.CastState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -20,8 +21,6 @@ import net.minecraft.world.phys.Vec2;
 
 @Mixin(FirstPersonHandsAndItemsRenderer.class)
 public class CastingHandMovementMixin {
-  @Unique
-  private static final float MAX_STAFF_MOVEMENT = 0.25F;
   @Unique
   private static final float STAFF_CENTER_POS_X = -0.15F;
   @Unique
@@ -55,7 +54,7 @@ public class CastingHandMovementMixin {
       return;
     }
 
-    Vec2 offset = castState.getStaffRenderOffset().scale(MAX_STAFF_MOVEMENT);
+    Vec2 offset = castState.getStaffRenderOffset().scale(ArcaneArtistryClientConfig.MAX_STAFF_MOVEMENT.get().floatValue());
 
     poseStack.translate(STAFF_CENTER_POS_X + offset.x, STAFF_CENTER_POS_Y + -offset.y, STAFF_CENTER_POS_Z);
     poseStack.rotate(Axis.XP.rotationDegrees(STAFF_ROT_X));
