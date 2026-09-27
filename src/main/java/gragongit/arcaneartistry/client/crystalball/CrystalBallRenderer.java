@@ -27,45 +27,44 @@ public final class CrystalBallRenderer {
   public record WorldPosition(double x, double y) {
   }
 
-  private static final int STAR_MIN_SIZE = 1;
-  private static final int STAR_MAX_SIZE = 3;
-  private static final int BIG_STAR_MIN_SIZE = 5;
-  private static final int BIG_STAR_MAX_SIZE = 9;
-  private static final float SPARKLE_CHANCE = 0.5f;
-  private static final float STAR_HIT_PADDING = 2;
-  private static final float ROOT_SIZE = 26;
-  private static final float ROOT_EDGE_LENGTH = ROOT_SIZE * 4;
-  private static final double DEPTH_SCALE = 0.45;
-  private static final double[] DEPTH_SCALE_POWERS = depthScalePowers(CastPattern.MAX_LENGTH + 1);
-  private static final float LANE_FACTOR = 5;
-  private static final double ROTATION_MARGIN = 1.25;
-  private static final double ROTATION =
-      Math.asin(Math.min(1, ROTATION_MARGIN * (LANE_FACTOR / ROOT_SIZE) * (1 + DEPTH_SCALE) * ROOT_SIZE / ROOT_EDGE_LENGTH));
-
-  private static final double[][] EDGE_DIR_X = edgeDirections(true);
-  private static final double[][] EDGE_DIR_Y = edgeDirections(false);
-
-  private static final Identifier FRAME_ROOT = Identifier.withDefaultNamespace("advancements/goal_frame_obtained");
-  private static final Identifier FRAME_UNKNOWN = Identifier.withDefaultNamespace("advancements/task_frame_unobtained");
-  private static final Identifier FRAME_EXPLORED = Identifier.withDefaultNamespace("advancements/task_frame_obtained");
-  private static final Identifier FRAME_SPELL = Identifier.withDefaultNamespace("advancements/challenge_frame_obtained");
-
-  private static final float MIN_FOCUS_NODE_PX = 26;
-  private static final int ZOOM_STEPS_PER_DEPTH = 4;
+  private record Visible(CrystalBallNode node, double worldX, double worldY, int depth) {
+  }
 
   private static final int LINE_OUTLINE = 0x000000;
   private static final int LINE_KNOWN = 0xFFFFFF;
   private static final int LINE_UNKNOWN = 0x808080;
   private static final int QUESTION_MARK = 0xA0A0A0;
 
+  private static final int STAR_MIN_SIZE = 1;
+  private static final int STAR_MAX_SIZE = 3;
+  private static final int BIG_STAR_MIN_SIZE = 5;
+  private static final int BIG_STAR_MAX_SIZE = 9;
+  private static final float SPARKLE_CHANCE = 0.5f;
+  private static final float STAR_HIT_PADDING = 2;
+
+  private static final Identifier FRAME_ROOT = Identifier.withDefaultNamespace("advancements/goal_frame_obtained");
+  private static final Identifier FRAME_UNKNOWN = Identifier.withDefaultNamespace("advancements/task_frame_unobtained");
+  private static final Identifier FRAME_EXPLORED = Identifier.withDefaultNamespace("advancements/task_frame_obtained");
+  private static final Identifier FRAME_SPELL = Identifier.withDefaultNamespace("advancements/challenge_frame_obtained");
   private static final float ICON_SIZE_FACTOR = 0.6f;
 
+  private static final float ROOT_SIZE = 26;
+  private static final float ROOT_EDGE_LENGTH = ROOT_SIZE * 4;
+  private static final double DEPTH_SCALE = 0.45;
+  private static final float LANE_FACTOR = 5;
+
   private static final float FOCUS_FILL = 0.85f;
+  private static final int ZOOM_STEPS_PER_DEPTH = 4;
+  private static final float MIN_FOCUS_NODE_PX = ROOT_SIZE;
+
+  private static final double ROTATION_MARGIN = 1.25;
+  private static final double ROTATION =
+      Math.asin(Math.min(1, ROTATION_MARGIN * (LANE_FACTOR / ROOT_SIZE) * (1 + DEPTH_SCALE) * ROOT_SIZE / ROOT_EDGE_LENGTH));
+  private static final double[][] EDGE_DIR_X = edgeDirections(true);
+  private static final double[][] EDGE_DIR_Y = edgeDirections(false);
+  private static final double[] DEPTH_SCALE_POWERS = depthScalePowers(CastPattern.MAX_LENGTH + 1);
 
   private static final float COORD_LIMIT = 1_000_000f;
-
-  private record Visible(CrystalBallNode node, double worldX, double worldY, int depth) {
-  }
 
   private final int maxDepth;
   private final List<Visible> visible = new ArrayList<>();
