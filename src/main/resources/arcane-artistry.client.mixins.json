@@ -7,7 +7,8 @@
     "AvatarRenderStateMixin",
     "CastingMouseDeltaMixin",
     "CastingArmModelMixin",
-    "CastingHandMovementMixin"
+    "CastingHandMovementMixin",
+    "VideoSettingsScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1
