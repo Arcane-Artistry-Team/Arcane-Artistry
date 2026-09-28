@@ -28,7 +28,7 @@ public class CrystalBallScreen extends Screen {
   private final CrystalBallRenderer renderer;
   private final int maxDepth;
   private final double galaxyRadius;
-  private final CrystalBallRenderer.ChrystalBallNodeStateProvider states;
+  private final CrystalBallRenderer.CrystalBallNodeStateProvider states;
   private final long openedAt = System.nanoTime();
   private double rootFocusZoom;
   private double deepestFocusZoom;
@@ -36,7 +36,7 @@ public class CrystalBallScreen extends Screen {
   private boolean clickPending;
   private double clickDragDistance;
 
-  public CrystalBallScreen(CrystalBallRenderer.ChrystalBallNodeStateProvider states, int maxDepth) {
+  public CrystalBallScreen(CrystalBallRenderer.CrystalBallNodeStateProvider states, int maxDepth) {
     super(Component.translatable("screen.arcane_artistry.crystal_ball"));
     this.states = states;
     this.maxDepth = maxDepth;

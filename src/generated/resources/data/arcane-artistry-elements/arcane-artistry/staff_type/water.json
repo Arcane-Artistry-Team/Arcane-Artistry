@@ -1,6 +1,20 @@
 {
   "fail_sound": "minecraft:block.fire.extinguish",
   "icon": "minecraft:textures/item/heart_of_the_sea.png",
+  "meteor_colors": {
+    "flame": [
+      "#eafbff",
+      "#9be3f7",
+      "#4fb6e8",
+      "#2a78c8",
+      "#1b3f8a"
+    ],
+    "head": [
+      "#ffffff",
+      "#d6f4ff",
+      "#7fd3f2"
+    ]
+  },
   "no_mana_sound": "minecraft:entity.player.swim",
   "stroke_sound": "minecraft:block.pointed_dripstone.drip_water"
 }
