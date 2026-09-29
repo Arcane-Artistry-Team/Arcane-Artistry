@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import gragongit.arcaneartistry.common.api.CastPattern;
-import gragongit.arcaneartistry.common.staff.MeteorColors;
 import gragongit.arcaneartistry.common.staff.StaffDirection;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -19,7 +18,7 @@ public final class CrystalBallRenderer {
   public interface CrystalBallNodeStateProvider {
     CrystalBallNodeState stateOf(CrystalBallNode node);
 
-    MeteorColors meteorColors();
+    int connectionColor();
 
     default Optional<Identifier> backgroundShader() {
       return Optional.empty();
@@ -37,29 +36,17 @@ public final class CrystalBallRenderer {
   }
 
   private static final int QUESTION_MARK = 0xA0A0A0;
+  private static final float COORD_LIMIT = 1_000_000f;
 
-  private static final int METEORS_PER_EDGE = 6;
-  private static final float METEOR_SPACING_JITTER = 0.3f;
-  private static final double METEOR_FLOW_SPEED = 0.1;
-  private static final float METEOR_SIZE = 0.12f;
-  private static final float METEOR_SIZE_JITTER = 0.25f;
-  private static final float WOBBLE_AMPLITUDE = 0.07f;
-  private static final float WOBBLE_MIN_SPEED = 1.5f;
-  private static final float WOBBLE_MAX_SPEED = 2.8f;
-
-  private static final float HEAD_SHADE_CURVE = 1.4f;
-  private static final List<Integer> HEAD_UNKNOWN = List.of(0xF0F0F0, 0xC8C8C8, 0x9A9A9A);
-
-  private static final float FLAME_LENGTH = 6;
-  private static final float FLAME_EDGE_JITTER = 0.35f;
-  private static final float FLAME_NOISE_SCALE = 0.45f;
-  private static final float FLAME_TURBULENCE = 0.5f;
-  private static final double FLAME_SCROLL_SPEED = 7;
-  private static final float FLAME_FLICKER = 0.08f;
-  private static final float FLAME_HEAT_MAX = 1.1f;
-  private static final float FLAME_HEAT_MIN = 0.1f;
-  private static final float[] FLAME_TIP_ALPHA = {0.6f, 0.9f};
-  private static final List<Integer> FLAME_UNKNOWN = List.of(0xE8E8E8, 0xBDBDBD, 0x969696, 0x707070, 0x4A4A4A);
+  private static final int CONNECTION_WIDTH = 2;
+  private static final double PULSE_INTERVAL = 2;
+  private static final double PULSE_EDGE_DURATION = 1.5;
+  private static final float PULSE_TAIL = 0.1f;
+  private static final float PULSE_MIN_TAIL = 3;
+  private static final float PULSE_HALO = 0.33f;
+  private static final float PULSE_HALO_ALPHA = 0.35f;
+  private static final float PULSE_SATURATION = 0.7f;
+  private static final float PULSE_HEAD_SATURATION = 0.3f;
 
   private static final int STAR_MIN_SIZE = 1;
   private static final int STAR_MAX_SIZE = 3;
@@ -106,7 +93,8 @@ public final class CrystalBallRenderer {
   private float centerX, centerY;
   private double offsetX, offsetY;
   private double time;
-  private float fadeInPx, fadeOutPx, fadeLargeStartPx, fadeLargeEndPx;
+  private int connectionColor, pulseColor, pulseHeadColor;
+  private float fadeInPx, fadeOutPx, fadeLargeStartPx, fadeLargeMidPx, fadeLargeEndPx;
 
   public CrystalBallRenderer(int maxDepth) {
     this.maxDepth = maxDepth;
@@ -127,6 +115,7 @@ public final class CrystalBallRenderer {
     this.fadeOutPx = (float) fadeOutPx(focusNodePx);
     this.fadeLargeStartPx = (float) (focusNodePx * size(0) / size(2));
     this.fadeLargeEndPx = (float) fadeLargeEndPx(focusNodePx);
+    this.fadeLargeMidPx = Mth.sqrt(fadeLargeStartPx * fadeLargeEndPx);
     this.zoom = camera.zoom();
     if (zoom != anchorZoom) {
       anchorZoom = zoom;
@@ -136,6 +125,9 @@ public final class CrystalBallRenderer {
     this.offsetX = camera.panX() + anchorX * zoom;
     this.offsetY = camera.panY() + anchorY * zoom;
     this.time = System.nanoTime() / 1_000_000_000.0;
+    this.connectionColor = ARGB.opaque(states.connectionColor());
+    this.pulseColor = ARGB.opaque(brighter(connectionColor, PULSE_SATURATION));
+    this.pulseHeadColor = ARGB.opaque(brighter(connectionColor, PULSE_HEAD_SATURATION));
 
     visible.clear();
     bigStars.clear();
@@ -422,7 +414,7 @@ public final class CrystalBallRenderer {
       double childWorldX, double childWorldY, StaffDirection dir) {
     float childPx = sizePx(childDepth);
     float parentPx = sizePx(parentDepth);
-    float v = visibility(childPx) * fadeLarge(parentPx);
+    float v = visibility(childPx) * fadeLargeEdges(parentPx);
     if (v <= 0f) {
       return;
     }
@@ -440,148 +432,126 @@ public final class CrystalBallRenderer {
     float bx = (float) localX(childWorldX) + rx * laneEnd * sideEnd;
     float by = (float) localY(childWorldY) + ry * laneEnd * sideEnd;
 
+    drawConnection(ax, ay, bx, by, parentDepth, v);
+  }
+
+  private void drawConnection(float ax, float ay, float bx, float by, int parentDepth, float fade) {
     float dx = bx - ax;
     float dy = by - ay;
     float len = Mth.sqrt(dx * dx + dy * dy);
     if (len < 1e-4f) {
       return;
     }
-    float ux = dx / len;
-    float uy = dy / len;
+    boolean steep = Math.abs(dy) > Math.abs(dx);
+    float ua = steep ? ay : ax;
+    float va = steep ? ax : ay;
+    float ub = steep ? by : bx;
+    float vb = steep ? bx : by;
+    float slope = (vb - va) / (ub - ua);
+    float alongPerU = len / (ub - ua);
 
-    boolean unknown = states.stateOf(child) == CrystalBallNodeState.UNKNOWN;
-    float amplitude = childPx * WOBBLE_AMPLITUDE;
-    float baseRadius = childPx * METEOR_SIZE / 2;
-    int edgeHash = Mth.murmurHash3Mixer(child.path().hashCode());
-
-    for (int i = 0; i < METEORS_PER_EDGE; i++) {
-      int hash = Mth.murmurHash3Mixer(edgeHash + i);
-      double slot = (i + (unit(hash) - 0.5f) * METEOR_SPACING_JITTER) / METEORS_PER_EDGE;
-      float radius = Math.max(1, baseRadius * (1 + (unit(hash >>> 8) - 0.5f) * 2 * METEOR_SIZE_JITTER));
-      float wobbleSpeed = Mth.lerp(unit(hash >>> 16), WOBBLE_MIN_SPEED, WOBBLE_MAX_SPEED);
-      float wobblePhase = unit(hash >>> 24) * Mth.TWO_PI;
-      float s = (float) frac(time * METEOR_FLOW_SPEED + slot);
-
-      float envelope = Mth.sin(Mth.PI * s);
-      double wobbleAngle = time * wobbleSpeed + wobblePhase;
-      float wobble = amplitude * envelope * (float) Math.sin(wobbleAngle);
-      float along = s * len;
-      float x = ax + ux * along - uy * wobble;
-      float y = ay + uy * along + ux * wobble;
-
-      float wobbleSlope = amplitude * (Mth.PI * Mth.cos(Mth.PI * s) * (float) Math.sin(wobbleAngle)
-          + envelope * (float) Math.cos(wobbleAngle) * wobbleSpeed / (float) METEOR_FLOW_SPEED);
-      float tx = ux * len - uy * wobbleSlope;
-      float ty = uy * len + ux * wobbleSlope;
-      float tl = Mth.sqrt(tx * tx + ty * ty);
-
-      drawMeteor(x, y, tx / tl, ty / tl, radius, hash, v, unknown);
-    }
-  }
-
-  private void drawMeteor(float x, float y, float dirX, float dirY, float radius, int seed, float fade, boolean unknown) {
-    if (fade <= 0f) {
-      return;
-    }
-    int hx = Mth.floor(x);
-    int hy = Mth.floor(y);
-    float length = radius * FLAME_LENGTH;
-    float pad = radius + 2;
-
-    float tailX = hx - dirX * length;
-    float tailY = hy - dirY * length;
-    int minX = Math.max(Mth.floor(Math.min(hx, tailX) - pad), Mth.floor(vx0 - offsetX));
-    int maxX = Math.min(Mth.ceil(Math.max(hx, tailX) + pad), Mth.ceil(vx1 - offsetX));
-    int minY = Math.max(Mth.floor(Math.min(hy, tailY) - pad), Mth.floor(vy0 - offsetY));
-    int maxY = Math.min(Mth.ceil(Math.max(hy, tailY) + pad), Mth.ceil(vy1 - offsetY));
-    if (minX > maxX || minY > maxY) {
+    int uMin = steep ? Mth.floor(vy0 - offsetY) : Mth.floor(vx0 - offsetX);
+    int uMax = steep ? Mth.ceil(vy1 - offsetY) : Mth.ceil(vx1 - offsetX);
+    int us = Math.max(Mth.floor(Math.min(ua, ub)), uMin);
+    int ue = Math.min(Mth.ceil(Math.max(ua, ub)), uMax);
+    if (ue <= us) {
       return;
     }
 
-    MeteorColors colors = states.meteorColors();
-    List<Integer> head = unknown ? HEAD_UNKNOWN : colors.head();
-    List<Integer> flame = unknown ? FLAME_UNKNOWN : colors.flame();
-    float scroll = (float) ((time * FLAME_SCROLL_SPEED) % 256);
-    float flicker = FLAME_FLICKER * (float) Math.sin(time * 17 + unit(seed >>> 4) * Mth.TWO_PI);
-    float radiusSq = radius * radius;
+    float tail = Math.max(PULSE_MIN_TAIL, len * PULSE_TAIL);
+    float firstHead = (float) (Mth.positiveModulo(time - parentDepth * PULSE_EDGE_DURATION, PULSE_INTERVAL) / PULSE_EDGE_DURATION * len);
+    float headSpacing = (float) (PULSE_INTERVAL / PULSE_EDGE_DURATION * len);
+    int alpha = alpha255(fade);
 
-    for (int py = minY; py <= maxY; py++) {
-      int runStart = minX;
-      int runColor = 0;
-      for (int px = minX; px <= maxX + 1; px++) {
-        int color = 0;
-        if (px <= maxX) {
-          float qx = px - hx;
-          float qy = py - hy;
-          float distSq = qx * qx + qy * qy;
-          if (distSq <= radiusSq) {
-            color = ARGB.color(alpha255(fade), head.get(shade(Mth.sqrt(distSq) / radius, head.size())));
-          } else {
-            color = flameColor(-(qx * dirX + qy * dirY), qy * dirX - qx * dirY, radius, length, scroll, flicker, seed, flame, fade);
-          }
+    int runStart = us;
+    int runV = 0;
+    int runColor = 0;
+    for (int u = us; u <= ue; u++) {
+      int v = 0;
+      int color = 0;
+      if (u < ue) {
+        float along = (u + 0.5f - ua) * alongPerU;
+        float behind = behindPulse(along, firstHead, headSpacing);
+        v = connectionV(va, slope, ua, u);
+        color = ARGB.color(alpha, pulseColor(behind, tail));
+        if (behind < tail * PULSE_HALO) {
+          int halo = ARGB.color(alpha255(fade * pulseAlpha(behind, tail) * PULSE_HALO_ALPHA), pulseColor);
+          emit(steep, u, v - 1, u + 1, v, halo);
+          emit(steep, u, v + CONNECTION_WIDTH, u + 1, v + CONNECTION_WIDTH + 1, halo);
         }
-        if (color != runColor) {
-          if (runColor != 0) {
-            graphics.fill(runStart, py, px, py + 1, runColor);
-          }
-          runStart = px;
-          runColor = color;
-        }
+      }
+      if (u == us) {
+        runV = v;
+        runColor = color;
+      } else if (u == ue || v != runV || color != runColor) {
+        emit(steep, runStart, runV, u, runV + CONNECTION_WIDTH, runColor);
+        runStart = u;
+        runV = v;
+        runColor = color;
       }
     }
   }
 
-  private static int shade(float dist, int count) {
-    return Math.min(count - 1, (int) (Math.pow(dist, HEAD_SHADE_CURVE) * count));
+  private static float behindPulse(float along, float firstHead, float headSpacing) {
+    float index = Math.max(0, Mth.ceil((along - 1 - firstHead) / headSpacing));
+    return firstHead + index * headSpacing - along;
   }
 
-  private static int flameColor(float along, float lateral, float radius, float length, float scroll, float flicker, int seed,
-      List<Integer> palette, float fade) {
-    if (along < 0 || along > length) {
-      return 0;
+  private static float pulseAlpha(float behind, float tail) {
+    if (behind < 0) {
+      return Math.max(0, 1 + behind);
     }
-    float t = along / length;
-    float flow = along * FLAME_NOISE_SCALE - scroll;
-    float sideNoise = valueNoise(flow, lateral < 0 ? 0 : 7, seed);
-    float halfWidth = (radius + 0.5f) * (1 - t) * (1 - FLAME_EDGE_JITTER * sideNoise);
-    float distance = Math.abs(lateral);
-    if (distance > halfWidth) {
-      return 0;
+    return behind < 1 ? 1 : Math.max(0, 1 - behind / tail);
+  }
+
+  private int pulseColor(float behind, float tail) {
+    float a = pulseAlpha(behind, tail);
+    if (a <= 0) {
+      return connectionColor;
     }
-    float edge = 1 - distance / halfWidth;
-    float noise = valueNoise(flow, lateral * FLAME_NOISE_SCALE * 1.5f + 13, seed);
-    float heat = (1 - t) * 0.9f + edge * 0.5f - 0.35f + (noise - 0.5f) * FLAME_TURBULENCE + flicker;
-    int count = palette.size();
-    int i = Math.clamp(Mth.floor((FLAME_HEAT_MAX - heat) / (FLAME_HEAT_MAX - FLAME_HEAT_MIN) * count), 0, count - 1);
-    int fromTip = count - 1 - i;
-    float alpha = i > 0 && fromTip < FLAME_TIP_ALPHA.length ? FLAME_TIP_ALPHA[fromTip] : 1;
-    return ARGB.color(alpha255(fade * alpha), palette.get(i));
+    return ARGB.srgbLerp(a, connectionColor, behind < 1 ? pulseHeadColor : pulseColor);
   }
 
-  private static float valueNoise(float x, float y, int seed) {
-    int x0 = Mth.floor(x);
-    int y0 = Mth.floor(y);
-    float fx = x - x0;
-    float fy = y - y0;
-    fx = fx * fx * (3 - 2 * fx);
-    fy = fy * fy * (3 - 2 * fy);
-    float top = Mth.lerp(fx, lattice(x0, y0, seed), lattice(x0 + 1, y0, seed));
-    float bottom = Mth.lerp(fx, lattice(x0, y0 + 1, seed), lattice(x0 + 1, y0 + 1, seed));
-    return Mth.lerp(fy, top, bottom);
+  private static int connectionV(float va, float slope, float ua, int u) {
+    float v = va + slope * (u + 0.5f - ua) - CONNECTION_WIDTH / 2f;
+    return Math.round(Math.clamp(v, -COORD_LIMIT, COORD_LIMIT));
   }
 
-  private static float lattice(int x, int y, int seed) {
-    return unit(Mth.murmurHash3Mixer(seed ^ (x & 255) * 0x27D4EB2D ^ (y & 255) * 0x165667B1));
+  private void emit(boolean steep, int u0, int v0, int u1, int v1, int color) {
+    int x0 = steep ? v0 : u0;
+    int y0 = steep ? u0 : v0;
+    int x1 = steep ? v1 : u1;
+    int y1 = steep ? u1 : v1;
+    if (x1 > x0 && y1 > y0) {
+      graphics.fill(x0, y0, x1, y1, color);
+    }
+  }
+
+  private static int brighter(int rgb, float saturationFactor) {
+    float r = ARGB.red(rgb) / 255f;
+    float g = ARGB.green(rgb) / 255f;
+    float b = ARGB.blue(rgb) / 255f;
+    float max = Math.max(r, Math.max(g, b));
+    float delta = max - Math.min(r, Math.min(g, b));
+    float hue = 0;
+    if (delta > 0) {
+      if (max == r) {
+        hue = (g - b) / delta;
+      } else if (max == g) {
+        hue = 2 + (b - r) / delta;
+      } else {
+        hue = 4 + (r - g) / delta;
+      }
+      hue = Mth.positiveModulo(hue / 6, 1f);
+    }
+    float saturation = max > 0 ? delta / max : 0;
+    return Mth.hsvToRgb(hue, saturation * saturationFactor, 1);
   }
 
   private static float laneOf(float nodePx) {
     int nodeCore = Math.max(1, Math.round(nodePx / ROOT_SIZE));
     float lane = Math.max(2, LANE_FACTOR * nodeCore);
     return Math.min(lane, nodePx * 0.3f);
-  }
-
-  private static double frac(double value) {
-    return value - Math.floor(value);
   }
 
   private void drawNode(Font font, Visible v) {
@@ -690,7 +660,11 @@ public final class CrystalBallRenderer {
   }
 
   private float fadeLarge(float sizePx) {
-    return Math.clamp(1 - (sizePx - fadeLargeStartPx) / (fadeLargeEndPx - fadeLargeStartPx), 0, 1);
+    return Math.clamp(1 - (sizePx - fadeLargeMidPx) / (fadeLargeEndPx - fadeLargeMidPx), 0, 1);
+  }
+
+  private float fadeLargeEdges(float parentPx) {
+    return Math.clamp(1 - (parentPx - fadeLargeStartPx) / (fadeLargeMidPx - fadeLargeStartPx), 0, 1);
   }
 
   private float visibility(float sizePx) {

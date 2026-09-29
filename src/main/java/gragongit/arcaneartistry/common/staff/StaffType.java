@@ -12,15 +12,19 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.ExtraCodecs;
 
 public record StaffType(Identifier icon, Optional<Holder<SoundEvent>> strokeSound, Optional<Holder<SoundEvent>> failSound,
-    Optional<Holder<SoundEvent>> noManaSound, MeteorColors meteorColors, Optional<Identifier> crystalBallBackground) {
+    Optional<Holder<SoundEvent>> noManaSound, int connectionColor, Optional<Identifier> crystalBallBackground) {
 
-  public StaffType(Identifier icon, SoundEvent strokeSound, SoundEvent failSound, SoundEvent noManaSound, MeteorColors meteorColors,
-      @Nullable Identifier crystalBallBackground) {
+  public static final int DEFAULT_CONNECTION_COLOR = 0xC0C0C0;
+
+  public StaffType(Identifier icon, SoundEvent strokeSound, SoundEvent failSound, SoundEvent noManaSound,
+      @Nullable Integer connectionColor, @Nullable Identifier crystalBallBackground) {
     this(icon, Optional.ofNullable(strokeSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder),
         Optional.ofNullable(failSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder),
-        Optional.ofNullable(noManaSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder), meteorColors,
+        Optional.ofNullable(noManaSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder),
+        connectionColor != null ? connectionColor : DEFAULT_CONNECTION_COLOR,
         Optional.ofNullable(crystalBallBackground));
   }
 
@@ -34,7 +38,7 @@ public record StaffType(Identifier icon, Optional<Holder<SoundEvent>> strokeSoun
               SoundEvent.CODEC.optionalFieldOf("stroke_sound").forGetter(StaffType::strokeSound),
               SoundEvent.CODEC.optionalFieldOf("fail_sound").forGetter(StaffType::failSound),
               SoundEvent.CODEC.optionalFieldOf("no_mana_sound").forGetter(StaffType::noManaSound),
-              MeteorColors.CODEC.fieldOf("meteor_colors").forGetter(StaffType::meteorColors),
+              ExtraCodecs.STRING_RGB_COLOR.optionalFieldOf("connection_color", DEFAULT_CONNECTION_COLOR).forGetter(StaffType::connectionColor),
               Identifier.CODEC.optionalFieldOf("crystal_ball_background").forGetter(StaffType::crystalBallBackground))
           .apply(instance, StaffType::new));
 
