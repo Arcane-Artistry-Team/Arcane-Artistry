@@ -8,19 +8,26 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 
 public final class StaffTypeBootstrap {
-  private static final int FIRE_CONNECTION_COLOR = 0xB07D16;
-  private static final int WATER_CONNECTION_COLOR = 0x2A78C8;
-
   static void bootstrapStaffTypes(BootstrapContext<StaffType> context) {
     context
         .register(StaffTypes.FIRE_KEY,
-            new StaffType(Identifier.withDefaultNamespace("textures/item/blaze_powder.png"), SoundEvents.FIRECHARGE_USE,
-                SoundEvents.FIRE_EXTINGUISH, SoundEvents.FURNACE_FIRE_CRACKLE, FIRE_CONNECTION_COLOR,
-                ArcaneArtistryElements.id("crystal_ball/ember_galaxy")));
+            StaffType
+                .builder(Identifier.withDefaultNamespace("textures/item/blaze_powder.png"))
+                .strokeSound(SoundEvents.FIRECHARGE_USE)
+                .failSound(SoundEvents.FIRE_EXTINGUISH)
+                .noManaSound(SoundEvents.FURNACE_FIRE_CRACKLE)
+                .connectionColor(0xB07D16)
+                .crystalBallBackground(ArcaneArtistryElements.id("crystal_ball/ember_galaxy"))
+                .build());
     context
         .register(StaffTypes.WATER_KEY,
-            new StaffType(Identifier.withDefaultNamespace("textures/item/heart_of_the_sea.png"), SoundEvents.POINTED_DRIPSTONE_DRIP_WATER,
-                SoundEvents.FIRE_EXTINGUISH, SoundEvents.PLAYER_SWIM, WATER_CONNECTION_COLOR,
-                ArcaneArtistryElements.id("crystal_ball/tidal_galaxy")));
+            StaffType
+                .builder(Identifier.withDefaultNamespace("textures/item/heart_of_the_sea.png"))
+                .strokeSound(SoundEvents.POINTED_DRIPSTONE_DRIP_WATER)
+                .failSound(SoundEvents.FIRE_EXTINGUISH)
+                .noManaSound(SoundEvents.PLAYER_SWIM)
+                .connectionColor(0x2A78C8)
+                .crystalBallBackground(ArcaneArtistryElements.id("crystal_ball/tidal_galaxy"))
+                .build());
   }
 }

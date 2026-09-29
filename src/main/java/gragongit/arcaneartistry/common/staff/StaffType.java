@@ -19,13 +19,8 @@ public record StaffType(Identifier icon, Optional<Holder<SoundEvent>> strokeSoun
 
   public static final int DEFAULT_CONNECTION_COLOR = 0xC0C0C0;
 
-  public StaffType(Identifier icon, SoundEvent strokeSound, SoundEvent failSound, SoundEvent noManaSound,
-      @Nullable Integer connectionColor, @Nullable Identifier crystalBallBackground) {
-    this(icon, Optional.ofNullable(strokeSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder),
-        Optional.ofNullable(failSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder),
-        Optional.ofNullable(noManaSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder),
-        connectionColor != null ? connectionColor : DEFAULT_CONNECTION_COLOR,
-        Optional.ofNullable(crystalBallBackground));
+  public static Builder builder(Identifier icon) {
+    return new Builder(icon);
   }
 
   public Optional<Holder<SoundEvent>> noManaSoundOrFail() {
@@ -44,4 +39,47 @@ public record StaffType(Identifier icon, Optional<Holder<SoundEvent>> strokeSoun
 
   public static final StreamCodec<RegistryFriendlyByteBuf, Holder<StaffType>> STREAM_CODEC =
       ByteBufCodecs.holderRegistry(ModRegistries.STAFF_TYPE_KEY);
+
+  public static final class Builder {
+    private final Identifier icon;
+    private @Nullable Holder<SoundEvent> strokeSound;
+    private @Nullable Holder<SoundEvent> failSound;
+    private @Nullable Holder<SoundEvent> noManaSound;
+    private int connectionColor = DEFAULT_CONNECTION_COLOR;
+    private @Nullable Identifier crystalBallBackground;
+
+    private Builder(Identifier icon) {
+      this.icon = icon;
+    }
+
+    public Builder strokeSound(SoundEvent strokeSound) {
+      this.strokeSound = BuiltInRegistries.SOUND_EVENT.wrapAsHolder(strokeSound);
+      return this;
+    }
+
+    public Builder failSound(SoundEvent failSound) {
+      this.failSound = BuiltInRegistries.SOUND_EVENT.wrapAsHolder(failSound);
+      return this;
+    }
+
+    public Builder noManaSound(SoundEvent noManaSound) {
+      this.noManaSound = BuiltInRegistries.SOUND_EVENT.wrapAsHolder(noManaSound);
+      return this;
+    }
+
+    public Builder connectionColor(int connectionColor) {
+      this.connectionColor = connectionColor;
+      return this;
+    }
+
+    public Builder crystalBallBackground(Identifier crystalBallBackground) {
+      this.crystalBallBackground = crystalBallBackground;
+      return this;
+    }
+
+    public StaffType build() {
+      return new StaffType(icon, Optional.ofNullable(strokeSound), Optional.ofNullable(failSound), Optional.ofNullable(noManaSound),
+          connectionColor, Optional.ofNullable(crystalBallBackground));
+    }
+  }
 }
