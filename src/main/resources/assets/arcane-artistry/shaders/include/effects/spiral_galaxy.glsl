@@ -1,5 +1,5 @@
-#ifndef ARCANE_ARTISTRY_GALAXY_GLSL
-#define ARCANE_ARTISTRY_GALAXY_GLSL
+#ifndef ARCANE_ARTISTRY_SPIRAL_GALAXY_GLSL
+#define ARCANE_ARTISTRY_SPIRAL_GALAXY_GLSL
 
 // Spiral galaxy made of a volumetric Kali fractal. Returns three density layers that fade out towards the rim, for the calling shader
 // to color:

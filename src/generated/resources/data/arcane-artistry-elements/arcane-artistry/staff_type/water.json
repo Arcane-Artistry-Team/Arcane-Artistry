@@ -1,5 +1,5 @@
 {
-  "crystal_ball_shader": "arcane-artistry-elements:core/crystal_ball/water",
+  "crystal_ball_background": "arcane-artistry-elements:crystal_ball/tidal_galaxy",
   "fail_sound": "minecraft:block.fire.extinguish",
   "icon": "minecraft:textures/item/heart_of_the_sea.png",
   "meteor_colors": {

@@ -1,14 +1,14 @@
 #version 330
 #extension GL_ARB_separate_shader_objects : require
 
-// Placeholder: the default galaxy with an ember palette.
+// Placeholder: the spiral galaxy with an ember palette.
 
 #define BRIGHTNESS 0.5
 #define BASE_COLOR vec3(0.030, 0.008, 0.005)
 #define TIME_SCALE 0.6
 
-#include <arcane-artistry:galaxy.glsl>
-#include <arcane-artistry:crystal_ball.glsl>
+#include <arcane-artistry:effects/spiral_galaxy.glsl>
+#include <arcane-artistry:crystal_ball/frame.glsl>
 
 const vec3 EMBER = vec3(1.0, 0.45, 0.08);
 const vec3 CRIMSON = vec3(0.85, 0.12, 0.10);

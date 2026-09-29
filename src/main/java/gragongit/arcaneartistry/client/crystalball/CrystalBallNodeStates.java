@@ -16,23 +16,23 @@ import net.minecraft.resources.Identifier;
 public final class CrystalBallNodeStates implements CrystalBallRenderer.CrystalBallNodeStateProvider {
   private final Identifier staffIcon;
   private final MeteorColors meteorColors;
-  private final Optional<Identifier> galaxyShader;
+  private final Optional<Identifier> backgroundShader;
   private final Map<CastPattern, Spell> spells;
   private final Set<CastPattern> explored;
   private final Map<CrystalBallNode, CrystalBallNodeState> cache = new IdentityHashMap<>();
 
-  private CrystalBallNodeStates(Identifier staffIcon, MeteorColors meteorColors, Optional<Identifier> galaxyShader,
+  private CrystalBallNodeStates(Identifier staffIcon, MeteorColors meteorColors, Optional<Identifier> backgroundShader,
       Map<CastPattern, Spell> spells, Set<CastPattern> explored) {
     this.staffIcon = staffIcon;
     this.meteorColors = meteorColors;
-    this.galaxyShader = galaxyShader;
+    this.backgroundShader = backgroundShader;
     this.spells = spells;
     this.explored = explored;
   }
 
   public static CrystalBallNodeStates forStaffType(Registry<Spell> registry, Holder<StaffType> staffType, Set<CastPattern> explored) {
     StaffType type = staffType.value();
-    return new CrystalBallNodeStates(type.icon(), type.meteorColors(), type.crystalBallShader(),
+    return new CrystalBallNodeStates(type.icon(), type.meteorColors(), type.crystalBallBackground(),
         SpellsByStaffType.of(registry).forStaffType(staffType), explored);
   }
 
@@ -42,8 +42,8 @@ public final class CrystalBallNodeStates implements CrystalBallRenderer.CrystalB
   }
 
   @Override
-  public Optional<Identifier> galaxyShader() {
-    return galaxyShader;
+  public Optional<Identifier> backgroundShader() {
+    return backgroundShader;
   }
 
   @Override

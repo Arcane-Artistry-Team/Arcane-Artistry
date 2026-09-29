@@ -1,13 +1,13 @@
 #version 330
 #extension GL_ARB_separate_shader_objects : require
 
-// Default crystal ball background, used by staff types without their own shader.
+// Spiral galaxy in lapis and purple. The default crystal ball background for staff types without their own shader.
 
 #define BRIGHTNESS 0.5
 #define BASE_COLOR vec3(0.010, 0.010, 0.030)
 
-#include <arcane-artistry:galaxy.glsl>
-#include <arcane-artistry:crystal_ball.glsl>
+#include <arcane-artistry:effects/spiral_galaxy.glsl>
+#include <arcane-artistry:crystal_ball/frame.glsl>
 
 const vec3 LAPIS = vec3(0.15, 0.38, 1.0);
 const vec3 PURPLE = vec3(0.62, 0.22, 1.0);

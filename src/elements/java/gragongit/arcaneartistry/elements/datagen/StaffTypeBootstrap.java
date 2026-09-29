@@ -19,10 +19,10 @@ public final class StaffTypeBootstrap {
     context
         .register(StaffTypes.FIRE_KEY, new StaffType(Identifier.withDefaultNamespace("textures/item/blaze_powder.png"),
             SoundEvents.FIRECHARGE_USE, SoundEvents.FIRE_EXTINGUISH, SoundEvents.FURNACE_FIRE_CRACKLE, FIRE_METEOR,
-            ArcaneArtistryElements.id("core/crystal_ball/fire")));
+            ArcaneArtistryElements.id("crystal_ball/ember_galaxy")));
     context
         .register(StaffTypes.WATER_KEY, new StaffType(Identifier.withDefaultNamespace("textures/item/heart_of_the_sea.png"),
             SoundEvents.POINTED_DRIPSTONE_DRIP_WATER, SoundEvents.FIRE_EXTINGUISH, SoundEvents.PLAYER_SWIM, WATER_METEOR,
-            ArcaneArtistryElements.id("core/crystal_ball/water")));
+            ArcaneArtistryElements.id("crystal_ball/tidal_galaxy")));
   }
 }

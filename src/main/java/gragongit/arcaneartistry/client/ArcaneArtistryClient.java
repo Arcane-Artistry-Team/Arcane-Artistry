@@ -1,7 +1,7 @@
 package gragongit.arcaneartistry.client;
 
 import java.util.Set;
-import gragongit.arcaneartistry.client.crystalball.CrystalBallGalaxy;
+import gragongit.arcaneartistry.client.crystalball.CrystalBallBackground;
 import gragongit.arcaneartistry.client.crystalball.CrystalBallNodeStates;
 import gragongit.arcaneartistry.client.crystalball.CrystalBallScreen;
 import gragongit.arcaneartistry.client.mana.ManaHud;
@@ -22,7 +22,7 @@ public class ArcaneArtistryClient implements ClientModInitializer {
   @Override
   public void onInitializeClient() {
     StaffInteractionClientHandler.register();
-    CrystalBallGalaxy.register();
+    CrystalBallBackground.register();
     ArcaneArtistryClientConfig.load();
     ManaHud.register();
 

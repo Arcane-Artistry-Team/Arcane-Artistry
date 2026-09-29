@@ -1,14 +1,14 @@
 #version 330
 #extension GL_ARB_separate_shader_objects : require
 
-// Placeholder: the default galaxy with a teal palette.
+// Placeholder: the spiral galaxy with a teal palette.
 
 #define BRIGHTNESS 0.5
 #define BASE_COLOR vec3(0.005, 0.015, 0.030)
 #define TIME_SCALE 0.3
 
-#include <arcane-artistry:galaxy.glsl>
-#include <arcane-artistry:crystal_ball.glsl>
+#include <arcane-artistry:effects/spiral_galaxy.glsl>
+#include <arcane-artistry:crystal_ball/frame.glsl>
 
 const vec3 TEAL = vec3(0.10, 0.75, 0.85);
 const vec3 DEEP = vec3(0.10, 0.30, 0.95);

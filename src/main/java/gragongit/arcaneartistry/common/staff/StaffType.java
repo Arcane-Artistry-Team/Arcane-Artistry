@@ -14,14 +14,14 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 
 public record StaffType(Identifier icon, Optional<Holder<SoundEvent>> strokeSound, Optional<Holder<SoundEvent>> failSound,
-    Optional<Holder<SoundEvent>> noManaSound, MeteorColors meteorColors, Optional<Identifier> crystalBallShader) {
+    Optional<Holder<SoundEvent>> noManaSound, MeteorColors meteorColors, Optional<Identifier> crystalBallBackground) {
 
   public StaffType(Identifier icon, SoundEvent strokeSound, SoundEvent failSound, SoundEvent noManaSound, MeteorColors meteorColors,
-      @Nullable Identifier crystalBallShader) {
+      @Nullable Identifier crystalBallBackground) {
     this(icon, Optional.ofNullable(strokeSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder),
         Optional.ofNullable(failSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder),
         Optional.ofNullable(noManaSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder), meteorColors,
-        Optional.ofNullable(crystalBallShader));
+        Optional.ofNullable(crystalBallBackground));
   }
 
   public Optional<Holder<SoundEvent>> noManaSoundOrFail() {
@@ -35,7 +35,7 @@ public record StaffType(Identifier icon, Optional<Holder<SoundEvent>> strokeSoun
               SoundEvent.CODEC.optionalFieldOf("fail_sound").forGetter(StaffType::failSound),
               SoundEvent.CODEC.optionalFieldOf("no_mana_sound").forGetter(StaffType::noManaSound),
               MeteorColors.CODEC.fieldOf("meteor_colors").forGetter(StaffType::meteorColors),
-              Identifier.CODEC.optionalFieldOf("crystal_ball_shader").forGetter(StaffType::crystalBallShader))
+              Identifier.CODEC.optionalFieldOf("crystal_ball_background").forGetter(StaffType::crystalBallBackground))
           .apply(instance, StaffType::new));
 
   public static final StreamCodec<RegistryFriendlyByteBuf, Holder<StaffType>> STREAM_CODEC =

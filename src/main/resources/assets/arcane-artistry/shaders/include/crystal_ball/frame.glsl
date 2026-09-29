@@ -1,5 +1,5 @@
-#ifndef ARCANE_ARTISTRY_CRYSTAL_BALL_GLSL
-#define ARCANE_ARTISTRY_CRYSTAL_BALL_GLSL
+#ifndef ARCANE_ARTISTRY_CRYSTAL_BALL_FRAME_GLSL
+#define ARCANE_ARTISTRY_CRYSTAL_BALL_FRAME_GLSL
 
 // Frame for every crystal ball background shader. A shader optionally defines the settings below, includes this file and implements
 // crystalBallColor. Pixelation, posterizing and ColorModulator are applied here, so the shader only describes the look.
@@ -7,6 +7,7 @@
 //   time  animation time, already multiplied by TIME_SCALE
 
 #include <minecraft:dynamictransforms.glsl>
+#include <arcane-artistry:utils/pixel_art.glsl>
 
 #ifndef PIXEL_SIZE
 #define PIXEL_SIZE 2.0 // GUI pixels per shader pixel
@@ -33,13 +34,9 @@ layout(location = 0) out vec4 fragColor;
 vec3 crystalBallColor(vec2 uv, float time);
 
 void main() {
-    float cell = guiPixel * PIXEL_SIZE;
-    vec2 uv = (floor(rawUv / cell) + 0.5) * cell;
-
+    vec2 uv = snapToPixel(rawUv, guiPixel * PIXEL_SIZE);
     vec3 col = clamp(crystalBallColor(uv, rawTime * TIME_SCALE), 0.0, 1.0);
-    if (COLOR_LEVELS > 0.0) {
-        col = floor(col * COLOR_LEVELS + 0.5) / COLOR_LEVELS;
-    }
+    col = posterize(col, COLOR_LEVELS);
 
     fragColor = vec4(BASE_COLOR + col * BRIGHTNESS, 1.0) * ColorModulator;
 }

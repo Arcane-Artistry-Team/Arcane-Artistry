@@ -1,5 +1,5 @@
 {
-  "crystal_ball_shader": "arcane-artistry-elements:core/crystal_ball/fire",
+  "crystal_ball_background": "arcane-artistry-elements:crystal_ball/ember_galaxy",
   "fail_sound": "minecraft:block.fire.extinguish",
   "icon": "minecraft:textures/item/blaze_powder.png",
   "meteor_colors": {

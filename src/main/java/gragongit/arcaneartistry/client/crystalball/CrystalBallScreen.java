@@ -27,7 +27,7 @@ public class CrystalBallScreen extends Screen {
   private final CrystalBallCamera camera = new CrystalBallCamera();
   private final CrystalBallRenderer renderer;
   private final int maxDepth;
-  private final double galaxyRadius;
+  private final double backgroundRadius;
   private final CrystalBallRenderer.CrystalBallNodeStateProvider states;
   private final long openedAt = System.nanoTime();
   private double rootFocusZoom;
@@ -40,7 +40,7 @@ public class CrystalBallScreen extends Screen {
     super(Component.translatable("screen.arcane_artistry.crystal_ball"));
     this.states = states;
     this.maxDepth = maxDepth;
-    this.galaxyRadius = CrystalBallRenderer.treeRadius(maxDepth);
+    this.backgroundRadius = CrystalBallRenderer.treeRadius(maxDepth);
     this.renderer = new CrystalBallRenderer(maxDepth);
   }
 
@@ -77,13 +77,13 @@ public class CrystalBallScreen extends Screen {
     int y0 = MARGIN;
     int x1 = this.width - MARGIN;
     int y1 = this.height - MARGIN;
-    double galaxyZoom = CrystalBallGalaxy.parallaxZoom(camera.zoom(), rootFocusZoom, deepestFocusZoom);
-    double galaxyPan = galaxyZoom / camera.zoom();
-    double rootX = (x0 + x1) / 2.0 + camera.panX() * galaxyPan;
-    double rootY = (y0 + y1) / 2.0 + camera.panY() * galaxyPan;
-    CrystalBallGalaxy
-        .render(graphics, states.galaxyShader().orElse(CrystalBallGalaxy.DEFAULT_SHADER), x0, y0, x1, y1, rootX, rootY, galaxyZoom,
-            galaxyRadius, (System.nanoTime() - openedAt) / 1_000_000_000f);
+    double backgroundZoom = CrystalBallBackground.parallaxZoom(camera.zoom(), rootFocusZoom, deepestFocusZoom);
+    double backgroundPan = backgroundZoom / camera.zoom();
+    double rootX = (x0 + x1) / 2.0 + camera.panX() * backgroundPan;
+    double rootY = (y0 + y1) / 2.0 + camera.panY() * backgroundPan;
+    CrystalBallBackground
+        .render(graphics, states.backgroundShader().orElse(CrystalBallBackground.DEFAULT_SHADER), x0, y0, x1, y1, rootX, rootY,
+            backgroundZoom, backgroundRadius, (System.nanoTime() - openedAt) / 1_000_000_000f);
     renderer.render(graphics, this.font, root, camera, states, x0, y0, x1, y1);
     super.extractRenderState(graphics, mouseX, mouseY, delta);
   }

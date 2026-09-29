@@ -24,9 +24,9 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
 import net.minecraft.resources.Identifier;
 
-public final class CrystalBallGalaxy {
-  public static final Identifier DEFAULT_SHADER = ArcaneArtistry.id("core/crystal_ball_galaxy");
-  private static final Identifier VERTEX_SHADER = ArcaneArtistry.id("core/crystal_ball");
+public final class CrystalBallBackground {
+  public static final Identifier DEFAULT_SHADER = ArcaneArtistry.id("crystal_ball/spiral_galaxy");
+  private static final Identifier VERTEX_SHADER = ArcaneArtistry.id("crystal_ball/background");
 
   private static final float TIME_OFFSET = 100f;
   private static final double EDGE_UV = 0.65;
@@ -42,20 +42,21 @@ public final class CrystalBallGalaxy {
   private static final Map<Identifier, RenderPipeline> PIPELINES = new HashMap<>();
   private static final Set<Identifier> WARNED_MISSING = new HashSet<>();
 
-  private CrystalBallGalaxy() {}
+  private CrystalBallBackground() {}
 
   public static void register() {
     RenderPipelines.register(pipelineFor(DEFAULT_SHADER));
   }
 
   private static RenderPipeline pipelineFor(Identifier fragmentShader) {
-    return PIPELINES.computeIfAbsent(fragmentShader, CrystalBallGalaxy::createPipeline);
+    return PIPELINES.computeIfAbsent(fragmentShader, CrystalBallBackground::createPipeline);
   }
 
   private static RenderPipeline createPipeline(Identifier fragmentShader) {
     return RenderPipeline
         .builder(RenderPipelines.GLOBALS_SNIPPET)
-        .withLocation(ArcaneArtistry.id("pipeline/crystal_ball/" + fragmentShader.getNamespace() + "/" + fragmentShader.getPath()))
+        .withLocation(ArcaneArtistry
+            .id("pipeline/crystal_ball_background/" + fragmentShader.getNamespace() + "/" + fragmentShader.getPath()))
         .withBindGroupLayout(BindGroupLayouts.PROJECTION)
         .withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS)
         .withVertexShader(VERTEX_SHADER)
@@ -74,7 +75,7 @@ public final class CrystalBallGalaxy {
     Identifier file = fragmentShader.withPath(path -> "shaders/" + path + ".fsh");
     if (Minecraft.getInstance().getResourceManager().getResource(file).isEmpty()) {
       if (WARNED_MISSING.add(fragmentShader)) {
-        ArcaneArtistry.LOGGER.warn("Crystal ball shader {} not found, using {}", file, DEFAULT_SHADER);
+        ArcaneArtistry.LOGGER.warn("Crystal ball background {} not found, using {}", file, DEFAULT_SHADER);
       }
       return pipelineFor(DEFAULT_SHADER);
     }
@@ -101,12 +102,13 @@ public final class CrystalBallGalaxy {
             pixel));
   }
 
-  private record State(RenderPipeline pipeline, Matrix3x2fc pose, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, float time, float pixel,
-      @Nullable ScreenRectangle bounds) implements GuiElementRenderState {
+  private record State(RenderPipeline pipeline, Matrix3x2fc pose, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1,
+      float time, float pixel, @Nullable ScreenRectangle bounds) implements GuiElementRenderState {
 
     State(RenderPipeline pipeline, Matrix3x2f pose, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, float time,
         float pixel) {
-      this(pipeline, pose, x0, y0, x1, y1, u0, u1, v0, v1, time, pixel, new ScreenRectangle(x0, y0, x1 - x0, y1 - y0).transformMaxBounds(pose));
+      this(pipeline, pose, x0, y0, x1, y1, u0, u1, v0, v1, time, pixel,
+          new ScreenRectangle(x0, y0, x1 - x0, y1 - y0).transformMaxBounds(pose));
     }
 
     @Override
