@@ -7,7 +7,6 @@ import java.util.Set;
 import gragongit.arcaneartistry.common.api.CastPattern;
 import gragongit.arcaneartistry.common.spell.Spell;
 import gragongit.arcaneartistry.common.spell.SpellsByStaffType;
-import gragongit.arcaneartistry.common.staff.MeteorColors;
 import gragongit.arcaneartistry.common.staff.StaffType;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -15,16 +14,16 @@ import net.minecraft.resources.Identifier;
 
 public final class CrystalBallNodeStates implements CrystalBallRenderer.CrystalBallNodeStateProvider {
   private final Identifier staffIcon;
-  private final MeteorColors meteorColors;
+  private final int connectionColor;
   private final Optional<Identifier> backgroundShader;
   private final Map<CastPattern, Spell> spells;
   private final Set<CastPattern> explored;
   private final Map<CrystalBallNode, CrystalBallNodeState> cache = new IdentityHashMap<>();
 
-  private CrystalBallNodeStates(Identifier staffIcon, MeteorColors meteorColors, Optional<Identifier> backgroundShader,
+  private CrystalBallNodeStates(Identifier staffIcon, int connectionColor, Optional<Identifier> backgroundShader,
       Map<CastPattern, Spell> spells, Set<CastPattern> explored) {
     this.staffIcon = staffIcon;
-    this.meteorColors = meteorColors;
+    this.connectionColor = connectionColor;
     this.backgroundShader = backgroundShader;
     this.spells = spells;
     this.explored = explored;
@@ -32,13 +31,13 @@ public final class CrystalBallNodeStates implements CrystalBallRenderer.CrystalB
 
   public static CrystalBallNodeStates forStaffType(Registry<Spell> registry, Holder<StaffType> staffType, Set<CastPattern> explored) {
     StaffType type = staffType.value();
-    return new CrystalBallNodeStates(type.icon(), type.meteorColors(), type.crystalBallBackground(),
+    return new CrystalBallNodeStates(type.icon(), type.connectionColor(), type.crystalBallBackground(),
         SpellsByStaffType.of(registry).forStaffType(staffType), explored);
   }
 
   @Override
-  public MeteorColors meteorColors() {
-    return meteorColors;
+  public int connectionColor() {
+    return connectionColor;
   }
 
   @Override

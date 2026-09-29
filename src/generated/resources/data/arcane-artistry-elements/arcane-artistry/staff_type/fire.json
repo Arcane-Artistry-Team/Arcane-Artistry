@@ -1,21 +1,8 @@
 {
+  "connection_color": "#b07d16",
   "crystal_ball_background": "arcane-artistry-elements:crystal_ball/inferno",
   "fail_sound": "minecraft:block.fire.extinguish",
   "icon": "minecraft:textures/item/blaze_powder.png",
-  "meteor_colors": {
-    "flame": [
-      "#fff8e0",
-      "#ffe066",
-      "#ffa53a",
-      "#e8552e",
-      "#9e2a3a"
-    ],
-    "head": [
-      "#ffffff",
-      "#fff3c4",
-      "#ffd27a"
-    ]
-  },
   "no_mana_sound": "minecraft:block.furnace.fire_crackle",
   "stroke_sound": "minecraft:item.firecharge.use"
 }
