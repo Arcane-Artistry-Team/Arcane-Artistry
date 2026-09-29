@@ -3,6 +3,7 @@ package gragongit.arcaneartistry.elements.datagen;
 import java.util.List;
 import gragongit.arcaneartistry.common.staff.MeteorColors;
 import gragongit.arcaneartistry.common.staff.StaffType;
+import gragongit.arcaneartistry.elements.common.ArcaneArtistryElements;
 import gragongit.arcaneartistry.elements.common.staffs.StaffTypes;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.Identifier;
@@ -17,9 +18,11 @@ public final class StaffTypeBootstrap {
   static void bootstrapStaffTypes(BootstrapContext<StaffType> context) {
     context
         .register(StaffTypes.FIRE_KEY, new StaffType(Identifier.withDefaultNamespace("textures/item/blaze_powder.png"),
-            SoundEvents.FIRECHARGE_USE, SoundEvents.FIRE_EXTINGUISH, SoundEvents.FURNACE_FIRE_CRACKLE, FIRE_METEOR));
+            SoundEvents.FIRECHARGE_USE, SoundEvents.FIRE_EXTINGUISH, SoundEvents.FURNACE_FIRE_CRACKLE, FIRE_METEOR,
+            ArcaneArtistryElements.id("core/crystal_ball/fire")));
     context
         .register(StaffTypes.WATER_KEY, new StaffType(Identifier.withDefaultNamespace("textures/item/heart_of_the_sea.png"),
-            SoundEvents.POINTED_DRIPSTONE_DRIP_WATER, SoundEvents.FIRE_EXTINGUISH, SoundEvents.PLAYER_SWIM, WATER_METEOR));
+            SoundEvents.POINTED_DRIPSTONE_DRIP_WATER, SoundEvents.FIRE_EXTINGUISH, SoundEvents.PLAYER_SWIM, WATER_METEOR,
+            ArcaneArtistryElements.id("core/crystal_ball/water")));
   }
 }

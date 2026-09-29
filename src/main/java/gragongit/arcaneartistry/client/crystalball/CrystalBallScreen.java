@@ -82,7 +82,8 @@ public class CrystalBallScreen extends Screen {
     double rootX = (x0 + x1) / 2.0 + camera.panX() * galaxyPan;
     double rootY = (y0 + y1) / 2.0 + camera.panY() * galaxyPan;
     CrystalBallGalaxy
-        .render(graphics, x0, y0, x1, y1, rootX, rootY, galaxyZoom, galaxyRadius, (System.nanoTime() - openedAt) / 1_000_000_000f);
+        .render(graphics, states.galaxyShader().orElse(CrystalBallGalaxy.DEFAULT_SHADER), x0, y0, x1, y1, rootX, rootY, galaxyZoom,
+            galaxyRadius, (System.nanoTime() - openedAt) / 1_000_000_000f);
     renderer.render(graphics, this.font, root, camera, states, x0, y0, x1, y1);
     super.extractRenderState(graphics, mouseX, mouseY, delta);
   }

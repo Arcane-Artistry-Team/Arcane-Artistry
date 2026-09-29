@@ -21,6 +21,10 @@ public final class CrystalBallRenderer {
 
     MeteorColors meteorColors();
 
+    default Optional<Identifier> galaxyShader() {
+      return Optional.empty();
+    }
+
     default Optional<Identifier> iconOf(CrystalBallNode node) {
       return Optional.empty();
     }

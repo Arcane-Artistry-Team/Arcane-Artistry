@@ -1,6 +1,12 @@
 #version 330
 #extension GL_ARB_separate_shader_objects : require
 
+// Shared vertex shader for every crystal ball background. It is the interface between the Java side and the fragment shaders, so it
+// only passes data through:
+//   uv    position relative to the ball's center, the rim is at a distance of 0.65
+//   time  seconds since the screen opened, plus an offset
+//   pixel size of one GUI pixel in uv units
+
 #include <minecraft:projection.glsl>
 #include <minecraft:dynamictransforms.glsl>
 

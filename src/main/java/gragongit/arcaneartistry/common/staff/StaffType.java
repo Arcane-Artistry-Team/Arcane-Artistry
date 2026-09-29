@@ -1,6 +1,7 @@
 package gragongit.arcaneartistry.common.staff;
 
 import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gragongit.arcaneartistry.common.registry.ModRegistries;
@@ -13,12 +14,14 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 
 public record StaffType(Identifier icon, Optional<Holder<SoundEvent>> strokeSound, Optional<Holder<SoundEvent>> failSound,
-    Optional<Holder<SoundEvent>> noManaSound, MeteorColors meteorColors) {
+    Optional<Holder<SoundEvent>> noManaSound, MeteorColors meteorColors, Optional<Identifier> crystalBallShader) {
 
-  public StaffType(Identifier icon, SoundEvent strokeSound, SoundEvent failSound, SoundEvent noManaSound, MeteorColors meteorColors) {
+  public StaffType(Identifier icon, SoundEvent strokeSound, SoundEvent failSound, SoundEvent noManaSound, MeteorColors meteorColors,
+      @Nullable Identifier crystalBallShader) {
     this(icon, Optional.ofNullable(strokeSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder),
         Optional.ofNullable(failSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder),
-        Optional.ofNullable(noManaSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder), meteorColors);
+        Optional.ofNullable(noManaSound).map(BuiltInRegistries.SOUND_EVENT::wrapAsHolder), meteorColors,
+        Optional.ofNullable(crystalBallShader));
   }
 
   public Optional<Holder<SoundEvent>> noManaSoundOrFail() {
@@ -31,7 +34,8 @@ public record StaffType(Identifier icon, Optional<Holder<SoundEvent>> strokeSoun
               SoundEvent.CODEC.optionalFieldOf("stroke_sound").forGetter(StaffType::strokeSound),
               SoundEvent.CODEC.optionalFieldOf("fail_sound").forGetter(StaffType::failSound),
               SoundEvent.CODEC.optionalFieldOf("no_mana_sound").forGetter(StaffType::noManaSound),
-              MeteorColors.CODEC.fieldOf("meteor_colors").forGetter(StaffType::meteorColors))
+              MeteorColors.CODEC.fieldOf("meteor_colors").forGetter(StaffType::meteorColors),
+              Identifier.CODEC.optionalFieldOf("crystal_ball_shader").forGetter(StaffType::crystalBallShader))
           .apply(instance, StaffType::new));
 
   public static final StreamCodec<RegistryFriendlyByteBuf, Holder<StaffType>> STREAM_CODEC =
