@@ -17,7 +17,7 @@ public final class StaffTypeBootstrap {
                 .failSound(SoundEvents.FIRE_EXTINGUISH)
                 .noManaSound(SoundEvents.FURNACE_FIRE_CRACKLE)
                 .connectionColor(0xB07D16)
-                .crystalBallBackground(ArcaneArtistryElements.id("crystal_ball/ember_galaxy"))
+                .crystalBallBackground(ArcaneArtistryElements.id("crystal_ball/inferno"))
                 .build());
     context
         .register(StaffTypes.WATER_KEY,

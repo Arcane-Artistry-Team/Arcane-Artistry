@@ -1,6 +1,6 @@
 {
   "connection_color": "#b07d16",
-  "crystal_ball_background": "arcane-artistry-elements:crystal_ball/ember_galaxy",
+  "crystal_ball_background": "arcane-artistry-elements:crystal_ball/inferno",
   "fail_sound": "minecraft:block.fire.extinguish",
   "icon": "minecraft:textures/item/blaze_powder.png",
   "no_mana_sound": "minecraft:block.furnace.fire_crackle",
