@@ -1,6 +1,7 @@
 package gragongit.arcaneartistry.client.crystalball;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import gragongit.arcaneartistry.common.api.CastPattern;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -85,6 +86,9 @@ public class CrystalBallScreen extends Screen {
         .render(graphics, states.backgroundShader().orElse(CrystalBallBackground.DEFAULT_SHADER), x0, y0, x1, y1, rootX, rootY,
             backgroundZoom, backgroundRadius, (System.nanoTime() - openedAt) / 1_000_000_000f);
     renderer.render(graphics, this.font, root, camera, states, x0, y0, x1, y1);
+    if (renderer.nodeAt(mouseX, mouseY).isPresent()) {
+      graphics.requestCursor(CursorTypes.POINTING_HAND);
+    }
     super.extractRenderState(graphics, mouseX, mouseY, delta);
   }
 
