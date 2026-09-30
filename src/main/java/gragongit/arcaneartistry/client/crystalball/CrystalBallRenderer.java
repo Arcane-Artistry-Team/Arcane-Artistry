@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import gragongit.arcaneartistry.common.api.CastPattern;
+import gragongit.arcaneartistry.common.crystalball.CrystalBallEntry;
 import gragongit.arcaneartistry.common.staff.StaffDirection;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -26,12 +27,19 @@ public final class CrystalBallRenderer {
       return Optional.empty();
     }
 
-    default Optional<Identifier> iconOf(CrystalBallNode node) {
+    default Optional<CrystalBallEntry> entryOf(CrystalBallNode node) {
       return Optional.empty();
+    }
+
+    default Optional<Identifier> iconOf(CrystalBallNode node) {
+      return entryOf(node).map(CrystalBallEntry::icon);
     }
   }
 
   public record WorldPosition(double x, double y) {
+  }
+
+  public record HoveredNode(CrystalBallNode node, double screenX, double screenY, float sizePx, float focusSizePx) {
   }
 
   private record Visible(CrystalBallNode node, double worldX, double worldY, int depth) {
@@ -66,7 +74,7 @@ public final class CrystalBallRenderer {
   private static final Identifier FRAME_UNKNOWN = Identifier.withDefaultNamespace("advancements/task_frame_unobtained");
   private static final Identifier FRAME_EXPLORED = Identifier.withDefaultNamespace("advancements/task_frame_obtained");
   private static final Identifier FRAME_SPELL = Identifier.withDefaultNamespace("advancements/challenge_frame_obtained");
-  private static final float ICON_SIZE_FACTOR = 0.6f;
+  static final float ICON_SIZE_FACTOR = 0.6f;
 
   private static final float ROOT_SIZE = 26;
   private static final float ROOT_EDGE_LENGTH = ROOT_SIZE * 4;
@@ -102,6 +110,7 @@ public final class CrystalBallRenderer {
   private double offsetX, offsetY;
   private double time;
   private int connectionColor, pulseColor, pulseHeadColor;
+  private float focusSizePx;
   private float fadeInPx, fadeOutPx, fadeLargeStartPx, fadeLargeMidPx, fadeLargeEndPx;
 
   public CrystalBallRenderer(int maxDepth) {
@@ -119,6 +128,7 @@ public final class CrystalBallRenderer {
     this.centerX = (x0 + x1) / 2f;
     this.centerY = (y0 + y1) / 2f;
     double focusNodePx = focusNodePx(x1 - x0, y1 - y0);
+    this.focusSizePx = (float) focusNodePx;
     this.fadeInPx = (float) (focusNodePx * size(1) / size(0));
     this.fadeOutPx = (float) fadeOutPx(focusNodePx);
     this.fadeLargeStartPx = (float) (focusNodePx * size(0) / size(2));
@@ -166,9 +176,32 @@ public final class CrystalBallRenderer {
   }
 
   public Optional<CrystalBallNode> nodeAt(double mouseX, double mouseY) {
-    if (mouseX < vx0 || mouseX > vx1 || mouseY < vy0 || mouseY > vy1) {
+    if (!inViewport(mouseX, mouseY)) {
       return Optional.empty();
     }
+    Visible node = visibleNodeAt(mouseX, mouseY);
+    if (node != null) {
+      return Optional.of(node.node());
+    }
+    Visible nearest = nearestStar(bigStars, mouseX, mouseY, BIG_STAR_MAX_SIZE / 2f + STAR_HIT_PADDING, null);
+    nearest = nearestStar(stars, mouseX, mouseY, STAR_MAX_SIZE / 2f + STAR_HIT_PADDING, nearest);
+    return Optional.ofNullable(nearest).map(Visible::node);
+  }
+
+  public Optional<HoveredNode> hoveredNode(double mouseX, double mouseY) {
+    if (!inViewport(mouseX, mouseY)) {
+      return Optional.empty();
+    }
+    return Optional
+        .ofNullable(visibleNodeAt(mouseX, mouseY))
+        .map(v -> new HoveredNode(v.node(), screenX(v.worldX()), screenY(v.worldY()), sizePx(v.depth()), focusSizePx));
+  }
+
+  private boolean inViewport(double mouseX, double mouseY) {
+    return mouseX >= vx0 && mouseX <= vx1 && mouseY >= vy0 && mouseY <= vy1;
+  }
+
+  private Visible visibleNodeAt(double mouseX, double mouseY) {
     for (int i = visible.size() - 1; i >= 0; i--) {
       Visible v = visible.get(i);
       float sizePx = sizePx(v.depth());
@@ -177,12 +210,10 @@ public final class CrystalBallRenderer {
       }
       float half = sizePx / 2;
       if (Math.abs(mouseX - screenX(v.worldX())) <= half && Math.abs(mouseY - screenY(v.worldY())) <= half) {
-        return Optional.of(v.node());
+        return v;
       }
     }
-    Visible nearest = nearestStar(bigStars, mouseX, mouseY, BIG_STAR_MAX_SIZE / 2f + STAR_HIT_PADDING, null);
-    nearest = nearestStar(stars, mouseX, mouseY, STAR_MAX_SIZE / 2f + STAR_HIT_PADDING, nearest);
-    return Optional.ofNullable(nearest).map(Visible::node);
+    return null;
   }
 
   private Visible nearestStar(List<Visible> candidates, double mouseX, double mouseY, float radius, Visible best) {
@@ -601,12 +632,7 @@ public final class CrystalBallRenderer {
     float ly = (float) localY(v.worldY());
 
     CrystalBallNodeState state = states.stateOf(v.node());
-    Identifier sprite = switch (state) {
-      case ROOT -> FRAME_ROOT;
-      case UNKNOWN -> FRAME_UNKNOWN;
-      case EXPLORED -> FRAME_EXPLORED;
-      case SPELL -> FRAME_SPELL;
-    };
+    Identifier sprite = frameSprite(state);
     int alpha = alpha255(fade);
     var pose = graphics.pose();
     pose.pushMatrix();
@@ -619,6 +645,15 @@ public final class CrystalBallRenderer {
     } else if ((state == CrystalBallNodeState.SPELL || state == CrystalBallNodeState.ROOT) && sizePx >= 10 && fade >= 0.25f) {
       states.iconOf(v.node()).ifPresent(icon -> drawIcon(icon, lx, ly, sizePx, alpha));
     }
+  }
+
+  static Identifier frameSprite(CrystalBallNodeState state) {
+    return switch (state) {
+      case ROOT -> FRAME_ROOT;
+      case UNKNOWN -> FRAME_UNKNOWN;
+      case EXPLORED -> FRAME_EXPLORED;
+      case SPELL -> FRAME_SPELL;
+    };
   }
 
   private void drawQuestionMark(Font font, float lx, float ly, float sizePx, int alpha) {

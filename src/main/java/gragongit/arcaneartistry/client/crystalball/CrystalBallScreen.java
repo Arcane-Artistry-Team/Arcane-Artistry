@@ -1,13 +1,16 @@
 package gragongit.arcaneartistry.client.crystalball;
 
+import java.util.Optional;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import gragongit.arcaneartistry.common.api.CastPattern;
+import gragongit.arcaneartistry.common.crystalball.CrystalBallEntry;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 
 public class CrystalBallScreen extends Screen {
   private static final int MARGIN = 16;
@@ -24,9 +27,14 @@ public class CrystalBallScreen extends Screen {
   private static final double PAN_MARGIN = 24;
   private static final double STAGGER_MIN_DEPTHS = 1.01;
 
+  private static final float HOVER_FADE_IN = 0.06f;
+  private static final float HOVER_FADE_OUT = 0.12f;
+  private static final float HOVER_MAX_FADE = 0.3f;
+
   private final CrystalBallNode root = CrystalBallNode.createRoot();
   private final CrystalBallCamera camera = new CrystalBallCamera();
   private final CrystalBallRenderer renderer;
+  private final CrystalBallNodeHover hover = new CrystalBallNodeHover();
   private final int maxDepth;
   private final double backgroundRadius;
   private final CrystalBallRenderer.NodeStateProvider states;
@@ -36,6 +44,8 @@ public class CrystalBallScreen extends Screen {
   private boolean initialized;
   private boolean clickPending;
   private double clickDragDistance;
+  private boolean hovering;
+  private float hoverFade;
 
   public CrystalBallScreen(CrystalBallRenderer.NodeStateProvider states, int maxDepth) {
     super(Component.translatable("screen.arcane_artistry.crystal_ball"));
@@ -89,7 +99,34 @@ public class CrystalBallScreen extends Screen {
     if (renderer.nodeAt(mouseX, mouseY).isPresent()) {
       graphics.requestCursor(CursorTypes.POINTING_HAND);
     }
+    Optional<CrystalBallRenderer.HoveredNode> hovered = camera.isFlying() ? Optional.empty()
+        : renderer.hoveredNode(mouseX, mouseY).filter(node -> entryOf(node).isPresent());
+    hovering = hovered.isPresent();
+    if (hoverFade > 0) {
+      graphics.fill(x0, y0, x1, y1, Mth.floor(hoverFade * 255) << 24);
+    }
     super.extractRenderState(graphics, mouseX, mouseY, delta);
+    hovered.ifPresent(node -> {
+      graphics.nextStratum();
+      hover.extract(graphics, this.font, entryOf(node).orElseThrow(), states.stateOf(node.node()), node, y1, this.width);
+    });
+  }
+
+  private Optional<CrystalBallEntry> entryOf(CrystalBallRenderer.HoveredNode node) {
+    CrystalBallNodeState state = states.stateOf(node.node());
+    if (state != CrystalBallNodeState.ROOT && state != CrystalBallNodeState.SPELL) {
+      return Optional.empty();
+    }
+    return states.entryOf(node.node());
+  }
+
+  @Override
+  public void tick() {
+    if (hovering) {
+      hoverFade = Math.clamp(hoverFade + HOVER_FADE_IN, 0, HOVER_MAX_FADE);
+    } else {
+      hoverFade = Math.clamp(hoverFade - HOVER_FADE_OUT, 0, 1);
+    }
   }
 
   @Override

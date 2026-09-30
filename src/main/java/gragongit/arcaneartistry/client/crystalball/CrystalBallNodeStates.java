@@ -51,10 +51,6 @@ public final class CrystalBallNodeStates implements CrystalBallRenderer.NodeStat
   }
 
   @Override
-  public Optional<Identifier> iconOf(CrystalBallNode node) {
-    return entryOf(node).map(CrystalBallEntry::icon);
-  }
-
   public Optional<CrystalBallEntry> entryOf(CrystalBallNode node) {
     if (node.isRoot()) {
       return Optional.of(rootEntry);
