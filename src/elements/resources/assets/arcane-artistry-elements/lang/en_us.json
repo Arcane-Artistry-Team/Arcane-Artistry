@@ -1,0 +1,10 @@
+{
+  "staff_type.arcane-artistry-elements.fire": "Fire",
+  "staff_type.arcane-artistry-elements.fire.description": "Channels the raw heat of the inferno.",
+  "staff_type.arcane-artistry-elements.water": "Water",
+  "staff_type.arcane-artistry-elements.water.description": "Draws on the depths of the tides.",
+  "spell.arcane-artistry-elements.fireball": "Fireball",
+  "spell.arcane-artistry-elements.fireball.description": "Hurls an explosive ball of fire.",
+  "spell.arcane-artistry-elements.waterbomb": "Waterbomb",
+  "spell.arcane-artistry-elements.waterbomb.description": "Launches a bursting orb of water."
+}

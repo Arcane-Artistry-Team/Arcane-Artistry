@@ -4,18 +4,19 @@ import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import gragongit.arcaneartistry.client.crystalball.CrystalBallNodeStates.CrystalBallEntry;
 import gragongit.arcaneartistry.common.api.CastPattern;
+import gragongit.arcaneartistry.common.crystalball.CrystalBallEntry;
 import gragongit.arcaneartistry.common.registry.ModRegistries;
 import gragongit.arcaneartistry.common.staff.StaffType;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.codec.RegistryFileCodec;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.ExtraCodecs;
 
-public record Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffect effect, int manaCost, CrystalBallEntry crystalBall,
+public record Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffect effect, int manaCost, CrystalBallEntry crystalBallEntry,
     Optional<Holder<SoundEvent>> castSound) {
 
   public static Builder builder() {
@@ -36,7 +37,7 @@ public record Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffec
                   .forGetter(Spell::staffType),
               CastPattern.CODEC.fieldOf("pattern").forGetter(Spell::pattern), EFFECT_CODEC.fieldOf("effect").forGetter(Spell::effect),
               ExtraCodecs.NON_NEGATIVE_INT.fieldOf("mana_cost").forGetter(Spell::manaCost),
-              CrystalBallEntry.CODEC.fieldOf("crystal_ball").forGetter(Spell::crystalBall),
+              CrystalBallEntry.CODEC.fieldOf("crystal_ball").forGetter(Spell::crystalBallEntry),
               SoundEvent.CODEC.optionalFieldOf("cast_sound").forGetter(Spell::castSound))
           .apply(instance, Spell::new));
 
@@ -46,6 +47,8 @@ public record Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffec
     private @Nullable SpellEffect effect;
     private @Nullable Integer manaCost;
     private @Nullable Identifier icon;
+    private @Nullable Component title;
+    private @Nullable Component description;
     private @Nullable Holder<SoundEvent> castSound;
 
     private Builder() {}
@@ -75,6 +78,16 @@ public record Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffec
       return this;
     }
 
+    public Builder title(Component title) {
+      this.title = title;
+      return this;
+    }
+
+    public Builder description(Component description) {
+      this.description = description;
+      return this;
+    }
+
     public Builder castSound(SoundEvent castSound) {
       this.castSound = BuiltInRegistries.SOUND_EVENT.wrapAsHolder(castSound);
       return this;
@@ -82,7 +95,9 @@ public record Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffec
 
     public Spell build() {
       return new Spell(required(staffType, "staffType"), required(pattern, "pattern"), required(effect, "effect"),
-          required(manaCost, "manaCost"), new CrystalBallEntry(required(icon, "icon")), Optional.ofNullable(castSound));
+          required(manaCost, "manaCost"),
+          new CrystalBallEntry(required(icon, "icon"), required(title, "title"), Optional.ofNullable(description)),
+          Optional.ofNullable(castSound));
     }
 
     private static <T> T required(@Nullable T value, String name) {

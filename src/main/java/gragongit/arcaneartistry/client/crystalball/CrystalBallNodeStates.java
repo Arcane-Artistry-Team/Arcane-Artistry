@@ -4,41 +4,45 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gragongit.arcaneartistry.common.api.CastPattern;
+import gragongit.arcaneartistry.common.crystalball.CrystalBallEntry;
+import gragongit.arcaneartistry.common.crystalball.CrystalBallTheme;
 import gragongit.arcaneartistry.common.spell.Spell;
 import gragongit.arcaneartistry.common.spell.SpellsByStaffType;
 import gragongit.arcaneartistry.common.staff.StaffType;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.ExtraCodecs;
 
-public final class CrystalBallNodeStates implements CrystalBallRenderer.CrystalBallNodeStateProvider {
-  private final CrystalBallTheme crystalBall;
+public final class CrystalBallNodeStates implements CrystalBallRenderer.NodeStateProvider {
+  private final CrystalBallTheme theme;
+  private final CrystalBallEntry rootEntry;
   private final Map<CastPattern, Spell> spells;
   private final Set<CastPattern> explored;
   private final Map<CrystalBallNode, CrystalBallNodeState> cache = new IdentityHashMap<>();
 
-  private CrystalBallNodeStates(CrystalBallTheme crystalBall, Map<CastPattern, Spell> spells, Set<CastPattern> explored) {
-    this.crystalBall = crystalBall;
+  private CrystalBallNodeStates(CrystalBallTheme theme, CrystalBallEntry rootEntry, Map<CastPattern, Spell> spells,
+      Set<CastPattern> explored) {
+    this.theme = theme;
+    this.rootEntry = rootEntry;
     this.spells = spells;
     this.explored = explored;
   }
 
   public static CrystalBallNodeStates forStaffType(Registry<Spell> registry, Holder<StaffType> staffType, Set<CastPattern> explored) {
-    return new CrystalBallNodeStates(staffType.value().crystalBall(), SpellsByStaffType.of(registry).forStaffType(staffType), explored);
+    StaffType type = staffType.value();
+    return new CrystalBallNodeStates(type.crystalBallTheme(), type.crystalBallEntry(),
+        SpellsByStaffType.of(registry).forStaffType(staffType), explored);
   }
 
   @Override
   public int connectionColor() {
-    return crystalBall.connectionColor();
+    return theme.connectionColor();
   }
 
   @Override
   public Optional<Identifier> backgroundShader() {
-    return crystalBall.background();
+    return theme.background();
   }
 
   @Override
@@ -48,10 +52,14 @@ public final class CrystalBallNodeStates implements CrystalBallRenderer.CrystalB
 
   @Override
   public Optional<Identifier> iconOf(CrystalBallNode node) {
+    return entryOf(node).map(CrystalBallEntry::icon);
+  }
+
+  public Optional<CrystalBallEntry> entryOf(CrystalBallNode node) {
     if (node.isRoot()) {
-      return Optional.of(crystalBall.icon());
+      return Optional.of(rootEntry);
     }
-    return spellAt(node).map(spell -> spell.crystalBall().icon());
+    return spellAt(node).map(Spell::crystalBallEntry);
   }
 
   private CrystalBallNodeState compute(CrystalBallNode node) {
@@ -67,26 +75,5 @@ public final class CrystalBallNodeStates implements CrystalBallRenderer.CrystalB
 
   public Optional<Spell> spellAt(CrystalBallNode node) {
     return Optional.ofNullable(spells.get(node.path()));
-  }
-
-  public record CrystalBallTheme(int connectionColor, Optional<Identifier> background, Identifier icon) {
-    public static final int DEFAULT_CONNECTION_COLOR = 0xC0C0C0;
-
-    public static final Codec<CrystalBallTheme> CODEC = RecordCodecBuilder
-        .create(instance -> instance
-            .group(
-                ExtraCodecs.STRING_RGB_COLOR
-                    .optionalFieldOf("connection_color", DEFAULT_CONNECTION_COLOR)
-                    .forGetter(CrystalBallTheme::connectionColor),
-                Identifier.CODEC.optionalFieldOf("background").forGetter(CrystalBallTheme::background),
-                Identifier.CODEC.fieldOf("icon").forGetter(CrystalBallTheme::icon))
-            .apply(instance, CrystalBallTheme::new));
-  }
-
-  public record CrystalBallEntry(Identifier icon) {
-    public static final Codec<CrystalBallEntry> CODEC = RecordCodecBuilder
-        .create(instance -> instance
-            .group(Identifier.CODEC.fieldOf("icon").forGetter(CrystalBallEntry::icon))
-            .apply(instance, CrystalBallEntry::new));
   }
 }

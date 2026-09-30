@@ -17,7 +17,7 @@ import net.minecraft.world.phys.Vec2;
 
 public final class CrystalBallRenderer {
 
-  public interface CrystalBallNodeStateProvider {
+  public interface NodeStateProvider {
     CrystalBallNodeState stateOf(CrystalBallNode node);
 
     int connectionColor();
@@ -95,7 +95,7 @@ public final class CrystalBallRenderer {
   private double anchorZoom = Double.NaN;
 
   private GuiGraphicsExtractor graphics;
-  private CrystalBallNodeStateProvider states;
+  private NodeStateProvider states;
   private int vx0, vy0, vx1, vy1;
   private double zoom;
   private float centerX, centerY;
@@ -108,8 +108,8 @@ public final class CrystalBallRenderer {
     this.maxDepth = maxDepth;
   }
 
-  public void render(GuiGraphicsExtractor graphics, Font font, CrystalBallNode root, CrystalBallCamera camera,
-      CrystalBallNodeStateProvider states, int x0, int y0, int x1, int y1) {
+  public void render(GuiGraphicsExtractor graphics, Font font, CrystalBallNode root, CrystalBallCamera camera, NodeStateProvider states,
+      int x0, int y0, int x1, int y1) {
     this.graphics = graphics;
     this.states = states;
     this.vx0 = x0;

@@ -1,7 +1,13 @@
 {
   "cast_sound": "minecraft:entity.firework_rocket.large_blast",
   "crystal_ball": {
-    "icon": "minecraft:textures/item/fire_charge.png"
+    "description": {
+      "translate": "spell.arcane-artistry-elements.fireball.description"
+    },
+    "icon": "minecraft:textures/item/fire_charge.png",
+    "title": {
+      "translate": "spell.arcane-artistry-elements.fireball"
+    }
   },
   "effect": {
     "type": "arcane-artistry-elements:fireball",
