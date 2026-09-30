@@ -1,10 +1,12 @@
 {
   "cast_sound": "minecraft:entity.firework_rocket.large_blast",
+  "crystal_ball": {
+    "icon": "minecraft:textures/item/fire_charge.png"
+  },
   "effect": {
     "type": "arcane-artistry-elements:fireball",
     "power": 3
   },
-  "icon": "minecraft:textures/item/fire_charge.png",
   "mana_cost": 30,
   "pattern": [
     "up",

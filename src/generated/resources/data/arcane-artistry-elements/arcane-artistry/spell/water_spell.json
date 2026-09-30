@@ -1,10 +1,12 @@
 {
   "cast_sound": "minecraft:entity.player.splash",
+  "crystal_ball": {
+    "icon": "minecraft:textures/item/nether_star.png"
+  },
   "effect": {
     "type": "arcane-artistry-elements:fireball",
     "power": 1
   },
-  "icon": "minecraft:textures/item/nether_star.png",
   "mana_cost": 15,
   "pattern": [
     "left",

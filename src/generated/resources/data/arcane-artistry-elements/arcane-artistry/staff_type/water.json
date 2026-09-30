@@ -1,8 +1,10 @@
 {
-  "connection_color": "#2a78c8",
-  "crystal_ball_background": "arcane-artistry-elements:crystal_ball/tidal_galaxy",
+  "crystal_ball": {
+    "background": "arcane-artistry-elements:crystal_ball/tidal_galaxy",
+    "connection_color": "#2a78c8",
+    "icon": "minecraft:textures/item/heart_of_the_sea.png"
+  },
   "fail_sound": "minecraft:block.fire.extinguish",
-  "icon": "minecraft:textures/item/heart_of_the_sea.png",
   "no_mana_sound": "minecraft:entity.player.swim",
   "stroke_sound": "minecraft:block.pointed_dripstone.drip_water"
 }

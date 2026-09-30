@@ -4,6 +4,7 @@ import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import gragongit.arcaneartistry.client.crystalball.CrystalBallNodeStates.CrystalBallTheme;
 import gragongit.arcaneartistry.common.registry.ModRegistries;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -12,12 +13,9 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.util.ExtraCodecs;
 
-public record StaffType(Identifier icon, Optional<Holder<SoundEvent>> strokeSound, Optional<Holder<SoundEvent>> failSound,
-    Optional<Holder<SoundEvent>> noManaSound, int connectionColor, Optional<Identifier> crystalBallBackground) {
-
-  public static final int DEFAULT_CONNECTION_COLOR = 0xC0C0C0;
+public record StaffType(Optional<Holder<SoundEvent>> strokeSound, Optional<Holder<SoundEvent>> failSound,
+    Optional<Holder<SoundEvent>> noManaSound, CrystalBallTheme crystalBall) {
 
   public static Builder builder(Identifier icon) {
     return new Builder(icon);
@@ -29,12 +27,10 @@ public record StaffType(Identifier icon, Optional<Holder<SoundEvent>> strokeSoun
 
   public static final Codec<StaffType> CODEC = RecordCodecBuilder
       .create(instance -> instance
-          .group(Identifier.CODEC.fieldOf("icon").forGetter(StaffType::icon),
-              SoundEvent.CODEC.optionalFieldOf("stroke_sound").forGetter(StaffType::strokeSound),
+          .group(SoundEvent.CODEC.optionalFieldOf("stroke_sound").forGetter(StaffType::strokeSound),
               SoundEvent.CODEC.optionalFieldOf("fail_sound").forGetter(StaffType::failSound),
               SoundEvent.CODEC.optionalFieldOf("no_mana_sound").forGetter(StaffType::noManaSound),
-              ExtraCodecs.STRING_RGB_COLOR.optionalFieldOf("connection_color", DEFAULT_CONNECTION_COLOR).forGetter(StaffType::connectionColor),
-              Identifier.CODEC.optionalFieldOf("crystal_ball_background").forGetter(StaffType::crystalBallBackground))
+              CrystalBallTheme.CODEC.fieldOf("crystal_ball").forGetter(StaffType::crystalBall))
           .apply(instance, StaffType::new));
 
   public static final StreamCodec<RegistryFriendlyByteBuf, Holder<StaffType>> STREAM_CODEC =
@@ -45,7 +41,7 @@ public record StaffType(Identifier icon, Optional<Holder<SoundEvent>> strokeSoun
     private @Nullable Holder<SoundEvent> strokeSound;
     private @Nullable Holder<SoundEvent> failSound;
     private @Nullable Holder<SoundEvent> noManaSound;
-    private int connectionColor = DEFAULT_CONNECTION_COLOR;
+    private int connectionColor = CrystalBallTheme.DEFAULT_CONNECTION_COLOR;
     private @Nullable Identifier crystalBallBackground;
 
     private Builder(Identifier icon) {
@@ -78,8 +74,8 @@ public record StaffType(Identifier icon, Optional<Holder<SoundEvent>> strokeSoun
     }
 
     public StaffType build() {
-      return new StaffType(icon, Optional.ofNullable(strokeSound), Optional.ofNullable(failSound), Optional.ofNullable(noManaSound),
-          connectionColor, Optional.ofNullable(crystalBallBackground));
+      return new StaffType(Optional.ofNullable(strokeSound), Optional.ofNullable(failSound), Optional.ofNullable(noManaSound),
+          new CrystalBallTheme(connectionColor, Optional.ofNullable(crystalBallBackground), icon));
     }
   }
 }
