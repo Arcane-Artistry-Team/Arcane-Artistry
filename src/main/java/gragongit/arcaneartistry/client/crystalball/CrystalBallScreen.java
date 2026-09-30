@@ -13,7 +13,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
 public class CrystalBallScreen extends Screen {
-  private static final int MARGIN = 16;
   private static final int HOME_BUTTON_WIDTH = 50;
   private static final int HOME_BUTTON_HEIGHT = 20;
   private static final int BUTTON_PADDING = 4;
@@ -57,17 +56,17 @@ public class CrystalBallScreen extends Screen {
 
   @Override
   protected void init() {
-    rootFocusZoom = CrystalBallRenderer.focusZoom(0, viewWidth(), viewHeight());
-    deepestFocusZoom = CrystalBallRenderer.focusZoom(maxDepth, viewWidth(), viewHeight());
+    rootFocusZoom = CrystalBallRenderer.focusZoom(0, this.width, this.height);
+    deepestFocusZoom = CrystalBallRenderer.focusZoom(maxDepth, this.width, this.height);
     camera.setZoomRange(rootFocusZoom, deepestFocusZoom);
-    camera.setFocusBounds((x, y, zoom) -> CrystalBallRenderer.clampFocus(x, y, zoom, maxDepth, viewWidth(), viewHeight(), PAN_MARGIN));
+    camera.setFocusBounds((x, y, zoom) -> CrystalBallRenderer.clampFocus(x, y, zoom, maxDepth, this.width, this.height, PAN_MARGIN));
     if (!initialized) {
       initialized = true;
       camera.jumpTo(0, 0, rootFocusZoom / Math.pow(CrystalBallRenderer.depthZoomFactor(), INTRO_DEPTHS));
       focus(CastPattern.empty(), INTRO_SECONDS);
     }
-    int x = this.width - MARGIN - BUTTON_PADDING - HOME_BUTTON_WIDTH;
-    int y = this.height - MARGIN - BUTTON_PADDING - HOME_BUTTON_HEIGHT;
+    int x = this.width - BUTTON_PADDING - HOME_BUTTON_WIDTH;
+    int y = this.height - BUTTON_PADDING - HOME_BUTTON_HEIGHT;
     addRenderableWidget(Button
         .builder(Component.translatable("screen.arcane_artistry.crystal_ball.home"), button -> focus(CastPattern.empty(), 1f))
         .bounds(x, y, HOME_BUTTON_WIDTH, HOME_BUTTON_HEIGHT)
@@ -76,7 +75,7 @@ public class CrystalBallScreen extends Screen {
 
   public void focus(CastPattern pattern, float seconds) {
     CrystalBallRenderer.WorldPosition target = CrystalBallRenderer.worldPositionOf(pattern);
-    double zoom = CrystalBallRenderer.focusZoom(pattern.size(), viewWidth(), viewHeight());
+    double zoom = CrystalBallRenderer.focusZoom(pattern.size(), this.width, this.height);
     boolean staggered = CrystalBallRenderer.depthsBetween(camera.zoom(), zoom) > STAGGER_MIN_DEPTHS;
     camera.flyTo(target.x(), target.y(), zoom, seconds, staggered);
   }
@@ -84,10 +83,10 @@ public class CrystalBallScreen extends Screen {
   @Override
   public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
     camera.update();
-    int x0 = MARGIN;
-    int y0 = MARGIN;
-    int x1 = this.width - MARGIN;
-    int y1 = this.height - MARGIN;
+    int x0 = 0;
+    int y0 = 0;
+    int x1 = this.width;
+    int y1 = this.height;
     double backgroundZoom = CrystalBallBackground.parallaxZoom(camera.zoom(), rootFocusZoom, deepestFocusZoom);
     double backgroundPan = backgroundZoom / camera.zoom();
     double rootX = (x0 + x1) / 2.0 + camera.panX() * backgroundPan;
@@ -169,17 +168,9 @@ public class CrystalBallScreen extends Screen {
     if (camera.isFlying()) {
       return true;
     }
-    double targetZoom = CrystalBallRenderer.steppedZoom(camera.zoom(), scrollY, viewWidth(), viewHeight());
+    double targetZoom = CrystalBallRenderer.steppedZoom(camera.zoom(), scrollY, this.width, this.height);
     camera.zoomAt(mouseX - this.width / 2, mouseY - this.height / 2, targetZoom / camera.zoom());
     return true;
-  }
-
-  private int viewWidth() {
-    return this.width - 2 * MARGIN;
-  }
-
-  private int viewHeight() {
-    return this.height - 2 * MARGIN;
   }
 
   @Override
