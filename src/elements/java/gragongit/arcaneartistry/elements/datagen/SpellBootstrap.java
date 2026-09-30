@@ -1,6 +1,5 @@
 package gragongit.arcaneartistry.elements.datagen;
 
-import gragongit.arcaneartistry.client.crystalball.CrystalBallNodeStates.CrystalBallEntry;
 import gragongit.arcaneartistry.common.api.CastPattern;
 import gragongit.arcaneartistry.common.registry.ModRegistries;
 import gragongit.arcaneartistry.common.spell.Spell;
@@ -15,21 +14,29 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvents;
 
 public final class SpellBootstrap {
-  private static final int FIREBALL_MANA_COST = 30;
-  private static final int WATER_MANA_COST = 15;
-
   static void bootstrapSpells(BootstrapContext<Spell> context) {
     HolderGetter<StaffType> staffTypes = context.lookup(ModRegistries.STAFF_TYPE_KEY);
-    registerSpell(context, "fireball_spell",
-        new Spell(staffTypes, StaffTypes.FIRE_KEY, CastPattern.of("UD"), new FireballEffect(3), FIREBALL_MANA_COST,
-            new CrystalBallEntry(Identifier.withDefaultNamespace("textures/item/fire_charge.png")),
-            SoundEvents.FIREWORK_ROCKET_LARGE_BLAST));
-    registerSpell(context, "water_spell",
-        new Spell(staffTypes, StaffTypes.WATER_KEY, CastPattern.of("LR"), new FireballEffect(1), WATER_MANA_COST,
-            new CrystalBallEntry(Identifier.withDefaultNamespace("textures/item/nether_star.png")), SoundEvents.PLAYER_SPLASH));
+    registerSpell(context, "fireball",
+        Spell
+            .builder()
+            .staffType(staffTypes.getOrThrow(StaffTypes.FIRE_KEY))
+            .pattern(CastPattern.of("UD"))
+            .effect(new FireballEffect(3))
+            .manaCost(30)
+            .icon(Identifier.withDefaultNamespace("textures/item/fire_charge.png"))
+            .castSound(SoundEvents.FIREWORK_ROCKET_LARGE_BLAST));
+    registerSpell(context, "waterbomb",
+        Spell
+            .builder()
+            .staffType(staffTypes.getOrThrow(StaffTypes.WATER_KEY))
+            .pattern(CastPattern.of("LR"))
+            .effect(new FireballEffect(1))
+            .manaCost(15)
+            .icon(Identifier.withDefaultNamespace("textures/item/nether_star.png"))
+            .castSound(SoundEvents.PLAYER_SPLASH));
   }
 
-  private static void registerSpell(BootstrapContext<Spell> context, String spellId, Spell spell) {
-    context.register(ResourceKey.create(ModRegistries.SPELL_KEY, ArcaneArtistryElements.id(spellId)), spell);
+  private static void registerSpell(BootstrapContext<Spell> context, String spellId, Spell.Builder spell) {
+    context.register(ResourceKey.create(ModRegistries.SPELL_KEY, ArcaneArtistryElements.id(spellId)), spell.build());
   }
 }

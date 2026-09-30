@@ -17,8 +17,8 @@ import net.minecraft.sounds.SoundEvent;
 public record StaffType(Optional<Holder<SoundEvent>> strokeSound, Optional<Holder<SoundEvent>> failSound,
     Optional<Holder<SoundEvent>> noManaSound, CrystalBallTheme crystalBall) {
 
-  public static Builder builder(Identifier icon) {
-    return new Builder(icon);
+  public static Builder builder() {
+    return new Builder();
   }
 
   public Optional<Holder<SoundEvent>> noManaSoundOrFail() {
@@ -37,15 +37,18 @@ public record StaffType(Optional<Holder<SoundEvent>> strokeSound, Optional<Holde
       ByteBufCodecs.holderRegistry(ModRegistries.STAFF_TYPE_KEY);
 
   public static final class Builder {
-    private final Identifier icon;
+    private @Nullable Identifier icon;
     private @Nullable Holder<SoundEvent> strokeSound;
     private @Nullable Holder<SoundEvent> failSound;
     private @Nullable Holder<SoundEvent> noManaSound;
     private int connectionColor = CrystalBallTheme.DEFAULT_CONNECTION_COLOR;
     private @Nullable Identifier crystalBallBackground;
 
-    private Builder(Identifier icon) {
+    private Builder() {}
+
+    public Builder icon(Identifier icon) {
       this.icon = icon;
+      return this;
     }
 
     public Builder strokeSound(SoundEvent strokeSound) {
@@ -75,7 +78,14 @@ public record StaffType(Optional<Holder<SoundEvent>> strokeSound, Optional<Holde
 
     public StaffType build() {
       return new StaffType(Optional.ofNullable(strokeSound), Optional.ofNullable(failSound), Optional.ofNullable(noManaSound),
-          new CrystalBallTheme(connectionColor, Optional.ofNullable(crystalBallBackground), icon));
+          new CrystalBallTheme(connectionColor, Optional.ofNullable(crystalBallBackground), required(icon, "icon")));
+    }
+
+    private static <T> T required(@Nullable T value, String name) {
+      if (value == null) {
+        throw new IllegalStateException("Missing required field '" + name + "'");
+      }
+      return value;
     }
   }
 }

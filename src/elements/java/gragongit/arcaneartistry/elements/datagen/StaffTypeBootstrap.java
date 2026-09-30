@@ -12,7 +12,8 @@ public final class StaffTypeBootstrap {
     context
         .register(StaffTypes.FIRE_KEY,
             StaffType
-                .builder(Identifier.withDefaultNamespace("textures/item/blaze_powder.png"))
+                .builder()
+                .icon(Identifier.withDefaultNamespace("textures/item/blaze_powder.png"))
                 .strokeSound(SoundEvents.FIRECHARGE_USE)
                 .failSound(SoundEvents.FIRE_EXTINGUISH)
                 .noManaSound(SoundEvents.FURNACE_FIRE_CRACKLE)
@@ -22,7 +23,8 @@ public final class StaffTypeBootstrap {
     context
         .register(StaffTypes.WATER_KEY,
             StaffType
-                .builder(Identifier.withDefaultNamespace("textures/item/heart_of_the_sea.png"))
+                .builder()
+                .icon(Identifier.withDefaultNamespace("textures/item/heart_of_the_sea.png"))
                 .strokeSound(SoundEvents.POINTED_DRIPSTONE_DRIP_WATER)
                 .failSound(SoundEvents.FIRE_EXTINGUISH)
                 .noManaSound(SoundEvents.PLAYER_SWIM)
