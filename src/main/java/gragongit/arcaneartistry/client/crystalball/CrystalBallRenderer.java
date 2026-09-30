@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import gragongit.arcaneartistry.common.api.CastPattern;
 import gragongit.arcaneartistry.common.staff.StaffDirection;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -35,7 +37,11 @@ public final class CrystalBallRenderer {
   private record Visible(CrystalBallNode node, double worldX, double worldY, int depth) {
   }
 
+  private record Edge(float ax, float ay, float bx, float by, int parentDepth, float fade) {
+  }
+
   private static final int QUESTION_MARK = 0xA0A0A0;
+  private static final int OUTLINE_COLOR = 0x000000;
   private static final float COORD_LIMIT = 1_000_000f;
 
   private static final int CONNECTION_WIDTH = 2;
@@ -54,6 +60,7 @@ public final class CrystalBallRenderer {
   private static final int BIG_STAR_MAX_SIZE = 9;
   private static final float SPARKLE_CHANCE = 0.5f;
   private static final float STAR_HIT_PADDING = 2;
+  private static final int[][][] STAR_OUTLINES = starOutlines();
 
   private static final Identifier FRAME_ROOT = Identifier.withDefaultNamespace("advancements/goal_frame_obtained");
   private static final Identifier FRAME_UNKNOWN = Identifier.withDefaultNamespace("advancements/task_frame_unobtained");
@@ -79,6 +86,7 @@ public final class CrystalBallRenderer {
 
   private final int maxDepth;
   private final List<Visible> visible = new ArrayList<>();
+  private final List<Edge> edges = new ArrayList<>();
   private final List<Visible> bigStars = new ArrayList<>();
   private final List<Visible> stars = new ArrayList<>();
 
@@ -130,6 +138,7 @@ public final class CrystalBallRenderer {
     this.pulseHeadColor = ARGB.opaque(brighter(connectionColor, PULSE_HEAD_SATURATION));
 
     visible.clear();
+    edges.clear();
     bigStars.clear();
     stars.clear();
     graphics.enableScissor(x0, y0, x1, y1);
@@ -138,15 +147,17 @@ public final class CrystalBallRenderer {
     pose.pushMatrix();
     pose.translate((float) offsetX, (float) offsetY);
     collect(root, 0, 0, 0);
+    for (Edge e : edges) {
+      drawConnection(e, true);
+    }
+    for (Edge e : edges) {
+      drawConnection(e, false);
+    }
     for (Visible v : visible) {
       drawNode(font, v);
     }
-    for (Visible v : bigStars) {
-      drawStar(v, BIG_STAR_MIN_SIZE, BIG_STAR_MAX_SIZE, true);
-    }
-    for (Visible v : stars) {
-      drawStar(v, STAR_MIN_SIZE, STAR_MAX_SIZE, false);
-    }
+    drawStars(true);
+    drawStars(false);
     pose.popMatrix();
     graphics.disableScissor();
 
@@ -432,10 +443,15 @@ public final class CrystalBallRenderer {
     float bx = (float) localX(childWorldX) + rx * laneEnd * sideEnd;
     float by = (float) localY(childWorldY) + ry * laneEnd * sideEnd;
 
-    drawConnection(ax, ay, bx, by, parentDepth, v);
+    edges.add(new Edge(ax, ay, bx, by, parentDepth, v));
   }
 
-  private void drawConnection(float ax, float ay, float bx, float by, int parentDepth, float fade) {
+  private void drawConnection(Edge edge, boolean outline) {
+    float ax = edge.ax();
+    float ay = edge.ay();
+    float bx = edge.bx();
+    float by = edge.by();
+    float fade = edge.fade();
     float dx = bx - ax;
     float dy = by - ay;
     float len = Mth.sqrt(dx * dx + dy * dy);
@@ -459,9 +475,11 @@ public final class CrystalBallRenderer {
     }
 
     float tail = Math.max(PULSE_MIN_TAIL, len * PULSE_TAIL);
-    float firstHead = (float) (Mth.positiveModulo(time - parentDepth * PULSE_EDGE_DURATION, PULSE_INTERVAL) / PULSE_EDGE_DURATION * len);
+    float firstHead =
+        (float) (Mth.positiveModulo(time - edge.parentDepth() * PULSE_EDGE_DURATION, PULSE_INTERVAL) / PULSE_EDGE_DURATION * len);
     float headSpacing = (float) (PULSE_INTERVAL / PULSE_EDGE_DURATION * len);
     int alpha = alpha255(fade);
+    int outlineColor = ARGB.color(alpha, OUTLINE_COLOR);
 
     int runStart = us;
     int runV = 0;
@@ -470,25 +488,40 @@ public final class CrystalBallRenderer {
       int v = 0;
       int color = 0;
       if (u < ue) {
-        float along = (u + 0.5f - ua) * alongPerU;
-        float behind = behindPulse(along, firstHead, headSpacing);
         v = connectionV(va, slope, ua, u);
-        color = ARGB.color(alpha, pulseColor(behind, tail));
-        if (behind < tail * PULSE_HALO) {
-          int halo = ARGB.color(alpha255(fade * pulseAlpha(behind, tail) * PULSE_HALO_ALPHA), pulseColor);
-          emit(steep, u, v - 1, u + 1, v, halo);
-          emit(steep, u, v + CONNECTION_WIDTH, u + 1, v + CONNECTION_WIDTH + 1, halo);
+        if (outline) {
+          color = outlineColor;
+        } else {
+          float along = (u + 0.5f - ua) * alongPerU;
+          float behind = behindPulse(along, firstHead, headSpacing);
+          color = ARGB.color(alpha, pulseColor(behind, tail));
+          if (behind < tail * PULSE_HALO) {
+            int halo = ARGB.color(alpha255(fade * pulseAlpha(behind, tail) * PULSE_HALO_ALPHA), pulseColor);
+            emit(steep, u, v - 1, u + 1, v, halo);
+            emit(steep, u, v + CONNECTION_WIDTH, u + 1, v + CONNECTION_WIDTH + 1, halo);
+          }
         }
       }
       if (u == us) {
         runV = v;
         runColor = color;
       } else if (u == ue || v != runV || color != runColor) {
-        emit(steep, runStart, runV, u, runV + CONNECTION_WIDTH, runColor);
+        if (outline) {
+          emit(steep, runStart, runV - 1, u, runV, runColor);
+          emit(steep, runStart, runV + CONNECTION_WIDTH, u, runV + CONNECTION_WIDTH + 1, runColor);
+        } else {
+          emit(steep, runStart, runV, u, runV + CONNECTION_WIDTH, runColor);
+        }
         runStart = u;
         runV = v;
         runColor = color;
       }
+    }
+    if (outline) {
+      int startV = connectionV(va, slope, ua, us);
+      int endV = connectionV(va, slope, ua, ue - 1);
+      emit(steep, us - 1, startV, us, startV + CONNECTION_WIDTH, outlineColor);
+      emit(steep, ue, endV, ue + 1, endV + CONNECTION_WIDTH, outlineColor);
     }
   }
 
@@ -610,7 +643,16 @@ public final class CrystalBallRenderer {
     pose.popMatrix();
   }
 
-  private void drawStar(Visible v, int minSize, int maxSize, boolean sparkle) {
+  private void drawStars(boolean outline) {
+    for (Visible v : bigStars) {
+      drawStar(v, BIG_STAR_MIN_SIZE, BIG_STAR_MAX_SIZE, true, outline);
+    }
+    for (Visible v : stars) {
+      drawStar(v, STAR_MIN_SIZE, STAR_MAX_SIZE, false, outline);
+    }
+  }
+
+  private void drawStar(Visible v, int minSize, int maxSize, boolean sparkle, boolean outline) {
     double sx = screenX(v.worldX());
     double sy = screenY(v.worldY());
     if (sx < vx0 - maxSize || sx > vx1 + maxSize || sy < vy0 - maxSize || sy > vy1 + maxSize) {
@@ -625,21 +667,89 @@ public final class CrystalBallRenderer {
     float brightness = 0.5f + 0.5f * (float) Math.sin(time * speed + phase);
     int alpha = alpha255(brightness);
     int color = ARGB.color(alpha, 0xFFFFFF);
+    int arm = size / 2;
+    boolean diagonals = sparkle && arm >= 2 && unit(hash >>> 24) < SPARKLE_CHANCE;
 
     var pose = graphics.pose();
     pose.pushMatrix();
     pose.translate((float) localX(v.worldX()), (float) localY(v.worldY()));
-    if (size <= 2) {
+    if (outline) {
+      int outlineColor = ARGB.color(alpha, OUTLINE_COLOR);
+      int[] runs = STAR_OUTLINES[diagonals ? 1 : 0][size];
+      for (int i = 0; i < runs.length; i += 3) {
+        graphics.fill(runs[i], runs[i + 1], runs[i] + runs[i + 2], runs[i + 1] + 1, outlineColor);
+      }
+    } else if (size <= 2) {
       graphics.fill(-size / 2, -size / 2, size - size / 2, size - size / 2, color);
     } else {
-      int arm = size / 2;
       graphics.fill(-arm, 0, arm + 1, 1, color);
       graphics.fill(0, -arm, 1, arm + 1, color);
-      if (sparkle && arm >= 2 && unit(hash >>> 24) < SPARKLE_CHANCE) {
+      if (diagonals) {
         drawDiagonals(arm / 2, ARGB.color(alpha / 2, 0xFFFFFF));
       }
     }
     pose.popMatrix();
+  }
+
+  private static int[][][] starOutlines() {
+    int[][][] outlines = new int[2][BIG_STAR_MAX_SIZE + 1][];
+    for (int size = STAR_MIN_SIZE; size <= BIG_STAR_MAX_SIZE; size++) {
+      outlines[0][size] = starOutline(size, false);
+      outlines[1][size] = starOutline(size, true);
+    }
+    return outlines;
+  }
+
+  private static int[] starOutline(int size, boolean diagonals) {
+    int radius = size / 2 + 2;
+    int side = 2 * radius + 1;
+    boolean[][] filled = new boolean[side][side];
+    if (size <= 2) {
+      for (int y = -size / 2; y < size - size / 2; y++) {
+        for (int x = -size / 2; x < size - size / 2; x++) {
+          filled[radius + y][radius + x] = true;
+        }
+      }
+    } else {
+      int arm = size / 2;
+      for (int i = -arm; i <= arm; i++) {
+        filled[radius][radius + i] = true;
+        filled[radius + i][radius] = true;
+      }
+      if (diagonals) {
+        for (int i = 1; i <= arm / 2; i++) {
+          filled[radius + i][radius + i] = true;
+          filled[radius + i][radius - i] = true;
+          filled[radius - i][radius + i] = true;
+          filled[radius - i][radius - i] = true;
+        }
+      }
+    }
+
+    IntList runs = new IntArrayList();
+    for (int y = 0; y < side; y++) {
+      int runStart = -1;
+      for (int x = 0; x <= side; x++) {
+        boolean outlined = x < side && isStarOutline(filled, x, y);
+        if (outlined && runStart < 0) {
+          runStart = x;
+        } else if (!outlined && runStart >= 0) {
+          runs.add(runStart - radius);
+          runs.add(y - radius);
+          runs.add(x - runStart);
+          runStart = -1;
+        }
+      }
+    }
+    return runs.toIntArray();
+  }
+
+  private static boolean isStarOutline(boolean[][] filled, int x, int y) {
+    int last = filled.length - 1;
+    if (filled[y][x]) {
+      return false;
+    }
+    return x > 0 && filled[y][x - 1] || x < last && filled[y][x + 1] || y > 0 && filled[y - 1][x] || y < last && filled[y + 1][x];
   }
 
   private void drawDiagonals(int arm, int color) {
