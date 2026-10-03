@@ -47,7 +47,7 @@ public class CrystalBallScreen extends Screen {
   private float hoverFade;
 
   public CrystalBallScreen(CrystalBallRenderer.NodeStateProvider states, int maxDepth) {
-    super(Component.translatable("screen.arcane_artistry.crystal_ball"));
+    super(Component.translatable("screen.arcane-artistry.crystal_ball"));
     this.states = states;
     this.maxDepth = maxDepth;
     this.backgroundRadius = CrystalBallRenderer.treeRadius(maxDepth);
@@ -68,7 +68,7 @@ public class CrystalBallScreen extends Screen {
     int x = this.width - BUTTON_PADDING - HOME_BUTTON_WIDTH;
     int y = this.height - BUTTON_PADDING - HOME_BUTTON_HEIGHT;
     addRenderableWidget(Button
-        .builder(Component.translatable("screen.arcane_artistry.crystal_ball.home"), button -> focus(CastPattern.empty(), 1f))
+        .builder(Component.translatable("screen.arcane-artistry.crystal_ball.home"), button -> focus(CastPattern.empty(), 1f))
         .bounds(x, y, HOME_BUTTON_WIDTH, HOME_BUTTON_HEIGHT)
         .build());
   }
@@ -98,8 +98,8 @@ public class CrystalBallScreen extends Screen {
     if (renderer.nodeAt(mouseX, mouseY).isPresent()) {
       graphics.requestCursor(CursorTypes.POINTING_HAND);
     }
-    Optional<CrystalBallRenderer.HoveredNode> hovered = camera.isFlying() ? Optional.empty()
-        : renderer.hoveredNode(mouseX, mouseY).filter(node -> entryOf(node).isPresent());
+    Optional<CrystalBallRenderer.HoveredNode> hovered =
+        camera.isFlying() ? Optional.empty() : renderer.hoveredNode(mouseX, mouseY).filter(node -> entryOf(node).isPresent());
     hovering = hovered.isPresent();
     if (hoverFade > 0) {
       graphics.fill(x0, y0, x1, y1, Mth.floor(hoverFade * 255) << 24);

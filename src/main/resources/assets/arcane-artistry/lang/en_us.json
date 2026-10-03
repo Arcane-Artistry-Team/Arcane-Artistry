@@ -1,6 +1,6 @@
 {
-  "screen.arcane_artistry.crystal_ball": "Crystal Ball",
-  "screen.arcane_artistry.crystal_ball.home": "Home",
+  "screen.arcane-artistry.crystal_ball": "Crystal Ball",
+  "screen.arcane-artistry.crystal_ball.home": "Home",
   "attribute.name.arcane-artistry.max_mana": "Max Mana",
   "options.arcane-artistry.header": "Arcane Artistry",
   "options.arcane-artistry.mana_bar": "Mana Bar",
