@@ -64,10 +64,9 @@ public class OrbRingBlock extends Block implements EntityBlock {
   }
 
   @Override
-  protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction directionToNeighbour,
-      BlockPos neighbourPos, BlockState neighbourState, RandomSource random) {
-    return directionToNeighbour == Direction.DOWN && !state.canSurvive(level, pos)
-        ? Blocks.AIR.defaultBlockState()
+  protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos,
+      Direction directionToNeighbour, BlockPos neighbourPos, BlockState neighbourState, RandomSource random) {
+    return directionToNeighbour == Direction.DOWN && !state.canSurvive(level, pos) ? Blocks.AIR.defaultBlockState()
         : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
   }
 
@@ -95,7 +94,7 @@ public class OrbRingBlock extends Block implements EntityBlock {
 
     if (player instanceof ServerPlayer serverPlayer) {
       level.playSound(null, pos, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS, 1F, 1F);
-      ServerPlayNetworking.send(serverPlayer, new CrystalBallPayload(staff.type(), ArcaneArtistryConfig.maxPatternLength()));
+      ServerPlayNetworking.send(serverPlayer, new CrystalBallPayload(staff.type(), ArcaneArtistryConfig.maxPatternLength(), pos));
     }
     return InteractionResult.SUCCESS;
   }
