@@ -2,7 +2,8 @@
 	"format_version": "26.3",
 	"ambientocclusion": false,
 	"textures": {
-		"texture": "arcane-artistry:block/lapis_crystal"
+		"texture": "arcane-artistry:block/lapis_crystal",
+		"particle": "arcane-artistry:block/lapis_crystal"
 	},
 	"elements": [
 		{

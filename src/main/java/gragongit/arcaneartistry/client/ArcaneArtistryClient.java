@@ -5,6 +5,7 @@ import gragongit.arcaneartistry.client.crystalball.CrystalBallBackground;
 import gragongit.arcaneartistry.client.crystalball.CrystalBallNodeStates;
 import gragongit.arcaneartistry.client.crystalball.CrystalBallScreen;
 import gragongit.arcaneartistry.client.mana.ManaHud;
+import gragongit.arcaneartistry.client.renderer.OrbRingRenderer;
 import gragongit.arcaneartistry.client.staff.StaffInteractionClientHandler;
 import gragongit.arcaneartistry.common.api.CastPattern;
 import gragongit.arcaneartistry.common.crystalball.CrystalBallPayload;
@@ -25,6 +26,7 @@ public class ArcaneArtistryClient implements ClientModInitializer {
     CrystalBallBackground.register();
     ArcaneArtistryClientConfig.load();
     ManaHud.register();
+    OrbRingRenderer.register();
 
     ClientPlayNetworking.registerGlobalReceiver(CrystalBallPayload.TYPE, (payload, context) -> {
       LocalPlayer player = context.player();

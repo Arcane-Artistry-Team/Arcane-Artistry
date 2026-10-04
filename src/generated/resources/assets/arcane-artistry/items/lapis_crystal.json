@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "minecraft:item/nether_star"
+    "model": "arcane-artistry:item/lapis_crystal"
   }
 }

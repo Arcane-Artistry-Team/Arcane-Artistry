@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "minecraft:item/nether_star"
+    "layer0": "minecraft:item/heart_of_the_sea"
   }
 }

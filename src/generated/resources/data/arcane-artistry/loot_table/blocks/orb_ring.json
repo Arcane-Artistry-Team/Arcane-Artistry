@@ -12,6 +12,25 @@
         }
       ],
       "rolls": 1
+    },
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "condition": {
+            "type": "minecraft:match_block",
+            "blocks": "arcane-artistry:orb_ring",
+            "state": {
+              "crystal": "true"
+            }
+          },
+          "name": "arcane-artistry:lapis_crystal"
+        }
+      ],
+      "rolls": 1
     }
   ]
 }

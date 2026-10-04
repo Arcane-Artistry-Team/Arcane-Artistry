@@ -1,6 +1,7 @@
 {
   "attribute.name.arcane-artistry.max_mana": "Max Mana",
   "block.arcane-artistry.orb_ring": "Orb Ring",
+  "item.arcane-artistry.lapis_crystal": "Lapis Crystal",
   "options.arcane-artistry.header": "Arcane Artistry",
   "options.arcane-artistry.mana_bar": "Mana Bar",
   "options.arcane-artistry.mana_bar.bottom_right": "Bottom Right",
