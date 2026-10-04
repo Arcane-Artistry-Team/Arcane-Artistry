@@ -1,13 +1,14 @@
 {
-  "screen.arcane-artistry.crystal_ball": "Crystal Ball",
-  "screen.arcane-artistry.crystal_ball.home": "Home",
   "attribute.name.arcane-artistry.max_mana": "Max Mana",
+  "block.arcane-artistry.orb_ring": "Orb Ring",
   "options.arcane-artistry.header": "Arcane Artistry",
   "options.arcane-artistry.mana_bar": "Mana Bar",
-  "options.arcane-artistry.mana_bar.crosshair": "Crosshair",
   "options.arcane-artistry.mana_bar.bottom_right": "Bottom Right",
+  "options.arcane-artistry.mana_bar.crosshair": "Crosshair",
+  "options.arcane-artistry.max_staff_movement": "Max Staff Movement",
+  "options.arcane-artistry.max_staff_movement.tooltip": "How far the staff in first person can move from its center while casting.",
   "options.arcane-artistry.stroke_threshold": "Stroke Threshold",
   "options.arcane-artistry.stroke_threshold.tooltip": "How far the mouse must move while casting before a stroke is registered. Lower is more sensitive.",
-  "options.arcane-artistry.max_staff_movement": "Max Staff Movement",
-  "options.arcane-artistry.max_staff_movement.tooltip": "How far the staff in first person can move from its center while casting."
+  "screen.arcane-artistry.crystal_ball": "Crystal Ball",
+  "screen.arcane-artistry.crystal_ball.home": "Home"
 }

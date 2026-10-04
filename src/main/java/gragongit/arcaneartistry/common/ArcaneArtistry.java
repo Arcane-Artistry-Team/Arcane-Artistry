@@ -10,6 +10,7 @@ import gragongit.arcaneartistry.common.mana.ManaAttachments;
 import gragongit.arcaneartistry.common.mana.ManaAttributes;
 import gragongit.arcaneartistry.common.mana.ManaState;
 import gragongit.arcaneartistry.common.network.ModNetworking;
+import gragongit.arcaneartistry.common.registry.ModBlocks;
 import gragongit.arcaneartistry.common.registry.ModDataComponents;
 import gragongit.arcaneartistry.common.registry.ModRegistries;
 import gragongit.arcaneartistry.common.spell.SpellHandler;
@@ -36,6 +37,7 @@ public class ArcaneArtistry implements ModInitializer {
     ModRegistries.register();
     ModNetworking.register();
     ModDataComponents.register();
+    ModBlocks.register();
     StaffCastAttachments.register();
     StaffInteractionHandler.register();
     CrystalBallAttachments.register();

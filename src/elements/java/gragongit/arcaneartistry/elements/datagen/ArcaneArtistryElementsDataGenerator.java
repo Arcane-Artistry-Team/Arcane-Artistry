@@ -1,20 +1,10 @@
 package gragongit.arcaneartistry.elements.datagen;
 
 import gragongit.arcaneartistry.common.registry.ModRegistries;
-import gragongit.arcaneartistry.datagen.SpellProvider;
-import gragongit.arcaneartistry.datagen.StaffTypeProvider;
-import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
+import gragongit.arcaneartistry.datagen.ArcaneArtistryDatagenModule;
 import net.minecraft.core.RegistrySetBuilder;
 
-public class ArcaneArtistryElementsDataGenerator implements DataGeneratorEntrypoint {
-
-  @Override
-  public void onInitializeDataGenerator(FabricDataGenerator generator) {
-    FabricDataGenerator.Pack pack = generator.createPack();
-    pack.addProvider(StaffTypeProvider::new);
-    pack.addProvider(SpellProvider::new);
-  }
+public class ArcaneArtistryElementsDataGenerator implements ArcaneArtistryDatagenModule {
 
   @Override
   public void buildRegistry(RegistrySetBuilder registryBuilder) {

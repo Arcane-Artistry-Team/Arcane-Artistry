@@ -22,7 +22,9 @@
       "gragongit.arcaneartistry.client.ArcaneArtistryClient"
     ],
     "fabric-datagen": [
-      "gragongit.arcaneartistry.datagen.ArcaneArtistryDataGenerator",
+      "gragongit.arcaneartistry.datagen.ArcaneArtistryDataGenerator"
+    ],
+    "arcane-artistry:datagen": [
       "gragongit.arcaneartistry.elements.datagen.ArcaneArtistryElementsDataGenerator"
     ]
   },
