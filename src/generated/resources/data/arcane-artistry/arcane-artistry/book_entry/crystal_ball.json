@@ -1,0 +1,36 @@
+{
+  "category": "arcane-artistry:basics",
+  "description": {
+    "translate": "book.arcane-artistry.entry.crystal_ball.description"
+  },
+  "icon": "minecraft:ender_eye",
+  "pages": [
+    {
+      "type": "arcane-artistry:text",
+      "text": {
+        "translate": "book.arcane-artistry.entry.crystal_ball.page0.text"
+      },
+      "title": {
+        "translate": "book.arcane-artistry.entry.crystal_ball.page0.title"
+      }
+    },
+    {
+      "type": "arcane-artistry:text",
+      "text": {
+        "translate": "book.arcane-artistry.entry.crystal_ball.page1.text"
+      },
+      "title": {
+        "translate": "book.arcane-artistry.entry.crystal_ball.page1.title"
+      }
+    }
+  ],
+  "parents": [
+    "arcane-artistry:orb_ring",
+    "arcane-artistry:lapis_crystal"
+  ],
+  "title": {
+    "translate": "book.arcane-artistry.entry.crystal_ball.title"
+  },
+  "x": 6,
+  "y": 0
+}

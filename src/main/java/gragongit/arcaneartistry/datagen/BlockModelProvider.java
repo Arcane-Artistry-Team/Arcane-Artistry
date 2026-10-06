@@ -23,6 +23,7 @@ public class BlockModelProvider extends FabricModelProvider {
   @Override
   public void generateItemModels(ItemModelGenerators itemModelGenerators) {
     itemModelGenerators.generateFlatItem(ModItems.LAPIS_CRYSTAL, Items.HEART_OF_THE_SEA, ModelTemplates.FLAT_ITEM);
+    itemModelGenerators.generateFlatItem(ModItems.GUIDE_BOOK, Items.ENCHANTED_BOOK, ModelTemplates.FLAT_ITEM);
   }
 
   @Override

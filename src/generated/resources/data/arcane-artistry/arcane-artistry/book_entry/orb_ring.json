@@ -1,0 +1,27 @@
+{
+  "category": "arcane-artistry:basics",
+  "description": {
+    "translate": "book.arcane-artistry.entry.orb_ring.description"
+  },
+  "icon": "arcane-artistry:orb_ring",
+  "pages": [
+    {
+      "type": "arcane-artistry:showcase",
+      "item": "arcane-artistry:orb_ring",
+      "text": {
+        "translate": "book.arcane-artistry.entry.orb_ring.page0.text"
+      },
+      "title": {
+        "translate": "book.arcane-artistry.entry.orb_ring.page0.title"
+      }
+    }
+  ],
+  "parents": [
+    "arcane-artistry:guide_book"
+  ],
+  "title": {
+    "translate": "book.arcane-artistry.entry.orb_ring.title"
+  },
+  "x": 3,
+  "y": -1
+}

@@ -1,19 +1,23 @@
-package gragongit.arcaneartistry.client.crystalball;
+package gragongit.arcaneartistry.client.gui;
 
 import net.minecraft.util.Mth;
 
-public final class CrystalBallCamera {
+/** Pan/zoom camera for 2D maps, with animated flights between focus points. */
+public final class MapCamera {
+
+  public record Position(double x, double y) {
+  }
 
   @FunctionalInterface
   public interface FocusBounds {
-    CrystalBallRenderer.WorldPosition clamp(double focusX, double focusY, double zoom);
+    Position clamp(double focusX, double focusY, double zoom);
   }
 
   private static final double FLIGHT_STAGGER = 0.3;
 
   private double minZoom = 0;
   private double maxZoom = Double.MAX_VALUE;
-  private FocusBounds focusBounds = (x, y, zoom) -> new CrystalBallRenderer.WorldPosition(x, y);
+  private FocusBounds focusBounds = (x, y, zoom) -> new Position(x, y);
 
   private double panX;
   private double panY;
@@ -55,7 +59,7 @@ public final class CrystalBallCamera {
   }
 
   private void clampFocus() {
-    CrystalBallRenderer.WorldPosition clamped = focusBounds.clamp(focusX(), focusY(), zoom);
+    Position clamped = focusBounds.clamp(focusX(), focusY(), zoom);
     setFocus(clamped.x(), clamped.y(), zoom);
   }
 

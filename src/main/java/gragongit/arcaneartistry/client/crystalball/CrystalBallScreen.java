@@ -3,6 +3,7 @@ package gragongit.arcaneartistry.client.crystalball;
 import java.util.Optional;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
+import gragongit.arcaneartistry.client.gui.MapCamera;
 import gragongit.arcaneartistry.common.api.CastPattern;
 import gragongit.arcaneartistry.common.crystalball.CrystalBallEntry;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -37,7 +38,7 @@ public class CrystalBallScreen extends Screen {
   private static final double REVEAL_RIM_WIDTH = 8;
 
   private final CrystalBallNode root = CrystalBallNode.createRoot();
-  private final CrystalBallCamera camera = new CrystalBallCamera();
+  private final MapCamera camera = new MapCamera();
   private final CrystalBallRenderer renderer;
   private final CrystalBallNodeHover hover = new CrystalBallNodeHover();
   private final int maxDepth;
@@ -114,7 +115,7 @@ public class CrystalBallScreen extends Screen {
   }
 
   public void focus(CastPattern pattern, float seconds) {
-    CrystalBallRenderer.WorldPosition target = CrystalBallRenderer.worldPositionOf(pattern);
+    MapCamera.Position target = CrystalBallRenderer.worldPositionOf(pattern);
     double zoom = CrystalBallRenderer.focusZoom(pattern.size(), this.width, this.height);
     boolean staggered = CrystalBallRenderer.depthsBetween(camera.zoom(), zoom) > STAGGER_MIN_DEPTHS;
     camera.flyTo(target.x(), target.y(), zoom, seconds, staggered);

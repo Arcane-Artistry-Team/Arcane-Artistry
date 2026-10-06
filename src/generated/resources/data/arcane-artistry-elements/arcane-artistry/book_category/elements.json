@@ -1,0 +1,11 @@
+{
+  "background": {
+    "shader": "arcane-artistry-elements:crystal_ball/tidal_galaxy"
+  },
+  "connection_color": "#2a78c8",
+  "icon": "minecraft:blaze_rod",
+  "sort": 10,
+  "title": {
+    "translate": "book.arcane-artistry-elements.category.elements"
+  }
+}

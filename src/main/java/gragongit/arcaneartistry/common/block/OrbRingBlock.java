@@ -9,6 +9,8 @@ import gragongit.arcaneartistry.common.staff.Staff;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -17,6 +19,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUtils;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -83,6 +87,16 @@ public class OrbRingBlock extends Block implements EntityBlock {
         level.playSound(null, pos, SoundEvents.AMETHYST_CLUSTER_PLACE, SoundSource.BLOCKS, 1F, 1F);
         level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
         stack.consume(1, player);
+      }
+      return InteractionResult.SUCCESS;
+    }
+
+    if (stack.is(Items.BOOK)) {
+      if (level instanceof ServerLevel serverLevel) {
+        player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, new ItemStack(ModItems.GUIDE_BOOK)));
+        serverLevel.playSound(null, pos, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS, 1F, 1.2F);
+        serverLevel.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 40, 0.3, 0.3, 0.3, 0.5);
+        level.gameEvent(player, GameEvent.ITEM_INTERACT_FINISH, pos);
       }
       return InteractionResult.SUCCESS;
     }

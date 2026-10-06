@@ -2,6 +2,7 @@ package gragongit.arcaneartistry.common.registry;
 
 import java.util.function.Function;
 import gragongit.arcaneartistry.common.ArcaneArtistry;
+import gragongit.arcaneartistry.common.guidebook.GuideBookItem;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -12,6 +13,7 @@ public final class ModItems {
   private ModItems() {}
 
   public static final Item LAPIS_CRYSTAL = register("lapis_crystal", Item::new, new Item.Properties());
+  public static final Item GUIDE_BOOK = register("guide_book", GuideBookItem::new, new Item.Properties().stacksTo(1));
 
   private static Item register(String name, Function<Item.Properties, Item> factory, Item.Properties properties) {
     ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, ArcaneArtistry.id(name));

@@ -1,6 +1,7 @@
 package gragongit.arcaneartistry.client;
 
 import gragongit.arcaneartistry.client.crystalball.CrystalBallBackground;
+import gragongit.arcaneartistry.client.guidebook.page.BookPageRenderers;
 import gragongit.arcaneartistry.client.mana.ManaHud;
 import gragongit.arcaneartistry.client.network.ModClientNetworking;
 import gragongit.arcaneartistry.client.renderer.OrbRingRenderer;
@@ -16,5 +17,6 @@ public class ArcaneArtistryClient implements ClientModInitializer {
     ManaHud.register();
     OrbRingRenderer.register();
     ModClientNetworking.register();
+    BookPageRenderers.register();
   }
 }

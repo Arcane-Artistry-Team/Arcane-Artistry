@@ -3,6 +3,7 @@ package gragongit.arcaneartistry.client.crystalball;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import gragongit.arcaneartistry.client.gui.MapCamera;
 import gragongit.arcaneartistry.common.api.CastPattern;
 import gragongit.arcaneartistry.common.crystalball.CrystalBallEntry;
 import gragongit.arcaneartistry.common.staff.StaffDirection;
@@ -34,9 +35,6 @@ public final class CrystalBallRenderer {
     default Optional<Identifier> iconOf(CrystalBallNode node) {
       return entryOf(node).map(CrystalBallEntry::icon);
     }
-  }
-
-  public record WorldPosition(double x, double y) {
   }
 
   public record HoveredNode(CrystalBallNode node, double screenX, double screenY, float sizePx, float focusSizePx) {
@@ -117,7 +115,7 @@ public final class CrystalBallRenderer {
     this.maxDepth = maxDepth;
   }
 
-  public void render(GuiGraphicsExtractor graphics, Font font, CrystalBallNode root, CrystalBallCamera camera, NodeStateProvider states,
+  public void render(GuiGraphicsExtractor graphics, Font font, CrystalBallNode root, MapCamera camera, NodeStateProvider states,
       int x0, int y0, int x1, int y1) {
     this.graphics = graphics;
     this.states = states;
@@ -279,7 +277,7 @@ public final class CrystalBallRenderer {
     }
   }
 
-  public static WorldPosition worldPositionOf(CastPattern pattern) {
+  public static MapCamera.Position worldPositionOf(CastPattern pattern) {
     double x = 0;
     double y = 0;
     for (int depth = 0; depth < pattern.size(); depth++) {
@@ -288,7 +286,7 @@ public final class CrystalBallRenderer {
       x += edgeDirX(dir, depth) * length;
       y += edgeDirY(dir, depth) * length;
     }
-    return new WorldPosition(x, y);
+    return new MapCamera.Position(x, y);
   }
 
   public static double treeRadius(int maxDepth) {
@@ -298,7 +296,7 @@ public final class CrystalBallRenderer {
       for (int i = 0; i < maxDepth; i++) {
         straight = straight.add(dir);
       }
-      WorldPosition end = worldPositionOf(straight);
+      MapCamera.Position end = worldPositionOf(straight);
       radius = Math.max(radius, Math.hypot(end.x(), end.y()));
     }
     return radius;
@@ -341,7 +339,7 @@ public final class CrystalBallRenderer {
     return focusNodePx * size(0) / size(3);
   }
 
-  public static WorldPosition clampFocus(double focusX, double focusY, double zoom, int maxDepth, int viewWidth, int viewHeight,
+  public static MapCamera.Position clampFocus(double focusX, double focusY, double zoom, int maxDepth, int viewWidth, int viewHeight,
       double marginPx) {
     double focusNodePx = focusNodePx(viewWidth, viewHeight);
     int firstDepth = 0;
@@ -357,7 +355,7 @@ public final class CrystalBallRenderer {
     double halfY = Math.max(0, viewHeight / 2.0 - marginPx) / zoom;
     FocusClamp clamp = new FocusClamp(focusX, focusY, halfX, halfY, firstDepth, lastDepth);
     clamp.search(0, 0, 0);
-    return new WorldPosition(clamp.bestX, clamp.bestY);
+    return new MapCamera.Position(clamp.bestX, clamp.bestY);
   }
 
   private static final class FocusClamp {

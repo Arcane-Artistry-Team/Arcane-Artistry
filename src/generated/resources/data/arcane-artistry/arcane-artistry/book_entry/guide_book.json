@@ -1,0 +1,30 @@
+{
+  "category": "arcane-artistry:basics",
+  "description": {
+    "translate": "book.arcane-artistry.entry.guide_book.description"
+  },
+  "icon": "arcane-artistry:guide_book",
+  "pages": [
+    {
+      "type": "arcane-artistry:text",
+      "text": {
+        "translate": "book.arcane-artistry.entry.guide_book.page0.text"
+      },
+      "title": {
+        "translate": "book.arcane-artistry.entry.guide_book.page0.title"
+      }
+    },
+    {
+      "type": "arcane-artistry:recipe",
+      "recipe": "minecraft:book",
+      "text": {
+        "translate": "book.arcane-artistry.entry.guide_book.page1.text"
+      }
+    }
+  ],
+  "title": {
+    "translate": "book.arcane-artistry.entry.guide_book.title"
+  },
+  "x": 0,
+  "y": 0
+}

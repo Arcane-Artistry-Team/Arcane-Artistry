@@ -1,0 +1,26 @@
+{
+  "category": "arcane-artistry:basics",
+  "description": {
+    "translate": "book.arcane-artistry.entry.staffs.description"
+  },
+  "icon": "minecraft:blaze_rod",
+  "pages": [
+    {
+      "type": "arcane-artistry:text",
+      "text": {
+        "translate": "book.arcane-artistry.entry.staffs.page0.text"
+      },
+      "title": {
+        "translate": "book.arcane-artistry.entry.staffs.page0.title"
+      }
+    }
+  ],
+  "parents": [
+    "arcane-artistry:crystal_ball"
+  ],
+  "title": {
+    "translate": "book.arcane-artistry.entry.staffs.title"
+  },
+  "x": 9,
+  "y": 0
+}

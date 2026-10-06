@@ -1,0 +1,37 @@
+{
+  "advancement": "arcane-artistry-elements:guide_book/obtain_blaze_rod",
+  "category": "arcane-artistry-elements:elements",
+  "description": {
+    "translate": "book.arcane-artistry-elements.entry.fire.description"
+  },
+  "icon": "minecraft:blaze_rod",
+  "pages": [
+    {
+      "type": "arcane-artistry:showcase",
+      "item": "minecraft:blaze_rod",
+      "text": {
+        "translate": "book.arcane-artistry-elements.entry.fire.page0.text"
+      },
+      "title": {
+        "translate": "book.arcane-artistry-elements.entry.fire.page0.title"
+      }
+    },
+    {
+      "type": "arcane-artistry:text",
+      "text": {
+        "translate": "book.arcane-artistry-elements.entry.fire.page1.text"
+      },
+      "title": {
+        "translate": "book.arcane-artistry-elements.entry.fire.page1.title"
+      }
+    }
+  ],
+  "parents": [
+    "arcane-artistry:staffs"
+  ],
+  "title": {
+    "translate": "book.arcane-artistry-elements.entry.fire.title"
+  },
+  "x": 0,
+  "y": -1
+}

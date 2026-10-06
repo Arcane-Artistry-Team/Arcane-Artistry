@@ -1,0 +1,26 @@
+{
+  "category": "arcane-artistry:basics",
+  "description": {
+    "translate": "book.arcane-artistry.entry.mana.description"
+  },
+  "icon": "minecraft:lapis_lazuli",
+  "pages": [
+    {
+      "type": "arcane-artistry:text",
+      "text": {
+        "translate": "book.arcane-artistry.entry.mana.page0.text"
+      },
+      "title": {
+        "translate": "book.arcane-artistry.entry.mana.page0.title"
+      }
+    }
+  ],
+  "parents": [
+    "arcane-artistry:staffs"
+  ],
+  "title": {
+    "translate": "book.arcane-artistry.entry.mana.title"
+  },
+  "x": 12,
+  "y": 0
+}

@@ -1,0 +1,27 @@
+{
+  "category": "arcane-artistry:basics",
+  "description": {
+    "translate": "book.arcane-artistry.entry.lapis_crystal.description"
+  },
+  "icon": "arcane-artistry:lapis_crystal",
+  "pages": [
+    {
+      "type": "arcane-artistry:showcase",
+      "item": "arcane-artistry:lapis_crystal",
+      "text": {
+        "translate": "book.arcane-artistry.entry.lapis_crystal.page0.text"
+      },
+      "title": {
+        "translate": "book.arcane-artistry.entry.lapis_crystal.page0.title"
+      }
+    }
+  ],
+  "parents": [
+    "arcane-artistry:guide_book"
+  ],
+  "title": {
+    "translate": "book.arcane-artistry.entry.lapis_crystal.title"
+  },
+  "x": 3,
+  "y": 1
+}

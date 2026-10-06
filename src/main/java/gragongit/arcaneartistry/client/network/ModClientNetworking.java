@@ -3,9 +3,12 @@ package gragongit.arcaneartistry.client.network;
 import java.util.Set;
 import gragongit.arcaneartistry.client.crystalball.CrystalBallNodeStates;
 import gragongit.arcaneartistry.client.crystalball.CrystalBallScreen;
+import gragongit.arcaneartistry.client.guidebook.GuideBookScreen;
+import gragongit.arcaneartistry.client.guidebook.GuideBookView;
 import gragongit.arcaneartistry.common.api.CastPattern;
 import gragongit.arcaneartistry.common.crystalball.CrystalBallPayload;
 import gragongit.arcaneartistry.common.crystalball.CrystalBallState;
+import gragongit.arcaneartistry.common.guidebook.OpenGuideBookPayload;
 import gragongit.arcaneartistry.common.registry.ModRegistries;
 import gragongit.arcaneartistry.common.spell.Spell;
 import gragongit.arcaneartistry.common.staff.StaffType;
@@ -20,6 +23,7 @@ public final class ModClientNetworking {
 
   public static void register() {
     ClientPlayNetworking.registerGlobalReceiver(CrystalBallPayload.TYPE, ModClientNetworking::openCrystalBall);
+    ClientPlayNetworking.registerGlobalReceiver(OpenGuideBookPayload.TYPE, ModClientNetworking::openGuideBook);
   }
 
   private static void openCrystalBall(CrystalBallPayload payload, ClientPlayNetworking.Context context) {
@@ -30,5 +34,9 @@ public final class ModClientNetworking {
 
     CrystalBallNodeStates states = CrystalBallNodeStates.forStaffType(spells, payload.staffType(), explored);
     context.client().gui.setScreen(new CrystalBallScreen(states, payload.maxPatternLength(), Vec3.atCenterOf(payload.origin())));
+  }
+
+  private static void openGuideBook(OpenGuideBookPayload payload, ClientPlayNetworking.Context context) {
+    context.client().gui.setScreen(new GuideBookScreen(new GuideBookView(context.player(), payload)));
   }
 }
