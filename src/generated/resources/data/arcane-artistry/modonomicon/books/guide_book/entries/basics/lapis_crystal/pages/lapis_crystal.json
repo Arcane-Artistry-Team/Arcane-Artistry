@@ -1,0 +1,13 @@
+{
+  "type": "modonomicon:spotlight",
+  "condition": {
+    "type": "modonomicon:none"
+  },
+  "id": "lapis_crystal",
+  "item": {
+    "id": "arcane-artistry:lapis_crystal"
+  },
+  "sort_number": 0,
+  "text": "book.arcane-artistry.guide_book.basics.lapis_crystal.lapis_crystal.text",
+  "title": "book.arcane-artistry.guide_book.basics.lapis_crystal.lapis_crystal.title"
+}

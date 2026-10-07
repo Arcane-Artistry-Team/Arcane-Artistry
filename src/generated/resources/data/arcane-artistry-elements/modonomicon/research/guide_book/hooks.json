@@ -1,0 +1,8 @@
+[
+  {
+    "fact_id": "arcane-artistry-elements:guide_book/staffs_read",
+    "id": "arcane-artistry-elements:guide_book/staffs_read_hook",
+    "trigger_target": "arcane-artistry:basics/staffs",
+    "trigger_type": "modonomicon:entry_viewed_once"
+  }
+]

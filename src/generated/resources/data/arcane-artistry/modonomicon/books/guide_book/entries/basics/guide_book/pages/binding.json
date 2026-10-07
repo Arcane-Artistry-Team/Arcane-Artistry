@@ -1,0 +1,10 @@
+{
+  "type": "modonomicon:crafting_recipe",
+  "condition": {
+    "type": "modonomicon:none"
+  },
+  "id": "binding",
+  "recipe_id_1": "minecraft:book",
+  "sort_number": 1,
+  "text": "book.arcane-artistry.guide_book.basics.guide_book.binding.text"
+}

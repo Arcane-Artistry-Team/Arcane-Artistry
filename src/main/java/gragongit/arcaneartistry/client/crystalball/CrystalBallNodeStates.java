@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import gragongit.arcaneartistry.common.api.CastPattern;
-import gragongit.arcaneartistry.common.crystalball.CrystalBallEntry;
 import gragongit.arcaneartistry.common.crystalball.CrystalBallTheme;
+import gragongit.arcaneartistry.common.presentation.Presentation;
 import gragongit.arcaneartistry.common.spell.Spell;
 import gragongit.arcaneartistry.common.spell.SpellsByStaffType;
 import gragongit.arcaneartistry.common.staff.StaffType;
@@ -16,22 +16,22 @@ import net.minecraft.resources.Identifier;
 
 public final class CrystalBallNodeStates implements CrystalBallRenderer.NodeStateProvider {
   private final CrystalBallTheme theme;
-  private final CrystalBallEntry rootEntry;
+  private final Presentation rootPresentation;
   private final Map<CastPattern, Spell> spells;
   private final Set<CastPattern> explored;
   private final Map<CrystalBallNode, CrystalBallNodeState> cache = new IdentityHashMap<>();
 
-  private CrystalBallNodeStates(CrystalBallTheme theme, CrystalBallEntry rootEntry, Map<CastPattern, Spell> spells,
+  private CrystalBallNodeStates(CrystalBallTheme theme, Presentation rootPresentation, Map<CastPattern, Spell> spells,
       Set<CastPattern> explored) {
     this.theme = theme;
-    this.rootEntry = rootEntry;
+    this.rootPresentation = rootPresentation;
     this.spells = spells;
     this.explored = explored;
   }
 
   public static CrystalBallNodeStates forStaffType(Registry<Spell> registry, Holder<StaffType> staffType, Set<CastPattern> explored) {
     StaffType type = staffType.value();
-    return new CrystalBallNodeStates(type.crystalBallTheme(), type.crystalBallEntry(),
+    return new CrystalBallNodeStates(type.crystalBallTheme(), type.presentation(),
         SpellsByStaffType.of(registry).forStaffType(staffType), explored);
   }
 
@@ -51,11 +51,11 @@ public final class CrystalBallNodeStates implements CrystalBallRenderer.NodeStat
   }
 
   @Override
-  public Optional<CrystalBallEntry> entryOf(CrystalBallNode node) {
+  public Optional<Presentation> presentationOf(CrystalBallNode node) {
     if (node.isRoot()) {
-      return Optional.of(rootEntry);
+      return Optional.of(rootPresentation);
     }
-    return spellAt(node).map(Spell::crystalBallEntry);
+    return spellAt(node).map(Spell::presentation);
   }
 
   private CrystalBallNodeState compute(CrystalBallNode node) {

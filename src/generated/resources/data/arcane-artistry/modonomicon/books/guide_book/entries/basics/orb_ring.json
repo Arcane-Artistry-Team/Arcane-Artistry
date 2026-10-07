@@ -1,0 +1,36 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "arcane-artistry:basics",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "arcane-artistry:generated/guide_book/nodes/entry_viewed_once/basics_orb_ring",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.arcane-artistry.guide_book.basics.orb_ring.name"
+        }
+      ]
+    }
+  },
+  "description": "book.arcane-artistry.guide_book.basics.orb_ring.description",
+  "hide_while_locked": true,
+  "icon": {
+    "id": "arcane-artistry:orb_ring"
+  },
+  "id": "arcane-artistry:basics/orb_ring",
+  "name": "book.arcane-artistry.guide_book.basics.orb_ring.name",
+  "parents": [
+    {
+      "entry": "arcane-artistry:basics/guide_book"
+    }
+  ],
+  "sort_number": 1,
+  "x": 3,
+  "y": -1
+}

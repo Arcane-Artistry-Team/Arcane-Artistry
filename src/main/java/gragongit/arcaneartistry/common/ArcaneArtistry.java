@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import gragongit.arcaneartistry.common.api.CastProgressEvents;
 import gragongit.arcaneartistry.common.api.CastProgressEvents.CastProgressContext;
 import gragongit.arcaneartistry.common.crystalball.CrystalBallAttachments;
+import gragongit.arcaneartistry.common.guidebook.GuideBookPages;
 import gragongit.arcaneartistry.common.mana.ManaAttachments;
 import gragongit.arcaneartistry.common.mana.ManaAttributes;
 import gragongit.arcaneartistry.common.mana.ManaState;
@@ -41,6 +42,7 @@ public class ArcaneArtistry implements ModInitializer {
     CrystalBallAttachments.register();
     ManaAttributes.register();
     ManaAttachments.register();
+    GuideBookPages.register();
 
     SpellHandler.init();
 

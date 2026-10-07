@@ -1,0 +1,18 @@
+[
+  {
+    "fact_id": "arcane-artistry:guide_book/staff_obtained/arcane-artistry-elements/water",
+    "id": "arcane-artistry:guide_book/staff_obtained/arcane-artistry-elements/water/minecraft/breeze_rod",
+    "trigger_target": {
+      "id": "minecraft:breeze_rod"
+    },
+    "trigger_type": "modonomicon:item_acquired"
+  },
+  {
+    "fact_id": "arcane-artistry:guide_book/staff_obtained/arcane-artistry-elements/fire",
+    "id": "arcane-artistry:guide_book/staff_obtained/arcane-artistry-elements/fire/minecraft/blaze_rod",
+    "trigger_target": {
+      "id": "minecraft:blaze_rod"
+    },
+    "trigger_type": "modonomicon:item_acquired"
+  }
+]

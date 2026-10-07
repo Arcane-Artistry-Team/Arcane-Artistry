@@ -1,7 +1,11 @@
 {
   "crystal_ball": {
     "background": "arcane-artistry-elements:crystal_ball/tidal_galaxy",
-    "connection_color": "#2a78c8",
+    "connection_color": "#2a78c8"
+  },
+  "fail_sound": "minecraft:block.fire.extinguish",
+  "no_mana_sound": "minecraft:entity.player.swim",
+  "presentation": {
     "description": {
       "translate": "staff_type.arcane-artistry-elements.water.description"
     },
@@ -10,7 +14,5 @@
       "translate": "staff_type.arcane-artistry-elements.water"
     }
   },
-  "fail_sound": "minecraft:block.fire.extinguish",
-  "no_mana_sound": "minecraft:entity.player.swim",
   "stroke_sound": "minecraft:block.pointed_dripstone.drip_water"
 }

@@ -1,6 +1,7 @@
 package gragongit.arcaneartistry.common.api;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import gragongit.arcaneartistry.common.staff.StaffDirection;
@@ -133,6 +134,10 @@ public final class CastPattern {
       strokes[i] = get(i);
     }
     return List.of(strokes);
+  }
+
+  public String toArrows() {
+    return strokes().stream().map(stroke -> String.valueOf(stroke.arrow())).collect(Collectors.joining(" "));
   }
 
   @Override

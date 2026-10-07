@@ -1,0 +1,9 @@
+{
+  "type": "arcane-artistry:spell",
+  "condition": {
+    "type": "modonomicon:none"
+  },
+  "id": "waterbomb",
+  "sort_number": 1,
+  "spell": "arcane-artistry-elements:waterbomb"
+}

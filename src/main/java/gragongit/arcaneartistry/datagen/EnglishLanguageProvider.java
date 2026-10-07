@@ -1,17 +1,25 @@
 package gragongit.arcaneartistry.datagen;
 
 import java.util.concurrent.CompletableFuture;
+import com.klikli_dev.modonomicon.api.datagen.LanguageProviderCache;
+import gragongit.arcaneartistry.common.guidebook.SpellPage;
+import gragongit.arcaneartistry.common.guidebook.SpellPageDetails;
+import gragongit.arcaneartistry.common.guidebook.StaffTypePage;
 import gragongit.arcaneartistry.common.mana.ManaAttributes;
 import gragongit.arcaneartistry.common.registry.ModBlocks;
 import gragongit.arcaneartistry.common.registry.ModItems;
+import gragongit.arcaneartistry.datagen.guidebook.StaffTypeEntryProvider;
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
 import net.minecraft.core.HolderLookup;
 
 public class EnglishLanguageProvider extends FabricLanguageProvider {
+  private final LanguageProviderCache guideBook;
 
-  public EnglishLanguageProvider(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
+  public EnglishLanguageProvider(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture,
+      LanguageProviderCache guideBook) {
     super(output, "en_us", registriesFuture);
+    this.guideBook = guideBook;
   }
 
   @Override
@@ -23,6 +31,14 @@ public class EnglishLanguageProvider extends FabricLanguageProvider {
 
     translations.add("screen.arcane-artistry.crystal_ball", "Crystal Ball");
     translations.add("screen.arcane-artistry.crystal_ball.home", "Home");
+
+    guideBook.data().forEach(translations::add);
+    translations.add(StaffTypeEntryProvider.LOCKED, "Requires: %s");
+    translations.add(StaffTypePage.ITEMS, "Staffs: %s");
+    translations.add(StaffTypePage.UNKNOWN, "This staff type no longer exists.");
+    translations.add(SpellPageDetails.PATTERN, "Pattern: %s");
+    translations.add(SpellPageDetails.MANA_COST, "Mana: %s");
+    translations.add(SpellPage.UNKNOWN, "This spell no longer exists.");
 
     translations.add("options.arcane-artistry.header", "Arcane Artistry");
     translations.add("options.arcane-artistry.mana_bar", "Mana Bar");

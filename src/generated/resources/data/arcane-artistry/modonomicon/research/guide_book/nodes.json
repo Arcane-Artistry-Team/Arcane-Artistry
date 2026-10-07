@@ -1,0 +1,14 @@
+[
+  {
+    "id": "arcane-artistry:guide_book/staff_obtained/arcane-artistry-elements/water",
+    "required_facts": [
+      "arcane-artistry:guide_book/staff_obtained/arcane-artistry-elements/water"
+    ]
+  },
+  {
+    "id": "arcane-artistry:guide_book/staff_obtained/arcane-artistry-elements/fire",
+    "required_facts": [
+      "arcane-artistry:guide_book/staff_obtained/arcane-artistry-elements/fire"
+    ]
+  }
+]

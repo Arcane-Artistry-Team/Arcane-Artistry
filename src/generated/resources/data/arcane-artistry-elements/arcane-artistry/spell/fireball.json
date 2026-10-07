@@ -1,14 +1,5 @@
 {
   "cast_sound": "minecraft:entity.firework_rocket.large_blast",
-  "crystal_ball": {
-    "description": {
-      "translate": "spell.arcane-artistry-elements.fireball.description"
-    },
-    "icon": "minecraft:textures/item/fire_charge.png",
-    "title": {
-      "translate": "spell.arcane-artistry-elements.fireball"
-    }
-  },
   "effect": {
     "type": "arcane-artistry-elements:fireball",
     "power": 3
@@ -18,5 +9,14 @@
     "up",
     "down"
   ],
+  "presentation": {
+    "description": {
+      "translate": "spell.arcane-artistry-elements.fireball.description"
+    },
+    "icon": "minecraft:textures/item/fire_charge.png",
+    "title": {
+      "translate": "spell.arcane-artistry-elements.fireball"
+    }
+  },
   "staff_type": "arcane-artistry-elements:fire"
 }

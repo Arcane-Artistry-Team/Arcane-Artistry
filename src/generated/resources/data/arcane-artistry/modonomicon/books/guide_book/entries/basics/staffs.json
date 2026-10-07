@@ -1,0 +1,36 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "arcane-artistry:basics",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "arcane-artistry:generated/guide_book/nodes/entry_viewed_once/basics_staffs",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.arcane-artistry.guide_book.basics.staffs.name"
+        }
+      ]
+    }
+  },
+  "description": "book.arcane-artistry.guide_book.basics.staffs.description",
+  "hide_while_locked": true,
+  "icon": {
+    "id": "minecraft:blaze_rod"
+  },
+  "id": "arcane-artistry:basics/staffs",
+  "name": "book.arcane-artistry.guide_book.basics.staffs.name",
+  "parents": [
+    {
+      "entry": "arcane-artistry:basics/crystal_ball"
+    }
+  ],
+  "sort_number": 4,
+  "x": 9,
+  "y": 0
+}

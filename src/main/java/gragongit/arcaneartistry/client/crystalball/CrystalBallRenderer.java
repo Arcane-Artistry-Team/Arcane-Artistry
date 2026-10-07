@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import gragongit.arcaneartistry.common.api.CastPattern;
-import gragongit.arcaneartistry.common.crystalball.CrystalBallEntry;
+import gragongit.arcaneartistry.common.presentation.Presentation;
 import gragongit.arcaneartistry.common.staff.StaffDirection;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -27,12 +27,12 @@ public final class CrystalBallRenderer {
       return Optional.empty();
     }
 
-    default Optional<CrystalBallEntry> entryOf(CrystalBallNode node) {
+    default Optional<Presentation> presentationOf(CrystalBallNode node) {
       return Optional.empty();
     }
 
     default Optional<Identifier> iconOf(CrystalBallNode node) {
-      return entryOf(node).map(CrystalBallEntry::icon);
+      return presentationOf(node).map(Presentation::icon);
     }
   }
 

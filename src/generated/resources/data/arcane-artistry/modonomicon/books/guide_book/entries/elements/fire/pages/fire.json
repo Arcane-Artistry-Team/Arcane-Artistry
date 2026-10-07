@@ -1,0 +1,14 @@
+{
+  "type": "arcane-artistry:staff_type",
+  "associated_items": [
+    {
+      "id": "minecraft:blaze_rod"
+    }
+  ],
+  "condition": {
+    "type": "modonomicon:none"
+  },
+  "id": "fire",
+  "sort_number": 0,
+  "staff_type": "arcane-artistry-elements:fire"
+}

@@ -30,6 +30,15 @@ public enum StaffDirection {
     return StaffDirection.values()[(this.ordinal() + 1) % StaffDirection.values().length];
   }
 
+  public char arrow() {
+    return switch (this) {
+      case RIGHT -> '→';
+      case DOWN -> '↓';
+      case LEFT -> '←';
+      case UP -> '↑';
+    };
+  }
+
   public Vec2 asVec2() {
     return switch (this) {
       case RIGHT -> new Vec2(1, 0);

@@ -1,0 +1,11 @@
+{
+  "type": "modonomicon:text",
+  "condition": {
+    "type": "modonomicon:none"
+  },
+  "id": "binding",
+  "show_title_separator": true,
+  "sort_number": 1,
+  "text": "book.arcane-artistry.guide_book.basics.crystal_ball.binding.text",
+  "title": "book.arcane-artistry.guide_book.basics.crystal_ball.binding.title"
+}

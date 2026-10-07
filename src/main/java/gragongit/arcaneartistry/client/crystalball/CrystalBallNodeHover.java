@@ -1,7 +1,8 @@
 package gragongit.arcaneartistry.client.crystalball;
 
 import java.util.List;
-import gragongit.arcaneartistry.common.crystalball.CrystalBallEntry;
+import gragongit.arcaneartistry.client.guidebook.GuideBookMarkdown;
+import gragongit.arcaneartistry.common.presentation.Presentation;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
@@ -9,7 +10,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
@@ -29,7 +29,7 @@ final class CrystalBallNodeHover {
   private static final int DESCRIPTION_PADDING = 6;
   private static final int[] TEST_SPLIT_OFFSETS = {0, 10, -10, 25, -25};
 
-  private record Layout(CrystalBallEntry entry, CrystalBallNodeState state, int frameSize, List<FormattedCharSequence> titleLines,
+  private record Layout(Presentation presentation, CrystalBallNodeState state, int frameSize, List<FormattedCharSequence> titleLines,
       List<FormattedCharSequence> description, int titleWidth, int descriptionWidth) {
 
     int textWidth() {
@@ -43,14 +43,14 @@ final class CrystalBallNodeHover {
 
   private Layout layout;
 
-  void extract(GuiGraphicsExtractor graphics, Font font, CrystalBallEntry entry, CrystalBallNodeState state,
+  void extract(GuiGraphicsExtractor graphics, Font font, Presentation presentation, CrystalBallNodeState state,
       CrystalBallRenderer.HoveredNode node, int viewBottom, int screenWidth) {
     int frameSize = Math.max(Math.round(node.sizePx()), MIN_FRAME_SIZE);
     // Up to the size of a focused node the box follows vanilla: it starts behind the frame and the description sits below it.
     // Zoomed in further, the description would end up inside the frame, so the box moves beside the frame instead.
     int maxBehindFrameSize = Math.max(Math.round(node.focusSizePx()), MIN_FRAME_SIZE);
     boolean besideFrame = frameSize > maxBehindFrameSize;
-    Layout layout = layout(font, entry, state, Math.min(frameSize, maxBehindFrameSize));
+    Layout layout = layout(font, presentation, state, Math.min(frameSize, maxBehindFrameSize));
     int frameLeft = (int) Math.round(node.screenX() - frameSize / 2.0);
     int frameTop = (int) Math.round(node.screenY() - frameSize / 2.0);
     int frameRight = frameLeft + frameSize;
@@ -95,24 +95,24 @@ final class CrystalBallNodeHover {
     int iconSize = Math.round(frameSize * CrystalBallRenderer.ICON_SIZE_FACTOR);
     int iconLeft = frameLeft + (frameSize - iconSize) / 2;
     int iconTop = frameTop + (frameSize - iconSize) / 2;
-    graphics.blit(RenderPipelines.GUI_TEXTURED, entry.icon(), iconLeft, iconTop, 0, 0, iconSize, iconSize, iconSize, iconSize, -1);
+    graphics.blit(RenderPipelines.GUI_TEXTURED, presentation.icon(), iconLeft, iconTop, 0, 0, iconSize, iconSize, iconSize, iconSize, -1);
   }
 
-  private Layout layout(Font font, CrystalBallEntry entry, CrystalBallNodeState state, int frameSize) {
-    if (layout != null && layout.entry() == entry && layout.state() == state && layout.frameSize() == frameSize) {
+  private Layout layout(Font font, Presentation presentation, CrystalBallNodeState state, int frameSize) {
+    if (layout != null && layout.presentation() == presentation && layout.state() == state && layout.frameSize() == frameSize) {
       return layout;
     }
-    List<FormattedCharSequence> titleLines = font.split(entry.title(), TITLE_MAX_WIDTH);
+    List<FormattedCharSequence> titleLines = font.split(presentation.title(), TITLE_MAX_WIDTH);
     int titleWidth = Math.max(titleLines.stream().mapToInt(font::width).max().orElse(0), TITLE_MIN_WIDTH);
-    List<FormattedCharSequence> description = entry
+    List<FormattedCharSequence> description = presentation
         .description()
         .map(text -> Language
             .getInstance()
-            .getVisualOrder(findOptimalLines(font, ComponentUtils.mergeStyles(text, Style.EMPTY.withColor(descriptionColor(state))),
+            .getVisualOrder(findOptimalLines(font, GuideBookMarkdown.render(text, Style.EMPTY.withColor(descriptionColor(state))),
                 frameSize + FRAME_MARGIN + titleWidth)))
         .orElse(List.of());
     int descriptionWidth = description.stream().mapToInt(font::width).max().orElse(0);
-    layout = new Layout(entry, state, frameSize, titleLines, description, titleWidth, descriptionWidth);
+    layout = new Layout(presentation, state, frameSize, titleLines, description, titleWidth, descriptionWidth);
     return layout;
   }
 

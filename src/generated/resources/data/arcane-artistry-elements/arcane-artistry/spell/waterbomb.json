@@ -1,14 +1,5 @@
 {
   "cast_sound": "minecraft:entity.player.splash",
-  "crystal_ball": {
-    "description": {
-      "translate": "spell.arcane-artistry-elements.waterbomb.description"
-    },
-    "icon": "minecraft:textures/item/nether_star.png",
-    "title": {
-      "translate": "spell.arcane-artistry-elements.waterbomb"
-    }
-  },
   "effect": {
     "type": "arcane-artistry-elements:fireball",
     "power": 1
@@ -18,5 +9,14 @@
     "left",
     "right"
   ],
+  "presentation": {
+    "description": {
+      "translate": "spell.arcane-artistry-elements.waterbomb.description"
+    },
+    "icon": "minecraft:textures/item/nether_star.png",
+    "title": {
+      "translate": "spell.arcane-artistry-elements.waterbomb"
+    }
+  },
   "staff_type": "arcane-artistry-elements:water"
 }

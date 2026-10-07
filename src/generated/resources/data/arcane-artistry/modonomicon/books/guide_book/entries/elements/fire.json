@@ -1,0 +1,28 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "arcane-artistry:elements",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "arcane-artistry:guide_book/staff_obtained/arcane-artistry-elements/fire",
+    "tooltip": {
+      "translate": "guide_book.arcane-artistry.staff_type.locked",
+      "with": [
+        {
+          "translate": "item.minecraft.blaze_rod"
+        }
+      ]
+    }
+  },
+  "description": "staff_type.arcane-artistry-elements.fire.description",
+  "icon": "minecraft:textures/item/blaze_powder.png",
+  "id": "arcane-artistry:elements/fire",
+  "name": "staff_type.arcane-artistry-elements.fire",
+  "sort_number": 0,
+  "x": 0,
+  "y": -1
+}

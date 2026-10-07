@@ -1,0 +1,11 @@
+{
+  "type": "modonomicon:text",
+  "condition": {
+    "type": "modonomicon:none"
+  },
+  "id": "casting",
+  "show_title_separator": true,
+  "sort_number": 0,
+  "text": "book.arcane-artistry.guide_book.basics.staffs.casting.text",
+  "title": "book.arcane-artistry.guide_book.basics.staffs.casting.title"
+}

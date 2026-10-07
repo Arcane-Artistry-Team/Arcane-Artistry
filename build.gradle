@@ -33,7 +33,17 @@ loom {
 fabricApi {
 	configureDataGeneration {
 		client = true
+		modId = 'arcane-artistry'
 		outputDirectory = file('src/generated/resources')
+	}
+}
+
+repositories {
+	maven {
+		url = 'https://dl.cloudsmith.io/public/klikli-dev/mods/maven/'
+		content {
+			includeGroup 'com.klikli_dev'
+		}
 	}
 }
 
@@ -41,6 +51,9 @@ dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	implementation("com.klikli_dev:modonomicon-${project.minecraft_version}-fabric:${project.modonomicon_version}") {
+		transitive = false
+	}
 
 	runtimeOnly sourceSets.elements.output
 }

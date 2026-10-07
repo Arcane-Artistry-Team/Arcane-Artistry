@@ -1,0 +1,14 @@
+{
+  "type": "arcane-artistry:staff_type",
+  "associated_items": [
+    {
+      "id": "minecraft:breeze_rod"
+    }
+  ],
+  "condition": {
+    "type": "modonomicon:none"
+  },
+  "id": "water",
+  "sort_number": 0,
+  "staff_type": "arcane-artistry-elements:water"
+}

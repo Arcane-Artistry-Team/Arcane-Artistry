@@ -5,7 +5,7 @@ import org.jspecify.annotations.Nullable;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import gragongit.arcaneartistry.common.api.CastPattern;
-import gragongit.arcaneartistry.common.crystalball.CrystalBallEntry;
+import gragongit.arcaneartistry.common.presentation.Presentation;
 import gragongit.arcaneartistry.common.registry.ModRegistries;
 import gragongit.arcaneartistry.common.staff.StaffType;
 import net.minecraft.core.Holder;
@@ -16,7 +16,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.ExtraCodecs;
 
-public record Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffect effect, int manaCost, CrystalBallEntry crystalBallEntry,
+public record Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffect effect, int manaCost, Presentation presentation,
     Optional<Holder<SoundEvent>> castSound) {
 
   public static Builder builder() {
@@ -37,7 +37,7 @@ public record Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffec
                   .forGetter(Spell::staffType),
               CastPattern.CODEC.fieldOf("pattern").forGetter(Spell::pattern), EFFECT_CODEC.fieldOf("effect").forGetter(Spell::effect),
               ExtraCodecs.NON_NEGATIVE_INT.fieldOf("mana_cost").forGetter(Spell::manaCost),
-              CrystalBallEntry.CODEC.fieldOf("crystal_ball").forGetter(Spell::crystalBallEntry),
+              Presentation.CODEC.fieldOf("presentation").forGetter(Spell::presentation),
               SoundEvent.CODEC.optionalFieldOf("cast_sound").forGetter(Spell::castSound))
           .apply(instance, Spell::new));
 
@@ -96,7 +96,7 @@ public record Spell(Holder<StaffType> staffType, CastPattern pattern, SpellEffec
     public Spell build() {
       return new Spell(required(staffType, "staffType"), required(pattern, "pattern"), required(effect, "effect"),
           required(manaCost, "manaCost"),
-          new CrystalBallEntry(required(icon, "icon"), required(title, "title"), Optional.ofNullable(description)),
+          new Presentation(required(icon, "icon"), required(title, "title"), Optional.ofNullable(description)),
           Optional.ofNullable(castSound));
     }
 

@@ -1,0 +1,32 @@
+[
+  {
+    "fact_id": "arcane-artistry:generated/guide_book/facts/entry_viewed_once/basics_guide_book",
+    "id": "arcane-artistry:generated/guide_book/facts/entry_viewed_once/basics_guide_book_hook",
+    "trigger_target": "arcane-artistry:basics/guide_book",
+    "trigger_type": "modonomicon:entry_viewed_once"
+  },
+  {
+    "fact_id": "arcane-artistry:generated/guide_book/facts/entry_viewed_once/basics_orb_ring",
+    "id": "arcane-artistry:generated/guide_book/facts/entry_viewed_once/basics_orb_ring_hook",
+    "trigger_target": "arcane-artistry:basics/orb_ring",
+    "trigger_type": "modonomicon:entry_viewed_once"
+  },
+  {
+    "fact_id": "arcane-artistry:generated/guide_book/facts/entry_viewed_once/basics_lapis_crystal",
+    "id": "arcane-artistry:generated/guide_book/facts/entry_viewed_once/basics_lapis_crystal_hook",
+    "trigger_target": "arcane-artistry:basics/lapis_crystal",
+    "trigger_type": "modonomicon:entry_viewed_once"
+  },
+  {
+    "fact_id": "arcane-artistry:generated/guide_book/facts/entry_viewed_once/basics_crystal_ball",
+    "id": "arcane-artistry:generated/guide_book/facts/entry_viewed_once/basics_crystal_ball_hook",
+    "trigger_target": "arcane-artistry:basics/crystal_ball",
+    "trigger_type": "modonomicon:entry_viewed_once"
+  },
+  {
+    "fact_id": "arcane-artistry:generated/guide_book/facts/entry_viewed_once/basics_staffs",
+    "id": "arcane-artistry:generated/guide_book/facts/entry_viewed_once/basics_staffs_hook",
+    "trigger_target": "arcane-artistry:basics/staffs",
+    "trigger_type": "modonomicon:entry_viewed_once"
+  }
+]

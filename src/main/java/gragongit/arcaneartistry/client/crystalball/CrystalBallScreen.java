@@ -4,7 +4,7 @@ import java.util.Optional;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import gragongit.arcaneartistry.common.api.CastPattern;
-import gragongit.arcaneartistry.common.crystalball.CrystalBallEntry;
+import gragongit.arcaneartistry.common.presentation.Presentation;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -150,7 +150,7 @@ public class CrystalBallScreen extends Screen {
       graphics.requestCursor(CursorTypes.POINTING_HAND);
     }
     Optional<CrystalBallRenderer.HoveredNode> hovered =
-        camera.isFlying() ? Optional.empty() : renderer.hoveredNode(mouseX, mouseY).filter(node -> entryOf(node).isPresent());
+        camera.isFlying() ? Optional.empty() : renderer.hoveredNode(mouseX, mouseY).filter(node -> presentationOf(node).isPresent());
     hovering = hovered.isPresent();
     if (hoverFade > 0) {
       graphics.fill(x0, y0, x1, y1, Mth.floor(hoverFade * 255) << 24);
@@ -158,16 +158,16 @@ public class CrystalBallScreen extends Screen {
     super.extractRenderState(graphics, mouseX, mouseY, delta);
     hovered.ifPresent(node -> {
       graphics.nextStratum();
-      hover.extract(graphics, this.font, entryOf(node).orElseThrow(), states.stateOf(node.node()), node, y1, this.width);
+      hover.extract(graphics, this.font, presentationOf(node).orElseThrow(), states.stateOf(node.node()), node, y1, this.width);
     });
   }
 
-  private Optional<CrystalBallEntry> entryOf(CrystalBallRenderer.HoveredNode node) {
+  private Optional<Presentation> presentationOf(CrystalBallRenderer.HoveredNode node) {
     CrystalBallNodeState state = states.stateOf(node.node());
     if (state != CrystalBallNodeState.ROOT && state != CrystalBallNodeState.SPELL) {
       return Optional.empty();
     }
-    return states.entryOf(node.node());
+    return states.presentationOf(node.node());
   }
 
   @Override

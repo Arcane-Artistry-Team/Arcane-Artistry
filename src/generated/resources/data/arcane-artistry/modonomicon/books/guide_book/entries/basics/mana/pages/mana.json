@@ -1,0 +1,11 @@
+{
+  "type": "modonomicon:text",
+  "condition": {
+    "type": "modonomicon:none"
+  },
+  "id": "mana",
+  "show_title_separator": true,
+  "sort_number": 0,
+  "text": "book.arcane-artistry.guide_book.basics.mana.mana.text",
+  "title": "book.arcane-artistry.guide_book.basics.mana.mana.title"
+}

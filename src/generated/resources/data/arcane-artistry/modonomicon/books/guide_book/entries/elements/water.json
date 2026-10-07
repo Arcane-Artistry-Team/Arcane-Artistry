@@ -1,0 +1,28 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "arcane-artistry:elements",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "arcane-artistry:guide_book/staff_obtained/arcane-artistry-elements/water",
+    "tooltip": {
+      "translate": "guide_book.arcane-artistry.staff_type.locked",
+      "with": [
+        {
+          "translate": "item.minecraft.breeze_rod"
+        }
+      ]
+    }
+  },
+  "description": "staff_type.arcane-artistry-elements.water.description",
+  "icon": "minecraft:textures/item/heart_of_the_sea.png",
+  "id": "arcane-artistry:elements/water",
+  "name": "staff_type.arcane-artistry-elements.water",
+  "sort_number": 1,
+  "x": 0,
+  "y": 1
+}

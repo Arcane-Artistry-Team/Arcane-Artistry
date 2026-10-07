@@ -1,0 +1,13 @@
+{
+  "type": "modonomicon:spotlight",
+  "condition": {
+    "type": "modonomicon:none"
+  },
+  "id": "orb_ring",
+  "item": {
+    "id": "arcane-artistry:orb_ring"
+  },
+  "sort_number": 0,
+  "text": "book.arcane-artistry.guide_book.basics.orb_ring.orb_ring.text",
+  "title": "book.arcane-artistry.guide_book.basics.orb_ring.orb_ring.title"
+}

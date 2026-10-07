@@ -1,0 +1,21 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "arcane-artistry:basics",
+  "condition": {
+    "type": "modonomicon:none"
+  },
+  "description": "book.arcane-artistry.guide_book.basics.guide_book.description",
+  "icon": {
+    "id": "minecraft:enchanted_book"
+  },
+  "id": "arcane-artistry:basics/guide_book",
+  "name": "book.arcane-artistry.guide_book.basics.guide_book.name",
+  "sort_number": 0,
+  "x": 0,
+  "y": 0
+}
