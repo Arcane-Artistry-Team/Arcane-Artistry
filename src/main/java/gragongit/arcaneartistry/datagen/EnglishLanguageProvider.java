@@ -19,7 +19,7 @@ public class EnglishLanguageProvider extends FabricLanguageProvider {
     translations.add(ModBlocks.ORB_RING, "Orb Ring");
     translations.add(ModItems.LAPIS_CRYSTAL, "Lapis Crystal");
 
-    translations.add(ManaAttributes.MAX_MANA, "Max Mana");
+    translations.addAttribute(ManaAttributes.MAX_MANA, "Max Mana");
 
     translations.add("screen.arcane-artistry.crystal_ball", "Crystal Ball");
     translations.add("screen.arcane-artistry.crystal_ball.home", "Home");
@@ -34,7 +34,8 @@ public class EnglishLanguageProvider extends FabricLanguageProvider {
             "How far the mouse must move while casting before a stroke is registered. Lower is more sensitive.");
     translations.add("options.arcane-artistry.max_staff_movement", "Max Staff Movement");
     translations
-        .add("options.arcane-artistry.max_staff_movement.tooltip", "How far the staff in first person can move from its center while casting.");
+        .add("options.arcane-artistry.max_staff_movement.tooltip",
+            "How far the staff in first person can move from its center while casting.");
   }
 
   @Override
