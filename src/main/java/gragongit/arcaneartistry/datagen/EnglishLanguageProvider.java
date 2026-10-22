@@ -3,7 +3,6 @@ package gragongit.arcaneartistry.datagen;
 import java.util.concurrent.CompletableFuture;
 import gragongit.arcaneartistry.common.mana.ManaAttributes;
 import gragongit.arcaneartistry.common.registry.ModBlocks;
-import gragongit.arcaneartistry.common.registry.ModItems;
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
 import net.minecraft.core.HolderLookup;
@@ -17,7 +16,7 @@ public class EnglishLanguageProvider extends FabricLanguageProvider {
   @Override
   public void generateTranslations(HolderLookup.Provider registries, TranslationBuilder translations) {
     translations.add(ModBlocks.ORB_RING, "Orb Ring");
-    translations.add(ModItems.LAPIS_CRYSTAL, "Lapis Crystal");
+    translations.add(ModBlocks.LAPIS_CRYSTAL, "Lapis Crystal");
 
     translations.addAttribute(ManaAttributes.MAX_MANA, "Max Mana");
 

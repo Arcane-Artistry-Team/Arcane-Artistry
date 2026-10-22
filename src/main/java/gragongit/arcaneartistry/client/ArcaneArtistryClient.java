@@ -2,6 +2,7 @@ package gragongit.arcaneartistry.client;
 
 import gragongit.arcaneartistry.client.crystalball.CrystalBallBackground;
 import gragongit.arcaneartistry.client.mana.ManaHud;
+import gragongit.arcaneartistry.client.model.crystal.CrystalBlockModel;
 import gragongit.arcaneartistry.client.network.ModClientNetworking;
 import gragongit.arcaneartistry.client.renderer.OrbRingRenderer;
 import gragongit.arcaneartistry.client.staff.StaffInteractionClientHandler;
@@ -15,6 +16,7 @@ public class ArcaneArtistryClient implements ClientModInitializer {
     ArcaneArtistryClientConfig.load();
     ManaHud.register();
     OrbRingRenderer.register();
+    CrystalBlockModel.register();
     ModClientNetworking.register();
   }
 }

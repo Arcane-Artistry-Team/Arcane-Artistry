@@ -32,6 +32,7 @@ public class BlockLootProvider extends FabricBlockLootSubProvider {
                         .when(MatchBlock
                             .blockMatches(blocks, ModBlocks.ORB_RING,
                                 StatePropertiesPredicate.Builder.properties().hasProperty(OrbRingBlock.CRYSTAL, true)))))));
+    dropSelf(ModBlocks.LAPIS_CRYSTAL);
   }
 
   @Override

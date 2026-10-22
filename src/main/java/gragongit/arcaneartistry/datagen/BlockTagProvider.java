@@ -15,7 +15,7 @@ public class BlockTagProvider extends FabricTagsProvider.BlockTagsProvider {
 
   @Override
   protected void addTags(HolderLookup.Provider registries) {
-    builder(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.ORB_RING_ID);
+    builder(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.ORB_RING_ID).add(ModBlocks.LAPIS_CRYSTAL_ID);
   }
 
   @Override

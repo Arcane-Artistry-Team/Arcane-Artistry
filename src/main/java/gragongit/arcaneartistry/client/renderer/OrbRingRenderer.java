@@ -36,7 +36,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public class OrbRingRenderer implements BlockEntityRenderer<OrbRingBlockEntity, OrbRingRenderState> {
-  private static final Identifier CRYSTAL_MODEL_ID = ArcaneArtistry.id("block/lapis_crystal");
+  private static final Identifier CRYSTAL_MODEL_ID = ArcaneArtistry.id("block/lapis_crystal_ball");
   private static final ExtraModelKey<BlockStateModel> CRYSTAL_MODEL = ExtraModelKey.create(CRYSTAL_MODEL_ID::toString);
 
   private static final float PIXEL = 1F / 16F;

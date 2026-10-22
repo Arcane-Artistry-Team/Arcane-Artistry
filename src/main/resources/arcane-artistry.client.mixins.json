@@ -6,6 +6,7 @@
     "AvatarRendererMixin",
     "AvatarRenderStateMixin",
     "CastingMouseDeltaMixin",
+    "CrystalSectionDirtyMixin",
     "CastingArmModelMixin",
     "CastingHandMovementMixin",
     "VideoSettingsScreenMixin",
