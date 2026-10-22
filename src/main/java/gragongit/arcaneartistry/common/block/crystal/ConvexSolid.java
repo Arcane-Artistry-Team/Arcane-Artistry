@@ -7,8 +7,8 @@ import org.joml.Vector3dc;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A convex solid bounded by planes from a fixed set of 18 directions: the 6 axis directions and the 12 diagonals between two axes. This is
- * enough to exactly represent boxes, 45 degree wedges and the convex hulls of two equally sized boxes in neighbouring cells.
+ * A convex solid bounded by planes from a fixed set of 26 directions: the 6 axis directions, the 12 diagonals between two axes and the 8
+ * space diagonals. This is enough to exactly represent boxes with cut edges and corners.
  *
  * <p>Plane {@code k} bounds the solid by {@code NORMALS[k] · p <= offsets[k]}.
  */
@@ -37,6 +37,9 @@ final class ConvexSolid {
           }
         }
       }
+    }
+    for (int corner = 0; corner < 8; corner++) {
+      normals.add(new Vector3d((corner & 1) == 0 ? -1 : 1, (corner & 2) == 0 ? -1 : 1, (corner & 4) == 0 ? -1 : 1).normalize());
     }
     return normals.toArray(Vector3dc[]::new);
   }

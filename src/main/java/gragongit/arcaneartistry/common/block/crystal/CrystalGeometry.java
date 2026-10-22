@@ -459,7 +459,45 @@ public final class CrystalGeometry {
       }
       core = core.cut(normal, point);
     }
+    return taper(cell, core, min, max);
+  }
+
+  /**
+   * Bevels the end of an uncut edge whose two sides are open towards a crystal along the edge that cuts it as a tip. The corner is cut at
+   * 45 degrees, so the edge runs smoothly into the tip cut instead of ending in a flat step.
+   */
+  private ConvexSolid taper(int[] cell, ConvexSolid core, double[] min, double[] max) {
+    int mask = key.cutMask(cell[0], cell[1], cell[2]);
+    for (int plane = 0; plane < PLANES.length; plane++) {
+      int axisA = PLANES[plane][0];
+      int axisB = PLANES[plane][1];
+      int edgeAxis = 3 - axisA - axisB;
+      for (int edge = 0; edge < EDGES_PER_PLANE; edge++) {
+        int signA = (edge & 1) != 0 ? 1 : -1;
+        int signB = (edge & 2) != 0 ? 1 : -1;
+        if (edgeType(mask, plane, edge) != NO_CUT || get(cell, axisA, signA) != EMPTY || get(cell, axisB, signB) != EMPTY) {
+          continue;
+        }
+        for (int direction = -1; direction <= 1; direction += 2) {
+          int[] neighbor = cell.clone();
+          neighbor[edgeAxis] += direction;
+          if (get(neighbor) != CRYSTAL || edgeType(key.cutMask(neighbor[0], neighbor[1], neighbor[2]), plane, edge) != TIP_CUT) {
+            continue;
+          }
+          Vector3d normal = new Vector3d().setComponent(axisA, signA).setComponent(axisB, signB).setComponent(edgeAxis, direction);
+          Vector3d point = new Vector3d();
+          point.setComponent(axisA, (signA > 0 ? max[axisA] : min[axisA]) - signA * TIP_LEG);
+          point.setComponent(axisB, signB > 0 ? max[axisB] : min[axisB]);
+          point.setComponent(edgeAxis, direction > 0 ? max[edgeAxis] : min[edgeAxis]);
+          core = core.cut(normal, point);
+        }
+      }
+    }
     return core;
+  }
+
+  private static int edgeType(int mask, int plane, int edge) {
+    return mask >> ((plane * EDGES_PER_PLANE + edge) * EDGE_BITS) & ((1 << EDGE_BITS) - 1);
   }
 
   /**
