@@ -463,9 +463,9 @@ public final class CrystalGeometry {
   }
 
   /**
-   * Bevels the end of an uncut edge whose two sides are open towards a crystal along the edge that cuts it, as a tip or along a slope. The
-   * corner is cut at 45 degrees and meets that cut at the block boundary, so the edge runs smoothly into it instead of ending in a flat
-   * step.
+   * Bevels the end of an edge whose two sides are open towards a crystal along the edge that cuts it deeper: as a tip where this edge is
+   * not cut, or along a slope where this edge is not cut or only cut as a tip. The corner is cut at 45 degrees and meets the deeper cut at
+   * the block boundary, so the edge runs smoothly into it instead of ending in a flat step.
    */
   private ConvexSolid taper(int[] cell, ConvexSolid core, double[] min, double[] max) {
     int mask = key.cutMask(cell[0], cell[1], cell[2]);
@@ -476,7 +476,8 @@ public final class CrystalGeometry {
       for (int edge = 0; edge < EDGES_PER_PLANE; edge++) {
         int signA = (edge & 1) != 0 ? 1 : -1;
         int signB = (edge & 2) != 0 ? 1 : -1;
-        if (edgeType(mask, plane, edge) != NO_CUT || get(cell, axisA, signA) != EMPTY || get(cell, axisB, signB) != EMPTY) {
+        int depth = cutDepth(edgeType(mask, plane, edge));
+        if (depth < 0 || get(cell, axisA, signA) != EMPTY || get(cell, axisB, signB) != EMPTY) {
           continue;
         }
         for (int direction = -1; direction <= 1; direction += 2) {
@@ -486,7 +487,7 @@ public final class CrystalGeometry {
             continue;
           }
           int neighborType = edgeType(key.cutMask(neighbor[0], neighbor[1], neighbor[2]), plane, edge);
-          if (neighborType != TIP_CUT && neighborType != STEP_CUT) {
+          if (cutDepth(neighborType) <= depth) {
             continue;
           }
           Vector3d normal = new Vector3d().setComponent(axisA, signA).setComponent(axisB, signB).setComponent(edgeAxis, direction);
@@ -504,6 +505,18 @@ public final class CrystalGeometry {
       }
     }
     return core;
+  }
+
+  /**
+   * Orders the cut types by how much they remove from an edge with open sides. Inner corner cuts never apply to such edges.
+   */
+  private static int cutDepth(int type) {
+    return switch (type) {
+      case NO_CUT -> 0;
+      case TIP_CUT -> 1;
+      case STEP_CUT -> 2;
+      default -> -1;
+    };
   }
 
   private static int edgeType(int mask, int plane, int edge) {
