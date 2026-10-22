@@ -57,6 +57,10 @@ public final class CrystalGeometry {
    * stays within the radius of {@link LevelCells}.
    */
   private static final int MAX_EDGE_DISTANCE = 2;
+  /**
+   * How far a tip cut reaches into the two sides next to the edge: half of an inset side, so two opposite tip cuts meet in its center.
+   */
+  private static final double TIP_LEG = (SIZE - 2 * INSET) / 2D;
 
   private final Key key;
   private final List<ConvexSolid> solids = new ArrayList<>();
@@ -210,7 +214,8 @@ public final class CrystalGeometry {
    * exceptions keep neighbouring cuts consistent:
    * <ul>
    * <li>Other edges of a step sharing an open side with it are not cut. The slope of the step already shapes these sides.</li>
-   * <li>If the crystals continuing along the edge do not cut it, the edge is not cut either, so the cut does not run into their side.</li>
+   * <li>If the crystals continuing along the edge do not cut it, the edge is not cut either, so the cut does not run into their side. If
+   * they are not steps there, a step is cut as a tip like them.</li>
    * </ul>
    * An inner corner, with crystals on both sides and air diagonally behind it, is cut off along the inset sides of the neighbours.
    *
@@ -227,7 +232,9 @@ public final class CrystalGeometry {
         for (int signB = -1; signB <= 1; signB += 2) {
           int type = NO_CUT;
           if (wouldCut(cells, cell, axisA, signA, axisB, signB) && !isBlockedAlongEdge(cells, cell, axisA, signA, axisB, signB)) {
-            type = isStep(cells, cell, axisA, signA, axisB, signB) ? STEP_CUT : TIP_CUT;
+            type = isStep(cells, cell, axisA, signA, axisB, signB) && isStepAlongEdge(cells, cell, axisA, signA, axisB, signB)
+                ? STEP_CUT
+                : TIP_CUT;
           } else if (isInnerCorner(cells, cell, axisA, signA, axisB, signB)) {
             type = INNER_CUT;
           }
@@ -309,6 +316,27 @@ public final class CrystalGeometry {
       }
     }
     return false;
+  }
+
+  /**
+   * Whether all crystals continuing along the edge are steps there as well. Otherwise the slope would end at their side, so the edge is
+   * cut as a tip like theirs.
+   */
+  private static boolean isStepAlongEdge(Cells cells, int[] cell, int axisA, int signA, int axisB, int signB) {
+    int edgeAxis = 3 - axisA - axisB;
+    for (int direction = -1; direction <= 1; direction += 2) {
+      int[] neighbor = cell.clone();
+      for (int distance = 1; distance <= MAX_EDGE_DISTANCE; distance++) {
+        neighbor[edgeAxis] += direction;
+        if (cells.get(neighbor[0], neighbor[1], neighbor[2]) != CRYSTAL) {
+          break;
+        }
+        if (!isStep(cells, neighbor, axisA, signA, axisB, signB)) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   private static int get(Cells cells, int[] cell, int axisA, int stepA, int axisB, int stepB, int shift) {
@@ -423,10 +451,9 @@ public final class CrystalGeometry {
           point.setComponent(axisB, cell[axisB] * SIZE + (signB > 0 ? SIZE : 0));
         }
         default -> {
-          // Cut off a triangle with legs of half the box size from the edge. The plane only depends on the two sides next to the edge,
-          // so crystals along the edge with the same sides get the same plane.
-          double leg = Math.min(max[axisA] - min[axisA], max[axisB] - min[axisB]) / 2;
-          point.setComponent(axisA, (signA > 0 ? max[axisA] : min[axisA]) - signA * leg);
+          // Cut off a triangle with legs of half the inset block size from the edge. The plane only depends on the two sides next to the
+          // edge, so crystals along the edge get the same plane even if their other sides differ.
+          point.setComponent(axisA, (signA > 0 ? max[axisA] : min[axisA]) - signA * TIP_LEG);
           point.setComponent(axisB, signB > 0 ? max[axisB] : min[axisB]);
         }
       }
