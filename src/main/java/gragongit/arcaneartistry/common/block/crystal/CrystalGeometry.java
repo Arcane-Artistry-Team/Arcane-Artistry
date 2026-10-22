@@ -23,10 +23,12 @@ import net.minecraft.world.level.block.Block;
  * <ul>
  * <li>Each crystal block has a core box. It is inset by {@link CrystalBlock#INSET} pixels towards empty neighbours and reaches the block
  * boundary towards crystals and solid blocks.</li>
- * <li>A crystal that is a step of a diagonal staircase is cut in half along its diagonal (see {@link #cutMask}). The cut runs through the
- * block's corners and the cut-off sides are not inset, so the cuts of a staircase line up to one smooth slope.</li>
- * <li>Two crystals sharing only an edge, where exactly one of the two cells next to the edge is a crystal, get a small 45 degree wedge
- * through the shared edge that smooths the inner corner.</li>
+ * <li>Every edge of a crystal whose two adjacent sides are open to the air is cut off (see {@link #cutMask}). Steps of a staircase are
+ * cut through the diagonal of their inset box, so the cuts of a staircase line up to one smooth slope. Other edges are cut through the
+ * centers of the adjacent sides, which turns the ends of crystals into tips. Sides touching solid blocks are never cut, so crystals look
+ * like they grow out of them.</li>
+ * <li>Inner corners, where a crystal has crystals on both sides of an edge but air diagonally behind it, are cut off by 45 degrees
+ * along the inset sides of the neighbours, so the inset walls and slopes of the neighbours run past the corner without a tooth.</li>
  * </ul>
  *
  * <p>The geometry of a cell depends on the 3x3x3 cells around it and on how the cell and its direct neighbours are cut. Both are stored in
@@ -37,8 +39,24 @@ public final class CrystalGeometry {
 
   private static final double MARGIN_SAMPLE_DEPTH = 0.5;
   private static final int[][] PLANES = {{0, 1}, {0, 2}, {1, 2}};
-  private static final int PLANE_CUT_BITS = 3;
-  private static final int CELL_CUT_BITS = PLANES.length * PLANE_CUT_BITS;
+  private static final int EDGES_PER_PLANE = 4;
+  private static final int EDGE_BITS = 2;
+  private static final int CELL_CUT_BITS = PLANES.length * EDGES_PER_PLANE * EDGE_BITS;
+  private static final int CUT_SLOTS_PER_WORD = Long.SIZE / CELL_CUT_BITS;
+
+  /** The edge is not cut. */
+  private static final int NO_CUT = 0;
+  /** The edge is cut off as the tip of a crystal, see {@link #cutMask}. */
+  private static final int TIP_CUT = 1;
+  /** The edge is cut along the slope of a staircase step. */
+  private static final int STEP_CUT = 2;
+  /** The edge is an inner corner and cut off along the inset sides of the neighbours. */
+  private static final int INNER_CUT = 3;
+  /**
+   * How far along an edge other crystals are checked. Together with the direct neighbours whose cuts are part of the {@link Key}, this
+   * stays within the radius of {@link LevelCells}.
+   */
+  private static final int MAX_EDGE_DISTANCE = 2;
 
   private final Key key;
   private final List<ConvexSolid> solids = new ArrayList<>();
@@ -51,7 +69,6 @@ public final class CrystalGeometry {
           if (get(x, y, z) == CRYSTAL) {
             int[] cell = {x, y, z};
             add(core(cell));
-            addWedges(cell);
           }
         }
       }
@@ -108,7 +125,7 @@ public final class CrystalGeometry {
    * Everything the geometry of a crystal depends on: the classifications of the 3x3x3 cells around it, two bits per cell, and the
    * {@linkplain #cutMask cuts} of the crystal and its six direct neighbours.
    */
-  public record Key(long cells, long cuts) {
+  public record Key(long cells, long cuts0, long cuts1, long cuts2, long cuts3) {
     private static int index(int x, int y, int z) {
       return (x + 1) * 9 + (y + 1) * 3 + (z + 1);
     }
@@ -125,7 +142,16 @@ public final class CrystalGeometry {
      */
     int cutMask(int x, int y, int z) {
       int slot = cutSlot(x, y, z);
-      return slot < 0 ? 0 : (int) (cuts >>> (slot * CELL_CUT_BITS) & ((1 << CELL_CUT_BITS) - 1));
+      if (slot < 0) {
+        return 0;
+      }
+      long word = switch (slot / CUT_SLOTS_PER_WORD) {
+        case 0 -> cuts0;
+        case 1 -> cuts1;
+        case 2 -> cuts2;
+        default -> cuts3;
+      };
+      return (int) (word >>> (slot % CUT_SLOTS_PER_WORD * CELL_CUT_BITS) & ((1 << CELL_CUT_BITS) - 1));
     }
 
     private static int cutSlot(int x, int y, int z) {
@@ -155,19 +181,20 @@ public final class CrystalGeometry {
       }
     }
 
-    long cuts = 0;
+    long[] cuts = new long[4];
     if (cells.get(0, 0, 0) == CRYSTAL) {
-      cuts |= cutMask(cells, new int[3]);
+      cuts[0] |= cutMask(cells, new int[3]);
     }
     if (withNeighborCuts) {
       for (Direction direction : Direction.values()) {
         int[] neighbor = {direction.getStepX(), direction.getStepY(), direction.getStepZ()};
         if (cells.get(neighbor[0], neighbor[1], neighbor[2]) == CRYSTAL) {
-          cuts |= (long) cutMask(cells, neighbor) << (Key.cutSlot(neighbor[0], neighbor[1], neighbor[2]) * CELL_CUT_BITS);
+          int slot = Key.cutSlot(neighbor[0], neighbor[1], neighbor[2]);
+          cuts[slot / CUT_SLOTS_PER_WORD] |= (long) cutMask(cells, neighbor) << (slot % CUT_SLOTS_PER_WORD * CELL_CUT_BITS);
         }
       }
     }
-    return new Key(classifications, cuts);
+    return new Key(classifications, cuts[0], cuts[1], cuts[2], cuts[3]);
   }
 
   /**
@@ -178,15 +205,18 @@ public final class CrystalGeometry {
   }
 
   /**
-   * Computes the diagonal cuts of the crystal at {@code cell}. A cell can be cut in a plane if it is a step there: it has crystals on two
-   * perpendicular sides and no crystals on the two opposite sides (air or solid blocks). The step is cut if the slope continues along the
-   * diagonal with another crystal, either the diagonal neighbour in the same plane or, for staircases along the space diagonal, the
-   * diagonal neighbour shifted by one block along the third axis being the same kind of step. The neighbours along the third axis must not
-   * be crystals that are not the same kind of step, since the slope would run into their sides. So the slope leads from crystal to crystal
-   * instead of into the air, and corners of cubes and L shapes stay square.
+   * Computes how the edges of the crystal at {@code cell} are cut. An edge whose two sides are open to the air is cut off: along the
+   * slope if the crystal is a step of a staircase, i.e. the opposite edge has crystals on both sides, and as a tip otherwise. Two
+   * exceptions keep neighbouring cuts consistent:
+   * <ul>
+   * <li>Other edges of a step sharing an open side with it are not cut. The slope of the step already shapes these sides.</li>
+   * <li>If the crystals continuing along the edge do not cut it, the edge is not cut either, so the cut does not run into their side.</li>
+   * </ul>
+   * An inner corner, with crystals on both sides and air diagonally behind it, is cut off along the inset sides of the neighbours.
    *
-   * <p>The result holds {@value #PLANE_CUT_BITS} bits per plane of {@link #PLANES}: 0 if not cut, otherwise {@code 1 + a + 2b}, where
-   * {@code a} and {@code b} are 1 if the kept half lies towards the positive side of the plane's first and second axis.
+   * <p>The result holds {@value #EDGE_BITS} bits per edge, {@value #EDGES_PER_PLANE} edges per plane of {@link #PLANES}: edge
+   * {@code 4 * plane + a + 2b} is the edge on the positive side of the plane's first axis if {@code a} is 1 and on the positive side of its
+   * second axis if {@code b} is 1.
    */
   static int cutMask(Cells cells, int[] cell) {
     int mask = 0;
@@ -195,48 +225,87 @@ public final class CrystalGeometry {
       int axisB = PLANES[plane][1];
       for (int signA = -1; signA <= 1; signA += 2) {
         for (int signB = -1; signB <= 1; signB += 2) {
-          if (isStep(cells, cell, axisA, signA, axisB, signB) && !runsIntoCrystal(cells, cell, axisA, signA, axisB, signB)
-              && (continuesSlope(cells, cell, axisA, signA, axisB, signB, 1)
-                  || continuesSlope(cells, cell, axisA, signA, axisB, signB, -1))) {
-            mask |= (1 + (signA > 0 ? 1 : 0) + (signB > 0 ? 2 : 0)) << (plane * PLANE_CUT_BITS);
+          int type = NO_CUT;
+          if (wouldCut(cells, cell, axisA, signA, axisB, signB) && !isBlockedAlongEdge(cells, cell, axisA, signA, axisB, signB)) {
+            type = isStep(cells, cell, axisA, signA, axisB, signB) ? STEP_CUT : TIP_CUT;
+          } else if (isInnerCorner(cells, cell, axisA, signA, axisB, signB)) {
+            type = INNER_CUT;
           }
+          int edge = plane * EDGES_PER_PLANE + (signA > 0 ? 1 : 0) + (signB > 0 ? 2 : 0);
+          mask |= type << (edge * EDGE_BITS);
         }
       }
     }
     return mask;
   }
 
-  private static boolean isStep(Cells cells, int[] cell, int axisA, int signA, int axisB, int signB) {
+  /**
+   * Whether the edge is an inner corner: crystals on both sides, but air diagonally behind it. The neighbours are inset towards that air,
+   * so the corner would stick out.
+   */
+  private static boolean isInnerCorner(Cells cells, int[] cell, int axisA, int signA, int axisB, int signB) {
     return get(cells, cell, axisA, signA, axisB, 0, 0) == CRYSTAL && get(cells, cell, axisA, 0, axisB, signB, 0) == CRYSTAL
-        && get(cells, cell, axisA, -signA, axisB, 0, 0) != CRYSTAL && get(cells, cell, axisA, 0, axisB, -signB, 0) != CRYSTAL;
+        && get(cells, cell, axisA, signA, axisB, signB, 0) == EMPTY;
+  }
+
+  private static boolean isOpen(int classification) {
+    return classification == EMPTY;
+  }
+
+  private static boolean isOpenEdge(Cells cells, int[] cell, int axisA, int signA, int axisB, int signB) {
+    return isOpen(get(cells, cell, axisA, signA, axisB, 0, 0)) && isOpen(get(cells, cell, axisA, 0, axisB, signB, 0));
   }
 
   /**
-   * Whether a neighbour along the third axis is a crystal that is not the same kind of step. The slope would run into its side.
+   * Whether the edge is a step of a staircase: open on both sides while the opposite edge has crystals on both sides.
    */
-  private static boolean runsIntoCrystal(Cells cells, int[] cell, int axisA, int signA, int axisB, int signB) {
-    for (int shift = -1; shift <= 1; shift += 2) {
-      int[] neighbor = offset(cell, axisA, 0, axisB, 0, shift);
-      if (cells.get(neighbor[0], neighbor[1], neighbor[2]) == CRYSTAL && !isStep(cells, neighbor, axisA, signA, axisB, signB)) {
-        return true;
-      }
+  static boolean isStep(Cells cells, int[] cell, int axisA, int signA, int axisB, int signB) {
+    return isOpenEdge(cells, cell, axisA, signA, axisB, signB) && get(cells, cell, axisA, -signA, axisB, 0, 0) == CRYSTAL
+        && get(cells, cell, axisA, 0, axisB, -signB, 0) == CRYSTAL;
+  }
+
+  /**
+   * Whether the edge would be cut considering only the cell itself.
+   */
+  private static boolean wouldCut(Cells cells, int[] cell, int axisA, int signA, int axisB, int signB) {
+    if (!isOpenEdge(cells, cell, axisA, signA, axisB, signB)) {
+      return false;
     }
-    return false;
-  }
-
-  /**
-   * Whether the slope of a step continues in the given direction along its diagonal.
-   */
-  private static boolean continuesSlope(Cells cells, int[] cell, int axisA, int signA, int axisB, int signB, int direction) {
-    int stepA = signA * direction;
-    int stepB = -signB * direction;
-    if (get(cells, cell, axisA, stepA, axisB, stepB, 0) == CRYSTAL) {
+    if (isStep(cells, cell, axisA, signA, axisB, signB)) {
       return true;
     }
-    for (int shift = -1; shift <= 1; shift += 2) {
-      int[] neighbor = offset(cell, axisA, stepA, axisB, stepB, shift);
-      if (cells.get(neighbor[0], neighbor[1], neighbor[2]) == CRYSTAL && isStep(cells, neighbor, axisA, signA, axisB, signB)) {
-        return true;
+    for (int[] plane : PLANES) {
+      for (int stepA = -1; stepA <= 1; stepA += 2) {
+        for (int stepB = -1; stepB <= 1; stepB += 2) {
+          if (isStep(cells, cell, plane[0], stepA, plane[1], stepB)
+              && (sharesSide(plane[0], stepA, axisA, signA, axisB, signB) || sharesSide(plane[1], stepB, axisA, signA, axisB, signB))) {
+            return false;
+          }
+        }
+      }
+    }
+    return true;
+  }
+
+  private static boolean sharesSide(int axis, int sign, int axisA, int signA, int axisB, int signB) {
+    return axis == axisA && sign == signA || axis == axisB && sign == signB;
+  }
+
+  /**
+   * Whether a crystal along the edge, reached through other crystals, would not cut the edge.
+   */
+  private static boolean isBlockedAlongEdge(Cells cells, int[] cell, int axisA, int signA, int axisB, int signB) {
+    int edgeAxis = 3 - axisA - axisB;
+    for (int direction = -1; direction <= 1; direction += 2) {
+      int[] neighbor = cell.clone();
+      for (int distance = 1; distance <= MAX_EDGE_DISTANCE; distance++) {
+        neighbor[edgeAxis] += direction;
+        if (cells.get(neighbor[0], neighbor[1], neighbor[2]) != CRYSTAL) {
+          break;
+        }
+        if (!wouldCut(cells, neighbor, axisA, signA, axisB, signB)) {
+          return true;
+        }
       }
     }
     return false;
@@ -309,138 +378,61 @@ public final class CrystalGeometry {
   }
 
   /**
-   * The cuts of a cell as {@code [axisA, axisB, signA, signB]}, where the signs point to the two neighbouring crystals whose half of the
-   * cell is kept.
+   * The cuts of a cell as {@code [axisA, axisB, signA, signB, type]}, where the signs point to the two sides next to the cut edge.
    */
   private List<int[]> cuts(int[] cell) {
     int mask = key.cutMask(cell[0], cell[1], cell[2]);
-    List<int[]> cuts = new ArrayList<>(3);
+    List<int[]> cuts = new ArrayList<>();
     for (int plane = 0; plane < PLANES.length; plane++) {
-      int value = mask >>> (plane * PLANE_CUT_BITS) & ((1 << PLANE_CUT_BITS) - 1);
-      if (value != 0) {
-        int signs = value - 1;
-        cuts.add(new int[] {PLANES[plane][0], PLANES[plane][1], (signs & 1) != 0 ? 1 : -1, (signs & 2) != 0 ? 1 : -1});
+      for (int edge = 0; edge < EDGES_PER_PLANE; edge++) {
+        int type = mask >> ((plane * EDGES_PER_PLANE + edge) * EDGE_BITS) & ((1 << EDGE_BITS) - 1);
+        if (type != NO_CUT) {
+          cuts.add(new int[] {PLANES[plane][0], PLANES[plane][1], (edge & 1) != 0 ? 1 : -1, (edge & 2) != 0 ? 1 : -1, type});
+        }
       }
     }
     return cuts;
   }
 
   private ConvexSolid core(int[] cell) {
-    List<int[]> cuts = cuts(cell);
     double[] min = new double[3];
     double[] max = new double[3];
     for (int axis = 0; axis < 3; axis++) {
-      min[axis] = cell[axis] * SIZE + inset(cell, cuts, axis, -1);
-      max[axis] = cell[axis] * SIZE + SIZE - inset(cell, cuts, axis, 1);
+      min[axis] = cell[axis] * SIZE + (get(cell, axis, -1) != EMPTY ? 0 : INSET);
+      max[axis] = cell[axis] * SIZE + SIZE - (get(cell, axis, 1) != EMPTY ? 0 : INSET);
     }
 
     ConvexSolid core = ConvexSolid.box(min, max);
-    Vector3d center = new Vector3d(cell[0], cell[1], cell[2]).mul(SIZE).add(SIZE / 2D, SIZE / 2D, SIZE / 2D);
-    for (int[] cut : cuts) {
-      Vector3d normal = new Vector3d().setComponent(cut[0], -cut[2]).setComponent(cut[1], -cut[3]);
-      core = core.cut(normal, center);
-    }
-    return core;
-  }
-
-  /**
-   * The inset of a cell's core on one side. Sides cut off by a diagonal cut are not inset, so that the cuts of neighbouring cells meet
-   * in the block corners.
-   */
-  private double inset(int[] cell, List<int[]> cuts, int axis, int step) {
-    if (get(cell, axis, step) != EMPTY) {
-      return 0;
-    }
-    for (int[] cut : cuts) {
-      if (cut[0] == axis && cut[2] == -step || cut[1] == axis && cut[3] == -step) {
-        return 0;
-      }
-    }
-    return INSET;
-  }
-
-  private double plainMin(int[] cell, int axis) {
-    return cell[axis] * SIZE + (get(cell, axis, -1) != EMPTY ? 0 : INSET);
-  }
-
-  private double plainMax(int[] cell, int axis) {
-    return cell[axis] * SIZE + SIZE - (get(cell, axis, 1) != EMPTY ? 0 : INSET);
-  }
-
-  /**
-   * Adds the wedges from {@code first} to all crystals sharing an edge with it that come after it, so that every pair is handled once.
-   */
-  private void addWedges(int[] first) {
-    for (int x = first[0]; x <= 1; x++) {
-      for (int y = -1; y <= 1; y++) {
-        for (int z = -1; z <= 1; z++) {
-          int[] second = {x, y, z};
-          if (Key.index(x, y, z) <= Key.index(first[0], first[1], first[2]) || get(second) != CRYSTAL) {
-            continue;
-          }
-
-          int changedAxes = 0;
-          boolean adjacent = true;
-          for (int axis = 0; axis < 3; axis++) {
-            int difference = Math.abs(second[axis] - first[axis]);
-            adjacent &= difference <= 1;
-            changedAxes += difference;
-          }
-          if (adjacent && changedAxes == 2) {
-            addWedge(first, second);
-          }
+    for (int[] cut : cuts(cell)) {
+      int axisA = cut[0];
+      int axisB = cut[1];
+      int signA = cut[2];
+      int signB = cut[3];
+      Vector3d normal = new Vector3d().setComponent(axisA, signA).setComponent(axisB, signB);
+      Vector3d point = new Vector3d(min[0] + max[0], min[1] + max[1], min[2] + max[2]).div(2);
+      switch (cut[4]) {
+        case STEP_CUT -> {
+          // The slope runs from the open side of one axis to the crystal side of the other, through the corners of the inset box.
+          point.setComponent(axisA, signA > 0 ? max[axisA] : min[axisA]);
+          point.setComponent(axisB, signB > 0 ? min[axisB] : max[axisB]);
+        }
+        case INNER_CUT -> {
+          // Through the inset sides of both neighbours where they meet this crystal.
+          double base = cell[axisA] * SIZE;
+          point.setComponent(axisA, base + (signA > 0 ? SIZE - INSET : INSET));
+          point.setComponent(axisB, cell[axisB] * SIZE + (signB > 0 ? SIZE : 0));
+        }
+        default -> {
+          // Cut off a triangle with legs of half the box size from the edge. The plane only depends on the two sides next to the edge,
+          // so crystals along the edge with the same sides get the same plane.
+          double leg = Math.min(max[axisA] - min[axisA], max[axisB] - min[axisB]) / 2;
+          point.setComponent(axisA, (signA > 0 ? max[axisA] : min[axisA]) - signA * leg);
+          point.setComponent(axisB, signB > 0 ? max[axisB] : min[axisB]);
         }
       }
+      core = core.cut(normal, point);
     }
-  }
-
-  /**
-   * Adds the 45 degree wedge between two crystals sharing an edge if exactly one of the two cells next to the edge is a crystal. The
-   * wedge's slanted face passes through the shared edge and faces the other cell.
-   */
-  private void addWedge(int[] first, int[] second) {
-    int edgeAxis = 0;
-    while (first[edgeAxis] != second[edgeAxis]) {
-      edgeAxis++;
-    }
-    int axisA = (edgeAxis + 1) % 3;
-    int axisB = (edgeAxis + 2) % 3;
-
-    int[] sideA = first.clone();
-    sideA[axisA] = second[axisA];
-    int[] sideB = first.clone();
-    sideB[axisB] = second[axisB];
-    boolean crystalA = get(sideA) == CRYSTAL;
-    boolean crystalB = get(sideB) == CRYSTAL;
-    if (crystalA == crystalB) {
-      return;
-    }
-
-    // The plain insets only depend on cells both crystals know, so both compute the same wedge.
-    double edgeMin = Math.max(plainMin(first, edgeAxis), plainMin(second, edgeAxis));
-    double edgeMax = Math.min(plainMax(first, edgeAxis), plainMax(second, edgeAxis));
-    if (edgeMax <= edgeMin) {
-      return;
-    }
-
-    int[] emptySide = crystalA ? sideB : sideA;
-    double edgeA = Math.max(first[axisA], second[axisA]) * SIZE;
-    double edgeB = Math.max(first[axisB], second[axisB]) * SIZE;
-    double signA = Math.signum(emptySide[axisA] * SIZE + SIZE / 2D - edgeA);
-    double signB = Math.signum(emptySide[axisB] * SIZE + SIZE / 2D - edgeB);
-
-    double[][] offsets = {{-INSET, -INSET}, {-INSET, INSET}, {INSET, -INSET}};
-    List<Vector3d> points = new ArrayList<>(6);
-    for (double[] offset : offsets) {
-      for (double edge : new double[] {edgeMin, edgeMax}) {
-        Vector3d point = new Vector3d();
-        point.setComponent(axisA, edgeA + offset[0] * signA);
-        point.setComponent(axisB, edgeB + offset[1] * signB);
-        point.setComponent(edgeAxis, edge);
-        points.add(point);
-      }
-    }
-    add(ConvexSolid.hull(points));
+    return core;
   }
 
   /**
