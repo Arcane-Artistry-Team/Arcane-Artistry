@@ -463,8 +463,9 @@ public final class CrystalGeometry {
   }
 
   /**
-   * Bevels the end of an uncut edge whose two sides are open towards a crystal along the edge that cuts it as a tip. The corner is cut at
-   * 45 degrees, so the edge runs smoothly into the tip cut instead of ending in a flat step.
+   * Bevels the end of an uncut edge whose two sides are open towards a crystal along the edge that cuts it, as a tip or along a slope. The
+   * corner is cut at 45 degrees and meets that cut at the block boundary, so the edge runs smoothly into it instead of ending in a flat
+   * step.
    */
   private ConvexSolid taper(int[] cell, ConvexSolid core, double[] min, double[] max) {
     int mask = key.cutMask(cell[0], cell[1], cell[2]);
@@ -481,13 +482,22 @@ public final class CrystalGeometry {
         for (int direction = -1; direction <= 1; direction += 2) {
           int[] neighbor = cell.clone();
           neighbor[edgeAxis] += direction;
-          if (get(neighbor) != CRYSTAL || edgeType(key.cutMask(neighbor[0], neighbor[1], neighbor[2]), plane, edge) != TIP_CUT) {
+          if (get(neighbor) != CRYSTAL) {
+            continue;
+          }
+          int neighborType = edgeType(key.cutMask(neighbor[0], neighbor[1], neighbor[2]), plane, edge);
+          if (neighborType != TIP_CUT && neighborType != STEP_CUT) {
             continue;
           }
           Vector3d normal = new Vector3d().setComponent(axisA, signA).setComponent(axisB, signB).setComponent(edgeAxis, direction);
           Vector3d point = new Vector3d();
-          point.setComponent(axisA, (signA > 0 ? max[axisA] : min[axisA]) - signA * TIP_LEG);
-          point.setComponent(axisB, signB > 0 ? max[axisB] : min[axisB]);
+          if (neighborType == STEP_CUT) {
+            point.setComponent(axisA, signA > 0 ? max[axisA] : min[axisA]);
+            point.setComponent(axisB, signB > 0 ? min[axisB] : max[axisB]);
+          } else {
+            point.setComponent(axisA, (signA > 0 ? max[axisA] : min[axisA]) - signA * TIP_LEG);
+            point.setComponent(axisB, signB > 0 ? max[axisB] : min[axisB]);
+          }
           point.setComponent(edgeAxis, direction > 0 ? max[edgeAxis] : min[edgeAxis]);
           core = core.cut(normal, point);
         }
