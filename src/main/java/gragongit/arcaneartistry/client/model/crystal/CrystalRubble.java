@@ -27,7 +27,23 @@ final class CrystalRubble {
 
   private CrystalRubble() {}
 
-  static void emit(QuadEmitter emitter, BlockAndTintGetter level, BlockPos pos, Direction direction, long[] margin, RandomSource random) {
+  /**
+   * Emits the debris for all faces of the crystal at {@code pos}. {@code margins} holds the uncovered pixels of each face as computed by
+   * {@link CrystalGeometry}, or null for faces without debris.
+   */
+  static void emit(QuadEmitter emitter, BlockAndTintGetter level, BlockPos pos, long[][] margins, RandomSource random) {
+    // Debris of faces meeting at an edge would overlap in the corner and flicker, so each pixel of the cell is filled at most once.
+    boolean[] occupied = new boolean[SIZE * SIZE * SIZE];
+    for (Direction direction : Direction.values()) {
+      long[] margin = margins[direction.ordinal()];
+      if (margin != null) {
+        emit(emitter, level, pos, direction, margin, occupied, random);
+      }
+    }
+  }
+
+  private static void emit(QuadEmitter emitter, BlockAndTintGetter level, BlockPos pos, Direction direction, long[] margin,
+      boolean[] occupied, RandomSource random) {
     BlockPos neighborPos = pos.relative(direction);
     BlockState neighbor = level.getBlockState(neighborPos);
     Material.Baked material = Minecraft
@@ -64,6 +80,17 @@ final class CrystalRubble {
           }
         }
         int height = 1 + random.nextInt(width * length > 1 ? 3 : 2);
+        int[] pixel = new int[3];
+        for (int depth = 0; depth < height; depth++) {
+          pixel[axis] = positive ? SIZE - 1 - depth : depth;
+          if (!occupy(occupied, pixel, axisU, u, width, axisV, v, length)) {
+            height = depth;
+            break;
+          }
+        }
+        if (height == 0) {
+          continue;
+        }
 
         Vector3f min = new Vector3f();
         Vector3f max = new Vector3f();
@@ -72,6 +99,28 @@ final class CrystalRubble {
         emitBox(emitter, min, max, direction, material, color, random);
       }
     }
+  }
+
+  /**
+   * Marks the rectangle of {@code width} by {@code length} pixels at {@code u}, {@code v} in the layer of {@code pixel} as occupied, if
+   * none of them is occupied yet.
+   */
+  private static boolean occupy(boolean[] occupied, int[] pixel, int axisU, int u, int width, int axisV, int v, int length) {
+    for (int pass = 0; pass < 2; pass++) {
+      for (int du = 0; du < width; du++) {
+        for (int dv = 0; dv < length; dv++) {
+          pixel[axisU] = u + du;
+          pixel[axisV] = v + dv;
+          int index = (pixel[0] * SIZE + pixel[1]) * SIZE + pixel[2];
+          if (pass == 1) {
+            occupied[index] = true;
+          } else if (occupied[index]) {
+            return false;
+          }
+        }
+      }
+    }
+    return true;
   }
 
   private static boolean isFree(long[] margin, boolean[] used, int u, int v) {
