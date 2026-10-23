@@ -1,5 +1,7 @@
 package gragongit.arcaneartistry.client.model.crystal;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.joml.Vector3f;
 import gragongit.arcaneartistry.common.block.crystal.CrystalGeometry;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.MutableQuadView;
@@ -12,7 +14,6 @@ import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.ARGB;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -31,18 +32,28 @@ final class CrystalRubble {
    * Emits the debris for all faces of the crystal at {@code pos}. {@code margins} holds the uncovered pixels of each face as computed by
    * {@link CrystalGeometry}, or null for faces without debris.
    */
-  static void emit(QuadEmitter emitter, BlockAndTintGetter level, BlockPos pos, long[][] margins, RandomSource random) {
+  static void emit(QuadEmitter emitter, BlockAndTintGetter level, BlockPos pos, BlockState state, long[][] margins, RandomSource random) {
     // Debris of faces meeting at an edge would overlap in the corner and flicker, so each pixel of the cell is filled at most once.
     boolean[] occupied = new boolean[SIZE * SIZE * SIZE];
+    List<Box> boxes = new ArrayList<>();
     for (Direction direction : Direction.values()) {
       long[] margin = margins[direction.ordinal()];
       if (margin != null) {
-        emit(emitter, level, pos, direction, margin, occupied, random);
+        place(boxes, level, pos, state, direction, margin, occupied, random);
       }
+    }
+    for (Box box : boxes) {
+      emitBox(emitter, box, occupied, random);
     }
   }
 
-  private static void emit(QuadEmitter emitter, BlockAndTintGetter level, BlockPos pos, Direction direction, long[] margin,
+  /**
+   * A debris piece spanning the pixels from {@code min} inclusive to {@code max} exclusive, lying on the solid block towards
+   * {@code base}.
+   */
+  private record Box(int[] min, int[] max, Direction base, Material.Baked material, int color) {}
+
+  private static void place(List<Box> boxes, BlockAndTintGetter level, BlockPos pos, BlockState state, Direction direction, long[] margin,
       boolean[] occupied, RandomSource random) {
     BlockPos neighborPos = pos.relative(direction);
     BlockState neighbor = level.getBlockState(neighborPos);
@@ -60,7 +71,7 @@ final class CrystalRubble {
     int axisV = axis == 2 ? 1 : 2;
     boolean positive = direction.getAxisDirection() == Direction.AxisDirection.POSITIVE;
 
-    random.setSeed(Mth.getSeed(pos.getX(), pos.getY(), pos.getZ()) * 31 + direction.ordinal());
+    random.setSeed(state.getSeed(pos) * 31 + direction.ordinal());
     boolean[] used = new boolean[SIZE * SIZE];
     for (int v = 0; v < SIZE; v++) {
       for (int u = 0; u < SIZE; u++) {
@@ -92,11 +103,15 @@ final class CrystalRubble {
           continue;
         }
 
-        Vector3f min = new Vector3f();
-        Vector3f max = new Vector3f();
-        min.setComponent(axisU, u * PIXEL).setComponent(axisV, v * PIXEL).setComponent(axis, positive ? 1 - height * PIXEL : 0);
-        max.setComponent(axisU, (u + width) * PIXEL).setComponent(axisV, (v + length) * PIXEL).setComponent(axis, positive ? 1 : height * PIXEL);
-        emitBox(emitter, min, max, direction, material, color, random);
+        int[] min = new int[3];
+        int[] max = new int[3];
+        min[axisU] = u;
+        min[axisV] = v;
+        min[axis] = positive ? SIZE - height : 0;
+        max[axisU] = u + width;
+        max[axisV] = v + length;
+        max[axis] = positive ? SIZE : height;
+        boxes.add(new Box(min, max, direction, material, color));
       }
     }
   }
@@ -143,12 +158,14 @@ final class CrystalRubble {
   }
 
   /**
-   * Emits all faces of a box except the one touching the solid block. Each face shows a random part of the texture.
+   * Emits the faces of a box except the one lying on the solid block and those completely covered by other debris. Each face shows a
+   * random part of the texture.
    */
-  private static void emitBox(QuadEmitter emitter, Vector3f min, Vector3f max, Direction hidden, Material.Baked material, int color,
-      RandomSource random) {
+  private static void emitBox(QuadEmitter emitter, Box box, boolean[] occupied, RandomSource random) {
+    Vector3f min = new Vector3f(box.min[0], box.min[1], box.min[2]).mul(PIXEL);
+    Vector3f max = new Vector3f(box.max[0], box.max[1], box.max[2]).mul(PIXEL);
     for (Direction face : Direction.values()) {
-      if (face == hidden) {
+      if (face == box.base || isCovered(box, face, occupied)) {
         continue;
       }
 
@@ -180,8 +197,32 @@ final class CrystalRubble {
       boolean onBorder = face.getAxisDirection() == Direction.AxisDirection.POSITIVE
           ? max.get(face.getAxis().ordinal()) >= 1
           : min.get(face.getAxis().ordinal()) <= 0;
-      emitter.nominalFace(face).cullFace(onBorder ? face : null).color(color, color, color, color);
-      emitter.materialBake(material, MutableQuadView.BAKE_NORMALIZED).emit();
+      emitter.nominalFace(face).cullFace(onBorder ? face : null).color(box.color, box.color, box.color, box.color);
+      emitter.materialBake(box.material, MutableQuadView.BAKE_NORMALIZED).emit();
     }
+  }
+
+  /**
+   * Whether all pixels directly in front of the face of the box are occupied by debris. Faces on the border of the cell are culled
+   * against the neighbouring block instead.
+   */
+  private static boolean isCovered(Box box, Direction face, boolean[] occupied) {
+    int axis = face.getAxis().ordinal();
+    int layer = face.getAxisDirection() == Direction.AxisDirection.POSITIVE ? box.max[axis] : box.min[axis] - 1;
+    if (layer < 0 || layer >= SIZE) {
+      return false;
+    }
+    int[] pixel = new int[3];
+    pixel[axis] = layer;
+    int axisU = axis == 0 ? 1 : 0;
+    int axisV = axis == 2 ? 1 : 2;
+    for (pixel[axisU] = box.min[axisU]; pixel[axisU] < box.max[axisU]; pixel[axisU]++) {
+      for (pixel[axisV] = box.min[axisV]; pixel[axisV] < box.max[axisV]; pixel[axisV]++) {
+        if (!occupied[(pixel[0] * SIZE + pixel[1]) * SIZE + pixel[2]]) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 }

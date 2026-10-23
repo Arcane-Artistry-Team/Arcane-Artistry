@@ -134,7 +134,7 @@ public final class CrystalBlockModel implements BlockStateModel {
     CrystalGeometry.Key key = CrystalGeometry.key(new CrystalGeometry.LevelCells(level, pos, state.getBlock()), true);
     CellMesh cell = cell(key);
     cell.mesh().outputTo(emitter);
-    CrystalRubble.emit(emitter, level, pos, cell.rubbleMargins(), random);
+    CrystalRubble.emit(emitter, level, pos, state, cell.rubbleMargins(), random);
   }
 
   @Override
