@@ -1,11 +1,22 @@
 package gragongit.arcaneartistry.common.block;
 
 import gragongit.arcaneartistry.common.block.crystal.CrystalGeometry;
+import gragongit.arcaneartistry.common.block.crystal.CrystalPlacement;
 import gragongit.arcaneartistry.common.block.crystal.CrystalShape;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -40,6 +51,32 @@ public class CrystalBlock extends Block {
   @Override
   protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
     return CrystalShape.get(CrystalGeometry.shapeKey(level, pos, this));
+  }
+
+  /**
+   * Places blocks against the side of a slope that is looked at most directly, see {@link CrystalPlacement}, instead of the side of the
+   * step of the voxelized shape that happens to be hit.
+   */
+  @Override
+  protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+      BlockHitResult hit) {
+    if (!(stack.getItem() instanceof BlockItem) || player.getCooldowns().isOnCooldown(stack)) {
+      return super.useItemOn(stack, state, level, pos, player, hand, hit);
+    }
+    Vec3 origin = Vec3.atLowerCornerOf(pos);
+    Direction face = CrystalPlacement.face(CrystalGeometry.key(new CrystalGeometry.LevelCells(level, pos, this), true),
+        player.getEyePosition().subtract(origin), hit.getLocation().subtract(origin), side -> level.getBlockState(pos.relative(side)).canBeReplaced());
+    if (face == null || face == hit.getDirection()) {
+      return super.useItemOn(stack, state, level, pos, player, hand, hit);
+    }
+
+    int count = stack.getCount();
+    InteractionResult result = stack.useOn(new UseOnContext(player, hand, hit.withDirection(face)));
+    if (player.hasInfiniteMaterials()) {
+      stack.setCount(count);
+    }
+    // Vanilla would otherwise retry with the side that was hit, placing the block somewhere unexpected.
+    return result.consumesAction() ? result : InteractionResult.CONSUME;
   }
 
   @Override

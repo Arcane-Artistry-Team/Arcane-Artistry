@@ -372,8 +372,15 @@ public final class CrystalGeometry {
     return false;
   }
 
+  /**
+   * The surface of the crystal inside the cell.
+   */
+  List<Polygon> surface() {
+    return ConvexSolid.unionSurface(solids, 0, SIZE);
+  }
+
   private Result build() {
-    List<Polygon> surface = ConvexSolid.unionSurface(solids, 0, SIZE);
+    List<Polygon> surface = surface();
     long[][] margins = new long[6][];
     if (get(0, 0, 0) == CRYSTAL) {
       for (Direction direction : Direction.values()) {

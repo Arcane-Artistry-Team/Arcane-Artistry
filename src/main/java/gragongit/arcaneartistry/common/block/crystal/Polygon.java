@@ -120,6 +120,27 @@ public record Polygon(List<Vector3dc> vertices, Vector3dc normal) {
     return result;
   }
 
+  /**
+   * Whether the point lies on this polygon, allowing it to be up to {@code tolerance} away.
+   */
+  boolean contains(Vector3dc point, double tolerance) {
+    if (Math.abs(normal.dot(point) - normal.dot(vertices.getFirst())) > tolerance) {
+      return false;
+    }
+    Vector3d edge = new Vector3d();
+    Vector3d toPoint = new Vector3d();
+    int count = vertices.size();
+    for (int i = 0; i < count; i++) {
+      Vector3dc current = vertices.get(i);
+      vertices.get((i + 1) % count).sub(current, edge);
+      point.sub(current, toPoint);
+      if (edge.cross(toPoint, new Vector3d()).dot(normal) < -tolerance * edge.length()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   double area() {
     Vector3d sum = new Vector3d();
     Vector3d cross = new Vector3d();
