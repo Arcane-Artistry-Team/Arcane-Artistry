@@ -70,7 +70,8 @@ public final class CrystalGeometry {
     for (int x = -1; x <= 1; x++) {
       for (int y = -1; y <= 1; y++) {
         for (int z = -1; z <= 1; z++) {
-          if (get(x, y, z) == CRYSTAL) {
+          // Crystals diagonally next to the cell only touch it along an edge or in a corner, so they cannot cover any of its faces.
+          if (Math.abs(x) + Math.abs(y) + Math.abs(z) <= 1 && get(x, y, z) == CRYSTAL) {
             int[] cell = {x, y, z};
             add(core(cell));
           }
