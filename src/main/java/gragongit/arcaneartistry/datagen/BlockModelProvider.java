@@ -1,7 +1,9 @@
 package gragongit.arcaneartistry.datagen;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.IntStream;
 import gragongit.arcaneartistry.client.model.crystal.CrystalBlockModel;
 import gragongit.arcaneartistry.common.ArcaneArtistry;
 import gragongit.arcaneartistry.common.registry.ModBlocks;
@@ -26,7 +28,7 @@ public class BlockModelProvider extends FabricModelProvider {
   @Override
   public void generateBlockStateModels(BlockModelGenerators blockModelGenerators) {
     blockModelGenerators.createNonTemplateModelBlock(ModBlocks.ORB_RING);
-    blockModelGenerators.blockStateOutput.accept(crystal(ModBlocks.LAPIS_CRYSTAL, ArcaneArtistry.id("block/lapis_crystal")));
+    blockModelGenerators.blockStateOutput.accept(crystal(ModBlocks.LAPIS_CRYSTAL, "lapis_crystal", 3, 8));
   }
 
   @Override
@@ -34,7 +36,16 @@ public class BlockModelProvider extends FabricModelProvider {
     itemModelGenerators.generateFlatItem(ModItems.LAPIS_CRYSTAL, Items.HEART_OF_THE_SEA, ModelTemplates.FLAT_ITEM);
   }
 
-  private static BlockModelDefinitionGenerator crystal(Block block, Identifier texture) {
+  /**
+   * The model of a crystal using the texture {@code block/<name>} and the shimmer textures {@code block/<name>_shimmer_<1..variants>}.
+   * Each side shimmers with a chance of one in {@code shimmerChance}.
+   */
+  private static BlockModelDefinitionGenerator crystal(Block block, String name, int shimmerVariants, int shimmerChance) {
+    Identifier texture = ArcaneArtistry.id("block/" + name);
+    List<Identifier> shimmerTextures = IntStream
+        .rangeClosed(1, shimmerVariants)
+        .mapToObj(i -> ArcaneArtistry.id("block/" + name + "_shimmer_" + i))
+        .toList();
     // The custom model type has to be known to serialize the block state definition.
     CrystalBlockModel.register();
     return new BlockModelDefinitionGenerator() {
@@ -46,7 +57,7 @@ public class BlockModelProvider extends FabricModelProvider {
       @Override
       public BlockStateModelDispatcher create() {
         return new BlockStateModelDispatcher(
-            Optional.of(new BlockStateModelDispatcher.SimpleModelSelectors(Map.of("", new CrystalBlockModel.Unbaked(texture)))),
+            Optional.of(new BlockStateModelDispatcher.SimpleModelSelectors(Map.of("", new CrystalBlockModel.Unbaked(texture, shimmerTextures, shimmerChance)))),
             Optional.empty());
       }
     };

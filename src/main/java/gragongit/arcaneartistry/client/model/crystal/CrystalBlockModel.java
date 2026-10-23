@@ -32,25 +32,34 @@ import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Block model of a {@link CrystalBlock}. The geometry of each crystal depends on the surrounding crystals and is computed by
  * {@link CrystalGeometry}. Meshes are cached per neighbourhood.
+ *
+ * <p>Each side of a crystal shimmers with a chance of one in {@code shimmer_chance}, by default {@value #DEFAULT_SHIMMER_CHANCE}, showing one
+ * of the shimmer textures instead of the normal one. Slopes belong to the side they mostly face.
  */
 public final class CrystalBlockModel implements BlockStateModel {
   public static final Identifier TYPE_ID = ArcaneArtistry.id("crystal");
 
   private static final AtomicBoolean REGISTERED = new AtomicBoolean();
   private static final int MAX_CACHED_CELLS = 16384;
+  private static final int DEFAULT_SHIMMER_CHANCE = 8;
 
   private final Material.Baked material;
+  private final List<Material.Baked> shimmerMaterials;
+  private final int shimmerChance;
   private final Map<CrystalGeometry.Key, CellMesh> cells = new ConcurrentHashMap<>();
   private final BlockStateModelPart isolatedPart;
 
-  private CrystalBlockModel(Material.Baked material) {
+  private CrystalBlockModel(Material.Baked material, List<Material.Baked> shimmerMaterials, int shimmerChance) {
     this.material = material;
+    this.shimmerMaterials = shimmerMaterials;
+    this.shimmerChance = shimmerChance;
     CrystalGeometry.Key isolatedKey = CrystalGeometry.key((x, y, z) -> x == 0 && y == 0 && z == 0 ? CrystalBlock.CRYSTAL : CrystalBlock.EMPTY, true);
     this.isolatedPart = new SimpleModelWrapper(new MeshQuadCollection(cell(isolatedKey).mesh()), false, material);
   }
@@ -117,7 +126,7 @@ public final class CrystalBlockModel implements BlockStateModel {
   /**
    * Assigns texture coordinates like a vanilla face with uv lock, so the texture lines up across neighbouring crystals.
    */
-  static void setLockedUv(QuadEmitter emitter, int vertex, Direction face, float x, float y, float z) {
+  static void setLockedUv(MutableQuadView emitter, int vertex, Direction face, float x, float y, float z) {
     switch (face) {
       case DOWN -> emitter.uv(vertex, x, 1 - z);
       case UP -> emitter.uv(vertex, x, z);
@@ -133,8 +142,46 @@ public final class CrystalBlockModel implements BlockStateModel {
       Predicate<@Nullable Direction> cullTest) {
     CrystalGeometry.Key key = CrystalGeometry.key(new CrystalGeometry.LevelCells(level, pos, state.getBlock()), true);
     CellMesh cell = cell(key);
-    cell.mesh().outputTo(emitter);
+    Material.Baked[] shimmer = shimmer(pos, state, random);
+    if (shimmer == null) {
+      cell.mesh().outputTo(emitter);
+    } else {
+      emitter.pushTransform(quad -> {
+        Material.Baked sideMaterial = shimmer[quad.nominalFace().ordinal()];
+        if (sideMaterial != null) {
+          for (int i = 0; i < 4; i++) {
+            setLockedUv(quad, i, quad.nominalFace(), quad.x(i), quad.y(i), quad.z(i));
+          }
+          quad.materialBake(sideMaterial, MutableQuadView.BAKE_NORMALIZED);
+        }
+        return true;
+      });
+      cell.mesh().outputTo(emitter);
+      emitter.popTransform();
+    }
     CrystalRubble.emit(emitter, level, pos, state, cell.rubbleMargins(), random);
+  }
+
+  /**
+   * Picks the shimmer material of each side of the crystal at {@code pos}, null for sides with the normal texture. Returns null if no side
+   * shimmers.
+   */
+  private Material.Baked @Nullable [] shimmer(BlockPos pos, BlockState state, RandomSource random) {
+    if (shimmerMaterials.isEmpty()) {
+      return null;
+    }
+    // Seeded apart from the debris, which uses the seeds of the six sides below.
+    random.setSeed(state.getSeed(pos) * 31 + Direction.values().length);
+    Material.Baked[] materials = new Material.Baked[Direction.values().length];
+    boolean shimmers = false;
+    for (Direction side : Direction.values()) {
+      int roll = random.nextInt(shimmerChance * shimmerMaterials.size());
+      if (roll < shimmerMaterials.size()) {
+        materials[side.ordinal()] = shimmerMaterials.get(roll);
+        shimmers = true;
+      }
+    }
+    return shimmers ? materials : null;
   }
 
   @Override
@@ -149,13 +196,17 @@ public final class CrystalBlockModel implements BlockStateModel {
 
   @Override
   public @BakedQuad.MaterialFlags int materialFlags() {
-    // Rubble uses the textures of neighbouring blocks, which may be animated.
+    // The shimmer textures and the textures of neighbouring blocks used by the rubble may be animated.
     return BakedQuad.FLAG_TRANSLUCENT | BakedQuad.FLAG_ANIMATED;
   }
 
-  public record Unbaked(Identifier texture) implements CustomUnbakedBlockStateModel {
+  public record Unbaked(Identifier texture, List<Identifier> shimmerTextures, int shimmerChance) implements CustomUnbakedBlockStateModel {
     public static final MapCodec<Unbaked> CODEC = RecordCodecBuilder
-        .mapCodec(instance -> instance.group(Identifier.CODEC.fieldOf("texture").forGetter(Unbaked::texture)).apply(instance, Unbaked::new));
+        .mapCodec(instance -> instance
+            .group(Identifier.CODEC.fieldOf("texture").forGetter(Unbaked::texture),
+                Identifier.CODEC.listOf().optionalFieldOf("shimmer_textures", List.of()).forGetter(Unbaked::shimmerTextures),
+                ExtraCodecs.POSITIVE_INT.optionalFieldOf("shimmer_chance", DEFAULT_SHIMMER_CHANCE).forGetter(Unbaked::shimmerChance))
+            .apply(instance, Unbaked::new));
 
     @Override
     public MapCodec<? extends CustomUnbakedBlockStateModel> codec() {
@@ -167,7 +218,12 @@ public final class CrystalBlockModel implements BlockStateModel {
 
     @Override
     public BlockStateModel bake(ModelBaker modelBakery) {
-      return new CrystalBlockModel(modelBakery.materials().get(new Material(texture, true), () -> TYPE_ID + " " + texture));
+      return new CrystalBlockModel(material(modelBakery, texture),
+          shimmerTextures.stream().map(shimmerTexture -> material(modelBakery, shimmerTexture)).toList(), shimmerChance);
+    }
+
+    private static Material.Baked material(ModelBaker modelBakery, Identifier texture) {
+      return modelBakery.materials().get(new Material(texture, true), () -> TYPE_ID + " " + texture);
     }
   }
 }

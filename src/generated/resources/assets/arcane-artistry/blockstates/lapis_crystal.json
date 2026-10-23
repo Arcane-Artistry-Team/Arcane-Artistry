@@ -2,6 +2,11 @@
   "variants": {
     "": {
       "fabric:type": "arcane-artistry:crystal",
+      "shimmer_textures": [
+        "arcane-artistry:block/lapis_crystal_shimmer_1",
+        "arcane-artistry:block/lapis_crystal_shimmer_2",
+        "arcane-artistry:block/lapis_crystal_shimmer_3"
+      ],
       "texture": "arcane-artistry:block/lapis_crystal"
     }
   }
