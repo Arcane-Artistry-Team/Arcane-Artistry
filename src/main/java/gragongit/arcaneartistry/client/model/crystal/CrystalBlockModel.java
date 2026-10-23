@@ -40,7 +40,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * Block model of a {@link CrystalBlock}. The geometry of each crystal depends on the surrounding crystals and is computed by
  * {@link CrystalGeometry}. Meshes are cached per neighbourhood.
  *
- * <p>Each side of a crystal shimmers with a chance of one in {@code shimmer_chance}, by default {@value #DEFAULT_SHIMMER_CHANCE}, showing one
+ * <p>
+ * Each side of a crystal shimmers with a chance of one in {@code shimmer_chance}, by default {@value #DEFAULT_SHIMMER_CHANCE}, showing one
  * of the shimmer textures instead of the normal one. Slopes belong to the side they mostly face.
  */
 public final class CrystalBlockModel implements BlockStateModel {
@@ -48,7 +49,7 @@ public final class CrystalBlockModel implements BlockStateModel {
 
   private static final AtomicBoolean REGISTERED = new AtomicBoolean();
   private static final int MAX_CACHED_CELLS = 16384;
-  private static final int DEFAULT_SHIMMER_CHANCE = 8;
+  private static final int DEFAULT_SHIMMER_CHANCE = 16;
 
   private final Material.Baked material;
   private final List<Material.Baked> shimmerMaterials;
@@ -60,7 +61,8 @@ public final class CrystalBlockModel implements BlockStateModel {
     this.material = material;
     this.shimmerMaterials = shimmerMaterials;
     this.shimmerChance = shimmerChance;
-    CrystalGeometry.Key isolatedKey = CrystalGeometry.key((x, y, z) -> x == 0 && y == 0 && z == 0 ? CrystalBlock.CRYSTAL : CrystalBlock.EMPTY, true);
+    CrystalGeometry.Key isolatedKey =
+        CrystalGeometry.key((x, y, z) -> x == 0 && y == 0 && z == 0 ? CrystalBlock.CRYSTAL : CrystalBlock.EMPTY, true);
     this.isolatedPart = new SimpleModelWrapper(new MeshQuadCollection(cell(isolatedKey).mesh()), false, material);
   }
 
@@ -73,7 +75,8 @@ public final class CrystalBlockModel implements BlockStateModel {
     }
   }
 
-  private record CellMesh(Mesh mesh, long[][] rubbleMargins) {}
+  private record CellMesh(Mesh mesh, long[][] rubbleMargins) {
+  }
 
   private CellMesh cell(CrystalGeometry.Key key) {
     CellMesh cell = cells.get(key);
