@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
+import org.jspecify.annotations.Nullable;
 import gragongit.arcaneartistry.common.block.CrystalBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -30,6 +31,10 @@ import net.minecraft.world.level.block.Block;
  * <li>Inner corners, where a crystal has crystals on both sides of an edge but air diagonally behind it, are cut off by 45 degrees
  * along the inset sides of the neighbours, so the inset walls and slopes of the neighbours run past the corner without a tooth.</li>
  * </ul>
+ *
+ * <p>The interior of the crystal is built the same way with an inset of {@link #INTERIOR_INSET} pixels, which shrinks the whole crystal
+ * by half a block. Crystals that are only one block wide, with no crystal on either side along an axis, have no interior. The interiors
+ * of their neighbours end at them like at solid blocks.
  *
  * <p>The geometry of a cell depends on the 3x3x3 cells around it and on how the cell and its direct neighbours are cut. Both are stored in
  * a {@link Key}.
@@ -58,22 +63,34 @@ public final class CrystalGeometry {
    */
   private static final int MAX_EDGE_DISTANCE = 2;
   /**
-   * How far a tip cut reaches into the two sides next to the edge: half of an inset side, so two opposite tip cuts meet in its center.
+   * How far a tip cut reaches into the two sides next to the edge: half of an inset side, so two opposite tip cuts meet in its center. The
+   * same holds for the interior of a crystal two blocks wide.
    */
   private static final double TIP_LEG = (SIZE - 2 * INSET) / 2D;
+  /**
+   * The inset of the interior: the crystal shrunk by half a block.
+   */
+  private static final int INTERIOR_INSET = INSET + SIZE / 2;
 
   private final Key key;
+  private final boolean interior;
+  private final int inset;
   private final List<ConvexSolid> solids = new ArrayList<>();
 
-  private CrystalGeometry(Key key) {
+  private CrystalGeometry(Key key, boolean interior) {
     this.key = key;
+    this.interior = interior;
+    this.inset = interior ? INTERIOR_INSET : INSET;
     for (int x = -1; x <= 1; x++) {
       for (int y = -1; y <= 1; y++) {
         for (int z = -1; z <= 1; z++) {
           // Crystals diagonally next to the cell only touch it along an edge or in a corner, so they cannot cover any of its faces.
           if (Math.abs(x) + Math.abs(y) + Math.abs(z) <= 1 && get(x, y, z) == CRYSTAL) {
             int[] cell = {x, y, z};
-            add(core(cell));
+            ConvexSolid core = core(cell);
+            if (core != null) {
+              add(core);
+            }
           }
         }
       }
@@ -122,9 +139,26 @@ public final class CrystalGeometry {
   }
 
   /**
-   * The surface of the crystal inside the cell.
+   * Whether all 26 cells around the center of {@code cells} are crystals. Such a crystal has no visible surface, neither outside nor in
+   * its interior.
    */
-  public record Result(List<Polygon> surface, long[][] rubbleMargins) {}
+  public static boolean isEnclosed(Cells cells) {
+    for (int x = -1; x <= 1; x++) {
+      for (int y = -1; y <= 1; y++) {
+        for (int z = -1; z <= 1; z++) {
+          if (cells.get(x, y, z) != CRYSTAL) {
+            return false;
+          }
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
+   * The surface of the crystal and of its interior inside the cell, split for rendering as described in {@link #splitAtCenter}.
+   */
+  public record Result(List<Polygon> surface, List<Polygon> interior, long[][] rubbleMargins) {}
 
   /**
    * Everything the geometry of a crystal depends on: the classifications of the 3x3x3 cells around it, two bits per cell, and the
@@ -354,11 +388,11 @@ public final class CrystalGeometry {
   }
 
   public static Result build(Key key) {
-    return new CrystalGeometry(key).build();
+    return new CrystalGeometry(key, false).build();
   }
 
   static CrystalGeometry of(Key key) {
-    return new CrystalGeometry(key);
+    return new CrystalGeometry(key, false);
   }
 
   /**
@@ -390,7 +424,75 @@ public final class CrystalGeometry {
         }
       }
     }
-    return new Result(surface, margins);
+    List<Polygon> interior = isThin(new int[3]) ? List.of() : new CrystalGeometry(key, true).interior(surface);
+    if (interior.isEmpty()) {
+      return new Result(surface, interior, margins);
+    }
+    return new Result(splitAtCenter(surface), splitAtCenter(interior), margins);
+  }
+
+  /**
+   * Splits the polygons at the center of the cell along each axis. Translucent quads are sorted by their centers, which fails for a large
+   * quad in front of a small one: the surface of the crystal can be drawn before its interior and hide it through the depth buffer. As the
+   * interior is inset by half a block, the pieces of the surface and of the interior then lie almost exactly in front of each other.
+   * Polygons spanning the whole cell along an axis are not split along it, as the surface and the interior both do so there.
+   */
+  private static List<Polygon> splitAtCenter(List<Polygon> polygons) {
+    List<Polygon> pieces = new ArrayList<>(polygons);
+    for (int axis = 0; axis < 3; axis++) {
+      Vector3dc normal = new Vector3d().setComponent(axis, 1);
+      List<Polygon> split = new ArrayList<>();
+      for (Polygon piece : pieces) {
+        double min = piece.minDistance(normal, SIZE / 2D);
+        double max = piece.maxDistance(normal, SIZE / 2D);
+        if (min < -Polygon.EPSILON && max > Polygon.EPSILON && (min > Polygon.EPSILON - SIZE / 2D || max < SIZE / 2D - Polygon.EPSILON)) {
+          for (Polygon part : piece.split(normal, SIZE / 2D)) {
+            if (part != null) {
+              split.add(part);
+            }
+          }
+        } else {
+          split.add(piece);
+        }
+      }
+      pieces = split;
+    }
+    return pieces;
+  }
+
+  /**
+   * The surface of this geometry as the interior of the crystal with the given {@code surface}. Where the interior touches the surface of
+   * the crystal, for example where it grows out of a solid block, the two would coincide and flicker, so the interior is left out there.
+   */
+  private List<Polygon> interior(List<Polygon> surface) {
+    List<Polygon> interior = new ArrayList<>();
+    for (Polygon polygon : surface()) {
+      List<Polygon> fragments = List.of(polygon);
+      for (Polygon outer : surface) {
+        if (outer.isCoplanar(polygon)) {
+          List<Polygon> remaining = new ArrayList<>();
+          for (Polygon fragment : fragments) {
+            fragment.subtract(outer, remaining);
+          }
+          fragments = remaining;
+        }
+      }
+      interior.addAll(fragments);
+    }
+    return interior;
+  }
+
+  /**
+   * Whether the crystal at {@code cell} is only one block wide: along some axis, neither side is a crystal. Cells outside the 3x3x3 cells
+   * of the {@link Key} are not known and assumed to be crystals.
+   */
+  private boolean isThin(int[] cell) {
+    for (int axis = 0; axis < 3; axis++) {
+      if (cell[axis] == 0 && get(cell, axis, -1) != CRYSTAL && get(cell, axis, 1) != CRYSTAL) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private int get(int x, int y, int z) {
@@ -430,12 +532,21 @@ public final class CrystalGeometry {
     return cuts;
   }
 
-  private ConvexSolid core(int[] cell) {
+  /**
+   * The core box of the crystal at {@code cell} with its cuts, or null if there is none.
+   */
+  private @Nullable ConvexSolid core(int[] cell) {
+    if (interior && isThin(cell)) {
+      return null;
+    }
     double[] min = new double[3];
     double[] max = new double[3];
     for (int axis = 0; axis < 3; axis++) {
-      min[axis] = cell[axis] * SIZE + (get(cell, axis, -1) != EMPTY ? 0 : INSET);
-      max[axis] = cell[axis] * SIZE + SIZE - (get(cell, axis, 1) != EMPTY ? 0 : INSET);
+      min[axis] = cell[axis] * SIZE + (get(cell, axis, -1) != EMPTY ? 0 : inset);
+      max[axis] = cell[axis] * SIZE + SIZE - (get(cell, axis, 1) != EMPTY ? 0 : inset);
+      if (min[axis] >= max[axis]) {
+        return null;
+      }
     }
 
     ConvexSolid core = ConvexSolid.box(min, max);
@@ -452,12 +563,8 @@ public final class CrystalGeometry {
           point.setComponent(axisA, signA > 0 ? max[axisA] : min[axisA]);
           point.setComponent(axisB, signB > 0 ? min[axisB] : max[axisB]);
         }
-        case INNER_CUT -> {
-          // Through the inset sides of both neighbours where they meet this crystal.
-          double base = cell[axisA] * SIZE;
-          point.setComponent(axisA, base + (signA > 0 ? SIZE - INSET : INSET));
-          point.setComponent(axisB, cell[axisB] * SIZE + (signB > 0 ? SIZE : 0));
-        }
+        // Through the inset sides of both neighbours where they meet this crystal.
+        case INNER_CUT -> point.set(innerCornerPoint(cell, axisA, signA, axisB, signB));
         default -> {
           // Cut off a triangle with legs of half the inset block size from the edge. The plane only depends on the two sides next to the
           // edge, so crystals along the edge get the same plane even if their other sides differ.
@@ -467,7 +574,48 @@ public final class CrystalGeometry {
       }
       core = core.cut(normal, point);
     }
+    if (interior) {
+      core = cutSolidCorners(cell, core);
+    }
     return taper(cell, core, min, max);
+  }
+
+  /**
+   * A point on the plane of an {@link #INNER_CUT}, which runs through the inset sides of the neighbours next to the edge.
+   */
+  private Vector3d innerCornerPoint(int[] cell, int axisA, int signA, int axisB, int signB) {
+    return new Vector3d()
+        .setComponent(axisA, cell[axisA] * SIZE + (signA > 0 ? SIZE - inset : inset))
+        .setComponent(axisB, cell[axisB] * SIZE + (signB > 0 ? SIZE : 0));
+  }
+
+  /**
+   * Cuts the interior like an inner corner at edges with a solid block on one side, a crystal on the other and air diagonally behind. The
+   * crystal is inset towards the air, so the surface steps back next to the solid block, and the interior growing out of the solid block
+   * would reach up to that step.
+   */
+  private ConvexSolid cutSolidCorners(int[] cell, ConvexSolid core) {
+    for (int[] plane : PLANES) {
+      for (int signA = -1; signA <= 1; signA += 2) {
+        for (int signB = -1; signB <= 1; signB += 2) {
+          int sideA = get(cell, plane[0], signA);
+          int sideB = get(cell, plane[1], signB);
+          int[] diagonal = offset(cell, plane[0], signA, plane[1], signB, 0);
+          if ((sideA == SOLID && sideB == CRYSTAL || sideA == CRYSTAL && sideB == SOLID) && isKnown(diagonal) && get(diagonal) == EMPTY) {
+            Vector3d normal = new Vector3d().setComponent(plane[0], signA).setComponent(plane[1], signB);
+            core = core.cut(normal, innerCornerPoint(cell, plane[0], signA, plane[1], signB));
+          }
+        }
+      }
+    }
+    return core;
+  }
+
+  /**
+   * Whether the cell lies within the 3x3x3 cells of the {@link Key}.
+   */
+  private static boolean isKnown(int[] cell) {
+    return Math.abs(cell[0]) <= 1 && Math.abs(cell[1]) <= 1 && Math.abs(cell[2]) <= 1;
   }
 
   /**

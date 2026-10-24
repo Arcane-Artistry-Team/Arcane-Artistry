@@ -2,6 +2,7 @@ package gragongit.arcaneartistry.client.model.crystal;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
@@ -43,6 +44,10 @@ import net.minecraft.world.level.block.state.BlockState;
  * <p>
  * Each side of a crystal shimmers with a chance of one in {@code shimmer_chance}, by default {@value #DEFAULT_SHIMMER_CHANCE}, showing one
  * of the shimmer textures instead of the normal one. Slopes belong to the side they mostly face.
+ *
+ * <p>
+ * Inside, crystals at least two blocks wide show their interior, the crystal shrunk by half a block and textured with
+ * {@code inner_texture}.
  */
 public final class CrystalBlockModel implements BlockStateModel {
   public static final Identifier TYPE_ID = ArcaneArtistry.id("crystal");
@@ -52,13 +57,16 @@ public final class CrystalBlockModel implements BlockStateModel {
   private static final int DEFAULT_SHIMMER_CHANCE = 16;
 
   private final Material.Baked material;
+  private final Material.Baked innerMaterial;
   private final List<Material.Baked> shimmerMaterials;
   private final int shimmerChance;
   private final Map<CrystalGeometry.Key, CellMesh> cells = new ConcurrentHashMap<>();
   private final BlockStateModelPart isolatedPart;
 
-  private CrystalBlockModel(Material.Baked material, List<Material.Baked> shimmerMaterials, int shimmerChance) {
+  private CrystalBlockModel(Material.Baked material, Material.Baked innerMaterial, List<Material.Baked> shimmerMaterials,
+      int shimmerChance) {
     this.material = material;
+    this.innerMaterial = innerMaterial;
     this.shimmerMaterials = shimmerMaterials;
     this.shimmerChance = shimmerChance;
     CrystalGeometry.Key isolatedKey =
@@ -75,7 +83,7 @@ public final class CrystalBlockModel implements BlockStateModel {
     }
   }
 
-  private record CellMesh(Mesh mesh, long[][] rubbleMargins) {
+  private record CellMesh(Mesh mesh, Mesh interiorMesh, long[][] rubbleMargins) {
   }
 
   private CellMesh cell(CrystalGeometry.Key key) {
@@ -85,13 +93,13 @@ public final class CrystalBlockModel implements BlockStateModel {
         cells.clear();
       }
       CrystalGeometry.Result result = CrystalGeometry.build(key);
-      cell = new CellMesh(bake(result.surface()), result.rubbleMargins());
+      cell = new CellMesh(bake(result.surface(), material), bake(result.interior(), innerMaterial), result.rubbleMargins());
       cells.put(key, cell);
     }
     return cell;
   }
 
-  private Mesh bake(List<Polygon> surface) {
+  private static Mesh bake(List<Polygon> surface, Material.Baked material) {
     MutableMesh mesh = Renderer.get().mutableMesh();
     QuadEmitter emitter = mesh.emitter();
     for (Polygon polygon : surface) {
@@ -143,8 +151,13 @@ public final class CrystalBlockModel implements BlockStateModel {
   @Override
   public void emitQuads(QuadEmitter emitter, BlockAndTintGetter level, BlockPos pos, BlockState state, RandomSource random,
       Predicate<@Nullable Direction> cullTest) {
-    CrystalGeometry.Key key = CrystalGeometry.key(new CrystalGeometry.LevelCells(level, pos, state.getBlock()), true);
-    CellMesh cell = cell(key);
+    CrystalGeometry.LevelCells cells = new CrystalGeometry.LevelCells(level, pos, state.getBlock());
+    if (CrystalGeometry.isEnclosed(cells)) {
+      // Nothing to see, so the key does not need to be computed.
+      return;
+    }
+
+    CellMesh cell = cell(CrystalGeometry.key(cells, true));
     Material.Baked[] shimmer = shimmer(pos, state, random);
     if (shimmer == null) {
       cell.mesh().outputTo(emitter);
@@ -162,6 +175,7 @@ public final class CrystalBlockModel implements BlockStateModel {
       cell.mesh().outputTo(emitter);
       emitter.popTransform();
     }
+    cell.interiorMesh().outputTo(emitter);
     CrystalRubble.emit(emitter, level, pos, state, cell.rubbleMargins(), random);
   }
 
@@ -203,10 +217,15 @@ public final class CrystalBlockModel implements BlockStateModel {
     return BakedQuad.FLAG_TRANSLUCENT | BakedQuad.FLAG_ANIMATED;
   }
 
-  public record Unbaked(Identifier texture, List<Identifier> shimmerTextures, int shimmerChance) implements CustomUnbakedBlockStateModel {
+  /**
+   * Without an {@code inner_texture}, the interior uses {@code texture} as well.
+   */
+  public record Unbaked(Identifier texture, Optional<Identifier> innerTexture, List<Identifier> shimmerTextures, int shimmerChance)
+      implements CustomUnbakedBlockStateModel {
     public static final MapCodec<Unbaked> CODEC = RecordCodecBuilder
         .mapCodec(instance -> instance
             .group(Identifier.CODEC.fieldOf("texture").forGetter(Unbaked::texture),
+                Identifier.CODEC.optionalFieldOf("inner_texture").forGetter(Unbaked::innerTexture),
                 Identifier.CODEC.listOf().optionalFieldOf("shimmer_textures", List.of()).forGetter(Unbaked::shimmerTextures),
                 ExtraCodecs.POSITIVE_INT.optionalFieldOf("shimmer_chance", DEFAULT_SHIMMER_CHANCE).forGetter(Unbaked::shimmerChance))
             .apply(instance, Unbaked::new));
@@ -221,7 +240,7 @@ public final class CrystalBlockModel implements BlockStateModel {
 
     @Override
     public BlockStateModel bake(ModelBaker modelBakery) {
-      return new CrystalBlockModel(material(modelBakery, texture),
+      return new CrystalBlockModel(material(modelBakery, texture), material(modelBakery, innerTexture.orElse(texture)),
           shimmerTextures.stream().map(shimmerTexture -> material(modelBakery, shimmerTexture)).toList(), shimmerChance);
     }
 

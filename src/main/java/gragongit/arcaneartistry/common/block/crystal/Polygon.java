@@ -121,6 +121,32 @@ public record Polygon(List<Vector3dc> vertices, Vector3dc normal) {
   }
 
   /**
+   * Whether {@code other} lies in the same plane as this polygon and faces the same way.
+   */
+  boolean isCoplanar(Polygon other) {
+    return normal.dot(other.normal) > 1 - EPSILON
+        && Math.abs(normal.dot(other.vertices.getFirst()) - normal.dot(vertices.getFirst())) < EPSILON;
+  }
+
+  /**
+   * Adds the parts of this polygon lying outside of {@code other}, which must be {@linkplain #isCoplanar coplanar}, to {@code output}.
+   */
+  void subtract(Polygon other, List<Polygon> output) {
+    Polygon inside = this;
+    int count = other.vertices.size();
+    for (int i = 0; i < count && inside != null; i++) {
+      Vector3dc current = other.vertices.get(i);
+      // Points away from the counter-clockwise polygon.
+      Vector3d outward = other.vertices.get((i + 1) % count).sub(current, new Vector3d()).cross(normal).normalize();
+      Polygon[] parts = inside.split(outward, outward.dot(current));
+      if (parts[1] != null) {
+        output.add(parts[1]);
+      }
+      inside = parts[0];
+    }
+  }
+
+  /**
    * Whether the point lies on this polygon, allowing it to be up to {@code tolerance} away.
    */
   boolean contains(Vector3dc point, double tolerance) {

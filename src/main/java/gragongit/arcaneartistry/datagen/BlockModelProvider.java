@@ -37,11 +37,12 @@ public class BlockModelProvider extends FabricModelProvider {
   }
 
   /**
-   * The model of a crystal using the texture {@code block/<name>} and the shimmer textures {@code block/<name>_shimmer_<1..variants>}. Each
-   * side shimmers with a chance of one in {@code shimmerChance}.
+   * The model of a crystal using the texture {@code block/<name>}, the texture {@code block/<name>_inner} for its interior and the shimmer
+   * textures {@code block/<name>_shimmer_<1..variants>}. Each side shimmers with a chance of one in {@code shimmerChance}.
    */
   private static BlockModelDefinitionGenerator crystal(Block block, String name, int shimmerVariants, int shimmerChance) {
     Identifier texture = ArcaneArtistry.id("block/" + name);
+    Identifier innerTexture = ArcaneArtistry.id("block/" + name + "_inner");
     List<Identifier> shimmerTextures =
         IntStream.rangeClosed(1, shimmerVariants).mapToObj(i -> ArcaneArtistry.id("block/" + name + "_shimmer_" + i)).toList();
     // The custom model type has to be known to serialize the block state definition.
@@ -56,7 +57,7 @@ public class BlockModelProvider extends FabricModelProvider {
       public BlockStateModelDispatcher create() {
         return new BlockStateModelDispatcher(Optional
             .of(new BlockStateModelDispatcher.SimpleModelSelectors(
-                Map.of("", new CrystalBlockModel.Unbaked(texture, shimmerTextures, shimmerChance)))),
+                Map.of("", new CrystalBlockModel.Unbaked(texture, Optional.of(innerTexture), shimmerTextures, shimmerChance)))),
             Optional.empty());
       }
     };
