@@ -16,7 +16,6 @@ import net.minecraft.client.data.models.blockstates.BlockModelDefinitionGenerato
 import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelDispatcher;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 
 public class BlockModelProvider extends FabricModelProvider {
@@ -33,7 +32,7 @@ public class BlockModelProvider extends FabricModelProvider {
 
   @Override
   public void generateItemModels(ItemModelGenerators itemModelGenerators) {
-    itemModelGenerators.generateFlatItem(ModItems.LAPIS_CRYSTAL, Items.HEART_OF_THE_SEA, ModelTemplates.FLAT_ITEM);
+    itemModelGenerators.generateFlatItem(ModItems.LAPIS_CRYSTAL, ModelTemplates.FLAT_ITEM);
   }
 
   /**
