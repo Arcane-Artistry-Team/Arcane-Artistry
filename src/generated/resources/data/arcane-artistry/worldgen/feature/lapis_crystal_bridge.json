@@ -1,0 +1,32 @@
+{
+  "type": "arcane-artistry:crystal_bridge",
+  "axes": [
+    "x",
+    "y",
+    "z"
+  ],
+  "base_tower_length": {
+    "type": "minecraft:uniform",
+    "max_inclusive": 3,
+    "min_inclusive": 1
+  },
+  "base_towers": {
+    "type": "minecraft:uniform",
+    "max_inclusive": 3,
+    "min_inclusive": 0
+  },
+  "crystal": {
+    "id": "arcane-artistry:lapis_crystal"
+  },
+  "max_length": 23,
+  "min_length": 1,
+  "pinch": {
+    "type": "minecraft:uniform",
+    "max_exclusive": 1.0,
+    "min_inclusive": 0.0
+  },
+  "thickness_lengths": [
+    8,
+    15
+  ]
+}

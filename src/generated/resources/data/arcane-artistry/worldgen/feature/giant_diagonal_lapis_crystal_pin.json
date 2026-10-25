@@ -1,0 +1,31 @@
+{
+  "type": "arcane-artistry:slanted_crystal_pin",
+  "base_tower_length": {
+    "type": "minecraft:uniform",
+    "max_inclusive": 3,
+    "min_inclusive": 1
+  },
+  "base_towers": {
+    "type": "minecraft:uniform",
+    "max_inclusive": 6,
+    "min_inclusive": 2
+  },
+  "crystal": {
+    "id": "arcane-artistry:lapis_crystal"
+  },
+  "search_range": 12,
+  "sizes": [
+    {
+      "data": {
+        "length": {
+          "type": "minecraft:uniform",
+          "max_inclusive": 14,
+          "min_inclusive": 8
+        },
+        "thickness": 4
+      },
+      "weight": 1
+    }
+  ],
+  "slant": "corner"
+}

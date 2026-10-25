@@ -20,6 +20,8 @@ public class EnglishLanguageProvider extends FabricLanguageProvider {
 
     translations.addAttribute(ManaAttributes.MAX_MANA, "Max Mana");
 
+    translations.add("biome.arcane-artistry.crystal_caves", "Crystal Caves");
+
     translations.add("screen.arcane-artistry.crystal_ball", "Crystal Ball");
     translations.add("screen.arcane-artistry.crystal_ball.home", "Home");
 

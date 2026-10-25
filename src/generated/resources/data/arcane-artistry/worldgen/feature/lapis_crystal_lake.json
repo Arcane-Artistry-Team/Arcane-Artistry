@@ -1,0 +1,23 @@
+{
+  "type": "arcane-artistry:crystal_lake",
+  "crystal": {
+    "id": "arcane-artistry:lapis_crystal"
+  },
+  "max_depth": {
+    "type": "minecraft:uniform",
+    "max_inclusive": 3,
+    "min_inclusive": 2
+  },
+  "radius": {
+    "type": "minecraft:uniform",
+    "max_inclusive": 10,
+    "min_inclusive": 5
+  },
+  "replaceable": "#minecraft:lush_ground_replaceable",
+  "shelf_width": {
+    "type": "minecraft:uniform",
+    "max_inclusive": 3,
+    "min_inclusive": 2
+  },
+  "slope_width": 2
+}

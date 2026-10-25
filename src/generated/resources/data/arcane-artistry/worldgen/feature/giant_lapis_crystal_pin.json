@@ -1,0 +1,25 @@
+{
+  "type": "arcane-artistry:crystal_pin",
+  "attach_to": [
+    "wall",
+    "floor",
+    "ceiling"
+  ],
+  "crystal": {
+    "id": "arcane-artistry:lapis_crystal"
+  },
+  "search_range": 12,
+  "sizes": [
+    {
+      "data": {
+        "length": {
+          "type": "minecraft:uniform",
+          "max_inclusive": 12,
+          "min_inclusive": 4
+        },
+        "thickness": 4
+      },
+      "weight": 1
+    }
+  ]
+}

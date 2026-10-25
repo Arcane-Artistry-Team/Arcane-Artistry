@@ -37,10 +37,21 @@ fabricApi {
 	}
 }
 
+repositories {
+	maven {
+		name = "Forge"
+		url = "https://maven.minecraftforge.net/"
+		content {
+			includeGroup "com.github.glitchfiend"
+		}
+	}
+}
+
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	implementation "com.github.glitchfiend:TerraBlender-fabric:${project.terrablender_version}"
 
 	runtimeOnly sourceSets.elements.output
 }

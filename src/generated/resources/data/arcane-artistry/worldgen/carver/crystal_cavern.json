@@ -1,0 +1,34 @@
+{
+  "type": "arcane-artistry:cavern",
+  "blobs": {
+    "type": "minecraft:uniform",
+    "max_inclusive": 9,
+    "min_inclusive": 5
+  },
+  "floor_level": {
+    "type": "minecraft:uniform",
+    "max_exclusive": -0.4,
+    "min_inclusive": -0.6
+  },
+  "horizontal_radius": {
+    "type": "minecraft:uniform",
+    "max_exclusive": 56.0,
+    "min_inclusive": 32.0
+  },
+  "roughness": 0.3,
+  "spacing": 6,
+  "vertical_radius": {
+    "type": "minecraft:uniform",
+    "max_exclusive": 18.0,
+    "min_inclusive": 12.0
+  },
+  "y": {
+    "type": "minecraft:uniform",
+    "max_inclusive": {
+      "absolute": -30
+    },
+    "min_inclusive": {
+      "absolute": -36
+    }
+  }
+}
